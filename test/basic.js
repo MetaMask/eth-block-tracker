@@ -1,6 +1,6 @@
 const test = require('tape')
-const RpcBlockTracker = require('../index')
 const JsonRpcEngine = require('json-rpc-engine')
+const RpcBlockTracker = require('../src/index')
 const TestBlockMiddleware = require('./util/testBlockMiddleware')
 
 test('basic tests - constructor', (t) => {

@@ -1,4 +1,4 @@
-const incrementHexNumber = require('../../lib/hexUtils').incrementHexNumber
+const incrementHexNumber = require('../../src/hexUtils').incrementHexNumber
 
 module.exports = class TestBlockMiddleware {
 
