@@ -1,24 +1,24 @@
+'use strict'
 const incrementHexNumber = require('../../src/hexUtils').incrementHexNumber
 
 module.exports = class TestBlockMiddleware {
-
-  constructor() {
+  constructor () {
     this._blockchain = {}
     this.setCurrentBlock(createBlock({ number: '0x01' }))
   }
 
-  nextBlock() {
+  nextBlock () {
     const nextNumber = incrementHexNumber(this.currentBlock.number)
     this.setCurrentBlock(createBlock({ number: nextNumber }))
   }
 
-  setCurrentBlock(blockParams) {
+  setCurrentBlock (blockParams) {
     const newBlock = createBlock(blockParams)
     this.currentBlock = newBlock
     this._blockchain[newBlock.number] = newBlock
   }
-  
-  createMiddleware() {
+
+  createMiddleware () {
     return (req, res, next, end) => {
       if (req.method !== 'eth_getBlockByNumber') return next()
       const blockRef = req.params[0]
@@ -30,11 +30,10 @@ module.exports = class TestBlockMiddleware {
       end()
     }
   }
-
 }
 
-function createBlock(blockParams){
-  const hash = '0x'+Math.floor(Math.random()*Number.MAX_SAFE_INTEGER).toString(16)
+function createBlock (blockParams) {
+  const hash = '0x' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
   return Object.assign({
     hash: hash,
     difficulty: '0x2892ddca',
@@ -55,6 +54,6 @@ function createBlock(blockParams){
     totalDifficulty: '0x751d0dfa03c1',
     transactionsRoot: '0xb090c32d840dec1e9752719f21bbae4a73e58333aecb89bc3b8ed559fb2712a3',
     transactions: [],
-    uncles: [],
+    uncles: []
   }, blockParams)
 }

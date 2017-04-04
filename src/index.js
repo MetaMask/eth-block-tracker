@@ -1,11 +1,11 @@
+'use strict'
 const EthQuery = require('eth-query')
 const AsyncEventEmitter = require('async-eventemitter')
 const pify = require('pify')
 const incrementHexNumber = require('./hexUtils').incrementHexNumber
 
 class RpcBlockTracker extends AsyncEventEmitter {
-
-  constructor(opts = {}) {
+  constructor (opts = {}) {
     super()
     if (!opts.provider) throw new Error('RpcBlockTracker - no provider specified.')
     this._query = new EthQuery(opts.provider)
@@ -88,7 +88,6 @@ class RpcBlockTracker extends AsyncEventEmitter {
         // setup poll for next block
         this._pollForNextBlock()
       }
-
     } catch (err) {
       if (err) console.error(err)
     }
@@ -101,7 +100,6 @@ class RpcBlockTracker extends AsyncEventEmitter {
   _fetchBlockByNumber (hexNumber) {
     return pify(this._query.getBlockByNumber).call(this._query, hexNumber, false)
   }
-
 }
 
 module.exports = RpcBlockTracker
