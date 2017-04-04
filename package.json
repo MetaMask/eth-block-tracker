@@ -4,9 +4,14 @@
   "description": "This module walks the Ethereum blockchain, keeping track of the latest block. It uses a web3 provider as a data source and will continuously poll for the next block.",
   "main": "src/index.js",
   "scripts": {
-    "test": "npm run test-node && npm run test-browser",
-    "test-node": "browserify test/basic.js | node",
-    "test-browser": "browserify test/basic.js | testling"
+    "lint": "aegir-lint",
+    "release": "aegir-release",
+    "build": "aegir-build",
+    "test": "aegir-test",
+    "test:node": "aegir-test node",
+    "test:browser": "aegir-test browser",
+    "coverage": "aegir-coverage",
+    "coverage-publish": "aegir-coverage publish"
   },
   "author": "",
   "license": "ISC",
@@ -33,9 +38,8 @@
     ]
   },
   "devDependencies": {
-    "browserify": "^14.1.0",
-    "json-rpc-engine": "^2.0.0",
-    "testling": "^1.7.1"
+    "aegir": "^11.0.1",
+    "json-rpc-engine": "^2.0.0"
   },
   "directories": {
     "test": "test"
