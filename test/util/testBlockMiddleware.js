@@ -68,7 +68,7 @@ module.exports = class TestBlockMiddleware {
         const rawTx = req.params[0]
         const rawTxBuffer = ethUtil.toBuffer(rawTx)
         const tx = new EthTx(rawTxBuffer)
-        const txHash = tx.hash()
+        const txHash = ethUtil.bufferToHex(tx.hash())
         const txJson = {
           // raw data
           nonce: ethUtil.bufferToHex(tx.nonce),
