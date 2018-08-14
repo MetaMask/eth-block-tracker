@@ -148,7 +148,7 @@ class RpcBlockTracker extends EventEmitter {
   }
 
   async _handleNewBlockNotification(err, notification) {
-    if (notification.id != this._subscriptionId)
+    if (notification.params.subscription != this._subscriptionId)
       return // this notification isn't for us
 
     if (err) {
@@ -156,7 +156,7 @@ class RpcBlockTracker extends EventEmitter {
       await this._removeSubscription()
     }
 
-    await this._setTrackingBlock(await this._fetchBlockByNumber(notification.result.number))
+    await this._setTrackingBlock(await this._fetchBlockByNumber(notification.params.result.number))
   }
 
   async _initSubscription() {
