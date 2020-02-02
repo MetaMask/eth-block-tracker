@@ -3,6 +3,8 @@ const BaseBlockTracker = require('./base')
 
 const sec = 1000
 
+const randomID = () => Math.floor(Math.random() * 100000000000)
+
 class PollingBlockTracker extends BaseBlockTracker {
 
   constructor (opts = {}) {
@@ -66,7 +68,7 @@ class PollingBlockTracker extends BaseBlockTracker {
   }
 
   async _fetchLatestBlock () {
-    const req = { jsonrpc: "2.0", id: 1, method: 'eth_blockNumber', params: [] }
+    const req = { jsonrpc: "2.0", id: randomID(), method: 'eth_blockNumber', params: [] }
     if (this._setSkipCacheFlag) req.skipCache = true
     const res = await pify((cb) => this._provider.sendAsync(req, cb))()
     if (res.error) throw new Error(`PollingBlockTracker - encountered error fetching block:\n${res.error}`)
