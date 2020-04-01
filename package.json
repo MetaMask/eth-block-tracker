@@ -4,7 +4,7 @@
   "description": "A block tracker for the Ethereum blockchain. Keeps track of the latest block.",
   "main": "src/polling.js",
   "scripts": {
-    "test": "yarn run build && yarn run test:unit && yarn run test:lint:deps",
+    "test": "yarn build && yarn test:unit && yarn test:lint:deps",
     "test:unit": "node test/index.js",
     "test:lint:deps": "npx depcheck --ignore-dirs dist --ignores babelify,@babel/runtime,@babel/preset-env,@babel/plugin-transform-runtime",
     "prepublishOnly": "yarn run build",
