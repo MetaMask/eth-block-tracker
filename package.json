@@ -11,7 +11,7 @@
     "build": "yarn run build:clean && yarn run build:es5 && yarn run build:bundle && yarn run build:validate",
     "build:clean": "rm -rf ./dist && mkdir -p ./dist",
     "build:es5": "babel ./src -d dist/es5/",
-    "build:bundle": "yarn run build:bundle:polling && yarn run build:bundle:base && yarn run build:bundle:subscribe",
+    "build:bundle": "yarn build:bundle:polling && yarn build:bundle:base && yarn build:bundle:subscribe",
     "build:bundle:polling": "browserify -s PollingBlockTracker -e src/polling.js -g babelify > dist/PollingBlockTracker.js",
     "build:bundle:subscribe": "browserify -s SubscribeBlockTracker -e src/subscribe.js -g babelify > dist/SubscribeBlockTracker.js",
     "build:bundle:base": "browserify -s BaseBlockTracker -e src/base.js -g babelify > dist/BaseBlockTracker.js",
