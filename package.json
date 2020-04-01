@@ -8,7 +8,7 @@
     "test:unit": "node test/index.js",
     "test:lint:deps": "npx depcheck --ignore-dirs dist --ignores babelify,@babel/runtime,@babel/preset-env,@babel/plugin-transform-runtime",
     "prepublishOnly": "yarn run build",
-    "build": "yarn run build:clean && yarn run build:es5 && yarn run build:bundle && yarn run build:validate",
+    "build": "yarn build:clean && yarn build:es5 && yarn build:bundle && yarn build:validate",
     "build:clean": "rm -rf ./dist && mkdir -p ./dist",
     "build:es5": "babel ./src -d dist/es5/",
     "build:bundle": "yarn build:bundle:polling && yarn build:bundle:base && yarn build:bundle:subscribe",
