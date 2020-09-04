@@ -21,6 +21,11 @@ module.exports = {
     parserOptions: {
       sourceType: 'script',
     },
+  }, {
+    files: ['test/index.js'],
+    rules: {
+      'import/no-unresolved': 'off'
+    },
   }],
 
   ignorePatterns: ['dist'],

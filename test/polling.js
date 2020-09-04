@@ -64,7 +64,7 @@ module.exports = (test, testLabel, PollingBlockTracker) => {
 
     try {
       // keep the block tracker polling
-      blockTracker.on('latest', () => { })
+      blockTracker.on('latest', () => undefined)
       // throw error in handler in attempt to break block tracker
       blockTracker.once('latest', () => {
         throw new Error('boom')

@@ -16,7 +16,6 @@ class BaseBlockTracker extends SafeEventEmitter {
     // config
     this._blockResetDuration = opts.blockResetDuration || 20 * sec
     // state
-    this._blockResetTimeout
     this._currentBlock = null
     this._isRunning = false
     // bind functions for internal use
@@ -85,15 +84,14 @@ class BaseBlockTracker extends SafeEventEmitter {
     this.on('removeListener', this._onRemoveListener)
   }
 
-  _onNewListener (eventName, handler) {
+  _onNewListener (eventName) {
     // `newListener` is called *before* the listener is added
-    if (!blockTrackerEvents.includes(eventName)) {
-      return
+    if (blockTrackerEvents.includes(eventName)) {
+      this._maybeStart()
     }
-    this._maybeStart()
   }
 
-  _onRemoveListener (eventName, handler) {
+  _onRemoveListener () {
     // `removeListener` is called *after* the listener is removed
     if (this._getBlockTrackerEventCount() > 0) {
       return

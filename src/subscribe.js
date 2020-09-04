@@ -1,5 +1,5 @@
-const BaseBlockTracker = require('./base')
 const createRandomId = require('json-rpc-random-id')()
+const BaseBlockTracker = require('./base')
 
 class SubscribeBlockTracker extends BaseBlockTracker {
 
@@ -27,7 +27,7 @@ class SubscribeBlockTracker extends BaseBlockTracker {
   //
 
   async _start () {
-    if (this._subscriptionId == null) {
+    if (this._subscriptionId === undefined || this._subscriptionId === null) {
       try {
         const blockNumber = await this._call('eth_blockNumber')
         this._subscriptionId = await this._call('eth_subscribe', 'newHeads', {})
@@ -40,7 +40,7 @@ class SubscribeBlockTracker extends BaseBlockTracker {
   }
 
   async _end () {
-    if (this._subscriptionId != null) {
+    if (this._subscriptionId !== null && this._subscriptionId !== undefined) {
       try {
         await this._call('eth_unsubscribe', this._subscriptionId)
         delete this._subscriptionId
@@ -50,8 +50,7 @@ class SubscribeBlockTracker extends BaseBlockTracker {
     }
   }
 
-  _call (method) {
-    const params = Array.prototype.slice.call(arguments, 1)
+  _call (method, ...params) {
     return new Promise((resolve, reject) => {
       this._provider.sendAsync({
         id: createRandomId(), method, params, jsonrpc: '2.0',
@@ -65,7 +64,7 @@ class SubscribeBlockTracker extends BaseBlockTracker {
     })
   }
 
-  _handleSubData (err, data) {
+  _handleSubData (_, data) {
     if (data.method === 'eth_subscription' && data.params.subscription === this._subscriptionId) {
       this._newPotentialLatest(data.params.result.number)
     }

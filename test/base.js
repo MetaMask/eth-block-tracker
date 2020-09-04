@@ -1,4 +1,4 @@
-const noop = () => {}
+const noop = () => undefined
 const timeout = (duration) => new Promise((resolve) => setTimeout(resolve, duration))
 
 module.exports = (test, testLabel, BaseBlockTracker) => {
@@ -34,11 +34,11 @@ module.exports = (test, testLabel, BaseBlockTracker) => {
     // custom subclass to track calls to _start/_end
     class TestBlockTracker extends BaseBlockTracker {
       _start () {
-        start++
+        start += 1
       }
 
       _end () {
-        end++
+        end += 1
       }
     }
 
@@ -81,7 +81,7 @@ module.exports = (test, testLabel, BaseBlockTracker) => {
     // custom subclass to track calls to _start/_end
     class TestBlockTracker extends BaseBlockTracker {
       async _fetchLatestBlock () {
-        blockFetchs++
+        blockFetchs += 1
         // dummy block with unique hash
         return { hash: blockFetchs }
       }
@@ -134,7 +134,7 @@ module.exports = (test, testLabel, BaseBlockTracker) => {
     // custom subclass to track calls to _start/_end
     class TestBlockTracker extends BaseBlockTracker {
       async _fetchLatestBlock () {
-        blockFetchs++
+        blockFetchs += 1
         // dummy block with unique hash
         return { hash: blockFetchs }
       }

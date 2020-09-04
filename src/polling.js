@@ -12,7 +12,7 @@ class PollingBlockTracker extends BaseBlockTracker {
     }
     const pollingInterval = opts.pollingInterval || 20 * sec
     const retryTimeout = opts.retryTimeout || pollingInterval / 10
-    const keepEventLoopActive = opts.keepEventLoopActive !== undefined ? opts.keepEventLoopActive : true
+    const keepEventLoopActive = opts.keepEventLoopActive === undefined ? true : opts.keepEventLoopActive
     const setSkipCacheFlag = opts.setSkipCacheFlag || false
     // BaseBlockTracker constructor
     super(Object.assign({
