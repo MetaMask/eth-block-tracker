@@ -1,5 +1,5 @@
 const noop = () => {}
-const timeout = (duration) => new Promise(resolve => setTimeout(resolve, duration))
+const timeout = (duration) => new Promise((resolve) => setTimeout(resolve, duration))
 
 module.exports = (test, testLabel, BaseBlockTracker) => {
 
@@ -33,10 +33,11 @@ module.exports = (test, testLabel, BaseBlockTracker) => {
 
     // custom subclass to track calls to _start/_end
     class TestBlockTracker extends BaseBlockTracker {
-      _start() {
+      _start () {
         start++
       }
-      _end() {
+
+      _end () {
         end++
       }
     }
@@ -79,11 +80,12 @@ module.exports = (test, testLabel, BaseBlockTracker) => {
 
     // custom subclass to track calls to _start/_end
     class TestBlockTracker extends BaseBlockTracker {
-      async _fetchLatestBlock() {
+      async _fetchLatestBlock () {
         blockFetchs++
         // dummy block with unique hash
         return { hash: blockFetchs }
       }
+
       async _start () {
         const latestBlock = await this._fetchLatestBlock()
         this._newPotentialLatest(latestBlock)
@@ -131,11 +133,12 @@ module.exports = (test, testLabel, BaseBlockTracker) => {
 
     // custom subclass to track calls to _start/_end
     class TestBlockTracker extends BaseBlockTracker {
-      async _fetchLatestBlock() {
+      async _fetchLatestBlock () {
         blockFetchs++
         // dummy block with unique hash
         return { hash: blockFetchs }
       }
+
       async _start () {
         const latestBlock = await this._fetchLatestBlock()
         this._newPotentialLatest(latestBlock)
@@ -152,8 +155,12 @@ module.exports = (test, testLabel, BaseBlockTracker) => {
 
     let block1, block2
     await Promise.all([
-      (async () => { block1 = await blockTracker.getLatestBlock() })(),
-      (async () => { block2 = await blockTracker.getLatestBlock() })(),
+      (async () => {
+        block1 = await blockTracker.getLatestBlock()
+      })(),
+      (async () => {
+        block2 = await blockTracker.getLatestBlock()
+      })(),
     ])
     t.ok(block1, 'blockTracker.getLatestBlock returned a block')
     t.ok(block2, 'blockTracker.getLatestBlock returned a block')

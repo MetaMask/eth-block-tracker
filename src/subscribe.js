@@ -3,9 +3,11 @@ const createRandomId = require('json-rpc-random-id')()
 
 class SubscribeBlockTracker extends BaseBlockTracker {
 
-  constructor(opts = {}) {
+  constructor (opts = {}) {
     // parse + validate args
-    if (!opts.provider) throw new Error('SubscribeBlockTracker - no provider specified.')
+    if (!opts.provider) {
+      throw new Error('SubscribeBlockTracker - no provider specified.')
+    }
     // BaseBlockTracker constructor
     super(opts)
     // config
@@ -16,7 +18,7 @@ class SubscribeBlockTracker extends BaseBlockTracker {
   // public
   //
 
-  async checkForLatestBlock() {
+  async checkForLatestBlock () {
     return await this.getLatestBlock()
   }
 
@@ -24,10 +26,10 @@ class SubscribeBlockTracker extends BaseBlockTracker {
   // private
   //
 
-  async _start() {
+  async _start () {
     if (this._subscriptionId == null) {
       try {
-        let blockNumber = await this._call('eth_blockNumber')
+        const blockNumber = await this._call('eth_blockNumber')
         this._subscriptionId = await this._call('eth_subscribe', 'newHeads', {})
         this._provider.on('data', this._handleSubData.bind(this))
         this._newPotentialLatest(blockNumber)
@@ -37,7 +39,7 @@ class SubscribeBlockTracker extends BaseBlockTracker {
     }
   }
 
-  async _end() {
+  async _end () {
     if (this._subscriptionId != null) {
       try {
         await this._call('eth_unsubscribe', this._subscriptionId)
@@ -48,19 +50,22 @@ class SubscribeBlockTracker extends BaseBlockTracker {
     }
   }
 
-  _call(method) {
-    let params = Array.prototype.slice.call(arguments, 1)
+  _call (method) {
+    const params = Array.prototype.slice.call(arguments, 1)
     return new Promise((resolve, reject) => {
       this._provider.sendAsync({
-        id: createRandomId(), method, params, jsonrpc: "2.0"
+        id: createRandomId(), method, params, jsonrpc: '2.0',
       }, (err, res) => {
-        if (err) reject(err)
-        else resolve(res.result)
+        if (err) {
+          reject(err)
+        } else {
+          resolve(res.result)
+        }
       })
     })
   }
 
-  _handleSubData(err, data) {
+  _handleSubData (err, data) {
     if (data.method === 'eth_subscription' && data.params.subscription === this._subscriptionId) {
       this._newPotentialLatest(data.params.result.number)
     }
