@@ -39,6 +39,11 @@
   resolved "https://registry.yarnpkg.com/@metamask/eslint-config/-/eslint-config-4.1.0.tgz#ace2357af2d9c7d04da40a337fc7f4a81a048921"
   integrity sha512-oc4ONdFB1h2yxBebVj4ACYzGzArB8ZQKiFVNCDlYiTCyeQ/GR4+EUwg0KvlO33LlXCRbAhO3CX0nChbvIB8hEw==
 
+"@metamask/safe-event-emitter@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-2.0.0.tgz#af577b477c683fad17c619a78208cede06f9605c"
+  integrity sha512-/kSXhY692qiV1MXu6EeOZvg5nECLclxNXcKCxJ3cXQgYuRymRHpdx/t7JXfsK+JLjwA1e1c1/SBrlQYpusC29Q==
+
 "@nodelib/fs.scandir@2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.4.tgz#d4b3549a5db5de2683e0c1071ab4f140904bbf69"
@@ -77,6 +82,11 @@
   resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
   integrity sha512-rr+OQyAjxze7GgWrSaJwydHStIhHq2lvY3BOC2Mj7KnzI7XK0Uw1TOOdI9lDoajEbSWLiYgoo4f1R51erQfhPQ==
 
+"@types/json-rpc-random-id@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/json-rpc-random-id/-/json-rpc-random-id-1.0.0.tgz#ed264b344d077782af357f625dd74e1b4dd72209"
+  integrity sha512-+cncTrtHR9V6LRF4HbFp5eD0/jz8p5h4ehDMXXyY9R3KQJWfg+XYxIKkUc+hMvkY0FtUdrBrB2O0FAgTsEZz9Q==
+
 "@types/json-schema@^7.0.3":
   version "7.0.7"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.7.tgz#98a993516c859eb0d5c4c8f098317a9ea68db9ad"
@@ -91,6 +101,11 @@
   version "10.14.15"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.14.15.tgz#e8f7729b631be1b02ae130ff0b61f3e018000640"
   integrity sha512-CBR5avlLcu0YCILJiDIXeU2pTw7UK/NIxfC63m7d7CVamho1qDEzXKkOtEauQRPMy6MI8mLozth+JJkas7HY6g==
+
+"@types/pify@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@types/pify/-/pify-5.0.0.tgz#50eac92722df9ae02caa9f514609cb8d18f9acd7"
+  integrity sha512-Y7rZv5LH4WqWXiCBDp+OqMG43XekhABHsUoWnfWcpy2TE4YxekicDMxt95aQsRgGYWAZ21ab7IxOQj0pHhVKsQ==
 
 "@typescript-eslint/eslint-plugin@^4.14.1":
   version "4.14.1"
@@ -2571,6 +2586,13 @@ eth-query@^2.0.2, eth-query@^2.1.0, eth-query@^2.1.2:
     json-rpc-random-id "^1.0.0"
     xtend "^4.0.1"
 
+eth-rpc-errors@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/eth-rpc-errors/-/eth-rpc-errors-4.0.2.tgz#11bc164e25237a679061ac05b7da7537b673d3b7"
+  integrity sha512-n+Re6Gu8XGyfFy1it0AwbD1x0MUzspQs0D5UiPs1fFPCr6WAwZM+vbIhXheBFrpgosqN9bs5PqlB4Q61U/QytQ==
+  dependencies:
+    fast-safe-stringify "^2.0.6"
+
 eth-sig-util@2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/eth-sig-util/-/eth-sig-util-2.2.0.tgz#769fa3d296b450f6618dedeefe076642c923a16f"
@@ -3012,6 +3034,11 @@ fast-levenshtein@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
   integrity sha1-PYpcZog6FqMMqGQ+hR8Zuqd5eRc=
+
+fast-safe-stringify@^2.0.6:
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.0.7.tgz#124aa885899261f68aedb42a7c080de9da608743"
+  integrity sha512-Utm6CdzT+6xsDk2m8S6uL8VHxNwI6Jub+e9NYTcAms28T84pTa25GJQV9j0CY0N1rM8hK4x6grpF2BQf+2qwVA==
 
 fastq@^1.6.0:
   version "1.10.1"
@@ -4233,6 +4260,14 @@ json-rpc-engine@^3.4.0, json-rpc-engine@^3.6.0:
     json-rpc-error "^2.0.0"
     promise-to-callback "^1.0.0"
     safe-event-emitter "^1.0.1"
+
+json-rpc-engine@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/json-rpc-engine/-/json-rpc-engine-6.1.0.tgz#bf5ff7d029e1c1bf20cb6c0e9f348dcd8be5a393"
+  integrity sha512-NEdLrtrq1jUZyfjkr9OCz9EzCNhnRyWtt1PAnvnhwy6e8XETS0Dtc+ZNCO2gvuAoKsIn2+vCSowXTYE4CkgnAQ==
+  dependencies:
+    "@metamask/safe-event-emitter" "^2.0.0"
+    eth-rpc-errors "^4.0.2"
 
 json-rpc-error@^2.0.0:
   version "2.0.0"

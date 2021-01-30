@@ -1,30 +1,38 @@
 module.exports = {
-  root: true,
-
   extends: [
     '@metamask/eslint-config',
     '@metamask/eslint-config/config/nodejs',
   ],
-
   plugins: [
     'json',
   ],
-
   parserOptions: {
     ecmaVersion: 2018,
   },
-
   overrides: [
     {
-      files: ['test/index.js'],
+      files: ['*.ts'],
+      extends: [
+        '@metamask/eslint-config/config/typescript',
+      ],
+    },
+    {
+      files: [
+        '*.js',
+        '*.json',
+      ],
+      parserOptions: {
+        sourceType: 'script',
+      },
       rules: {
-        'import/no-unresolved': 'off',
+        '@typescript-eslint/no-require-imports': 'off',
+        '@typescript-eslint/no-var-requires': 'off',
       },
     },
   ],
-
   ignorePatterns: [
     '!.eslintrc.js',
-    'dist',
+    'dist/',
+    'node_modules/',
   ],
 }
