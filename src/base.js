@@ -5,7 +5,7 @@ const sec = 1000
 const calculateSum = (accumulator, currentValue) => accumulator + currentValue
 const blockTrackerEvents = ['sync', 'latest']
 
-class BaseBlockTracker extends SafeEventEmitter {
+module.exports = class BaseBlockTracker extends SafeEventEmitter {
 
   //
   // public
@@ -160,8 +160,6 @@ class BaseBlockTracker extends SafeEventEmitter {
   }
 
 }
-
-module.exports = BaseBlockTracker
 
 function hexToInt (hexInt) {
   return Number.parseInt(hexInt, 16)

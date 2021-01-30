@@ -4,7 +4,7 @@ const BaseBlockTracker = require('./base')
 
 const sec = 1000
 
-class PollingBlockTracker extends BaseBlockTracker {
+module.exports = class PollingBlockTracker extends BaseBlockTracker {
 
   constructor (opts = {}) {
     // parse + validate args
@@ -42,10 +42,10 @@ class PollingBlockTracker extends BaseBlockTracker {
   //
 
   _start () {
-    this._performSync().catch((err) => this.emit('error', err))
+    this._synchronize().catch((err) => this.emit('error', err))
   }
 
-  async _performSync () {
+  async _synchronize () {
     while (this._isRunning) {
       try {
         await this._updateLatestBlock()
@@ -81,8 +81,6 @@ class PollingBlockTracker extends BaseBlockTracker {
   }
 
 }
-
-module.exports = PollingBlockTracker
 
 function timeout (duration, unref) {
   return new Promise((resolve) => {

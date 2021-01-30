@@ -6,27 +6,25 @@ module.exports = {
     '@metamask/eslint-config/config/nodejs',
   ],
 
+  plugins: [
+    'json',
+  ],
+
   parserOptions: {
-    ecmaVersion: 2017,
-    ecmaFeatures: {
-      arrowFunctions: true,
-      classes: true,
-    },
+    ecmaVersion: 2018,
   },
 
-  overrides: [{
-    files: [
-      '.eslintrc.js',
-    ],
-    parserOptions: {
-      sourceType: 'script',
+  overrides: [
+    {
+      files: ['test/index.js'],
+      rules: {
+        'import/no-unresolved': 'off',
+      },
     },
-  }, {
-    files: ['test/index.js'],
-    rules: {
-      'import/no-unresolved': 'off'
-    },
-  }],
+  ],
 
-  ignorePatterns: ['dist'],
+  ignorePatterns: [
+    '!.eslintrc.js',
+    'dist',
+  ],
 }

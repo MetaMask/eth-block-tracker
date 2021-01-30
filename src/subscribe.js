@@ -1,7 +1,7 @@
 const createRandomId = require('json-rpc-random-id')()
 const BaseBlockTracker = require('./base')
 
-class SubscribeBlockTracker extends BaseBlockTracker {
+module.exports = class SubscribeBlockTracker extends BaseBlockTracker {
 
   constructor (opts = {}) {
     // parse + validate args
@@ -70,5 +70,3 @@ class SubscribeBlockTracker extends BaseBlockTracker {
     }
   }
 }
-
-module.exports = SubscribeBlockTracker
