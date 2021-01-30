@@ -29,6 +29,13 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 'off',
       },
     },
+    {
+      files: ['test/*'],
+      rules: {
+        // This happens before a build is created. It doesn't matter.
+        'import/no-unresolved': 'off',
+      },
+    },
   ],
   ignorePatterns: [
     '!.eslintrc.js',
