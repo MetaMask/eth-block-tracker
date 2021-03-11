@@ -1,15 +1,15 @@
-const test = require('tape')
+const test = require('tape');
 
 const {
   BaseBlockTracker,
   PollingBlockTracker,
   SubscribeBlockTracker,
-} = require('../dist')
+} = require('../dist');
 
-const runBaseTests = require('./base')
-const runPollingTests = require('./polling')
-const runSubscribeTests = require('./subscribe')
+const runBaseTests = require('./base');
+const runPollingTests = require('./polling');
+const runSubscribeTests = require('./subscribe');
 
-runBaseTests(test, 'BaseBlockTracker', BaseBlockTracker)
-runPollingTests(test, 'PollingBlockTracker', PollingBlockTracker)
-runSubscribeTests(test, 'SubscribeBlockTracker', SubscribeBlockTracker)
+runBaseTests(test, 'BaseBlockTracker', BaseBlockTracker);
+runPollingTests(test, 'PollingBlockTracker', PollingBlockTracker);
+runSubscribeTests(test, 'SubscribeBlockTracker', SubscribeBlockTracker);
