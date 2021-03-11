@@ -7,7 +7,7 @@
     "dist/"
   ],
   "scripts": {
-    "lint": "eslint . --ext js,json,ts",
+    "lint": "eslint . --ext ts,js,json",
     "lint:fix": "yarn lint --fix",
     "build": "tsc --project .",
     "test": "yarn build && node test/index.js",
