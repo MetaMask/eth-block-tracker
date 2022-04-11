@@ -15,7 +15,7 @@ export interface Provider extends SafeEventEmitter {
 }
 
 interface BaseBlockTrackerArgs {
-  blockResetDuration?: number;
+  blockResetDuration?: number | undefined;
 }
 
 export class BaseBlockTracker extends SafeEventEmitter {
@@ -67,7 +67,7 @@ export class BaseBlockTracker extends SafeEventEmitter {
   }
 
   // dont allow module consumer to remove our internal event listeners
-  removeAllListeners(eventName: string | symbol) {
+  removeAllListeners(eventName?: string | symbol) {
     // perform default behavior, preserve fn arity
     if (eventName) {
       super.removeAllListeners(eventName);
@@ -86,14 +86,14 @@ export class BaseBlockTracker extends SafeEventEmitter {
   /**
    * To be implemented in subclass.
    */
-  protected _start(): void {
+  protected async _start(): Promise<void> {
     // default behavior is noop
   }
 
   /**
    * To be implemented in subclass.
    */
-  protected _end(): void {
+  protected async _end(): Promise<void> {
     // default behavior is noop
   }
 
@@ -128,7 +128,9 @@ export class BaseBlockTracker extends SafeEventEmitter {
     this._isRunning = true;
     // cancel setting latest block to stale
     this._cancelBlockResetTimeout();
-    this._start();
+    this._start().then(() => {
+      this.emit('_started');
+    });
   }
 
   private _maybeEnd(): void {
@@ -137,7 +139,9 @@ export class BaseBlockTracker extends SafeEventEmitter {
     }
     this._isRunning = false;
     this._setupBlockResetTimeout();
-    this._end();
+    this._end().then(() => {
+      this.emit('_ended');
+    });
   }
 
   private _getBlockTrackerEventCount(): number {
