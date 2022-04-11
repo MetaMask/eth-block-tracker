@@ -1,7 +1,10 @@
 import util from 'util';
 import SafeEventEmitter from '@metamask/safe-event-emitter';
-import { JsonRpcRequest, JsonRpcResponse } from 'json-rpc-engine';
-import { Provider } from '../src/BaseBlockTracker';
+import {
+  Provider,
+  SupportedRpcMethods,
+  SendAsyncCallbackArguments,
+} from '../src/BaseBlockTracker';
 import {
   SubscribeBlockTracker,
   SubscribeBlockTrackerOptions,
@@ -21,19 +24,23 @@ type BlockTrackerConstructor<T extends BlockTracker> = new (
   options?: BlockTrackerOptions<T>,
 ) => T;
 
-type FakeProviderStub =
-  | {
-      methodName: string;
-      response: { result: any } | { error: string };
-    }
-  | {
-      methodName: string;
-      implementation: () => void;
-    }
-  | {
-      methodName: string;
-      error: string;
-    };
+type FakeProviderStub = {
+  [K in keyof SupportedRpcMethods]:
+    | {
+        methodName: K;
+        response:
+          | { result: SupportedRpcMethods[K]['responseResult'] }
+          | { error: string };
+      }
+    | {
+        methodName: K;
+        implementation: () => void;
+      }
+    | {
+        methodName: K;
+        error: string;
+      };
+};
 
 export type WithBlockTrackerCallback<T extends BlockTracker> = (args: {
   provider: FakeProvider;
@@ -41,7 +48,7 @@ export type WithBlockTrackerCallback<T extends BlockTracker> = (args: {
 }) => void | Promise<void>;
 
 interface FakeProviderOptions {
-  stubs?: FakeProviderStub[];
+  stubs?: FakeProviderStub[keyof SupportedRpcMethods][];
 }
 
 export interface WithBlockTrackerOptions<T extends BlockTracker> {
@@ -60,9 +67,9 @@ export interface WithBlockTrackerOptions<T extends BlockTracker> {
  * that `sendAsync` takes.
  */
 class FakeProvider extends SafeEventEmitter implements Provider {
-  private stubs: FakeProviderStub[];
+  private stubs: FakeProviderStub[keyof SupportedRpcMethods][];
 
-  private originalStubs: FakeProviderStub[];
+  private originalStubs: FakeProviderStub[keyof SupportedRpcMethods][];
 
   constructor({ stubs = [] }: FakeProviderOptions = {}) {
     super();
@@ -70,9 +77,9 @@ class FakeProvider extends SafeEventEmitter implements Provider {
     this.originalStubs = this.stubs.slice();
   }
 
-  sendAsync<T, U>(
-    request: JsonRpcRequest<T>,
-    callback: (err: Error, response: JsonRpcResponse<U>) => void,
+  sendAsync<T extends keyof SendAsyncCallbackArguments>(
+    request: SendAsyncCallbackArguments[T]['request'],
+    callback: SendAsyncCallbackArguments[T]['callback'],
   ) {
     const index = this.stubs.findIndex(
       (stub) => stub.methodName === request.method,
@@ -85,13 +92,23 @@ class FakeProvider extends SafeEventEmitter implements Provider {
         stub.implementation();
       } else if ('response' in stub) {
         if ('result' in stub.response) {
-          callback(null as unknown as Error, {
+          // XXX: This fails in TypeScript 4.4, because it's unable to
+          // understand that the callback has multiple overloads and to work out
+          // which one it should resolve to, but this correctly works in 4.6.
+          // Unfortunately this prints a warning that
+          // @typescript-eslint/typescript-estree isn't compatible.
+          callback(null, {
             jsonrpc: '2.0',
             id: 1,
             result: stub.response.result,
           });
         } else if ('error' in stub.response) {
-          callback(null as unknown as Error, {
+          // XXX: This fails in TypeScript 4.4, because it's unable to
+          // understand that the callback has multiple overloads and to work out
+          // which one it should resolve to, but this correctly works in 4.6.
+          // Unfortunately this prints a warning that
+          // @typescript-eslint/typescript-estree isn't compatible.
+          callback(null, {
             jsonrpc: '2.0',
             id: 1,
             error: {
@@ -101,7 +118,7 @@ class FakeProvider extends SafeEventEmitter implements Provider {
           });
         }
       } else if ('error' in stub) {
-        callback(new Error(stub.error), null as unknown as JsonRpcResponse<U>);
+        callback(new Error(stub.error), null);
       }
       return;
     }
@@ -114,11 +131,13 @@ class FakeProvider extends SafeEventEmitter implements Provider {
           'Current set of stubs:\n\n' +
           `${util.inspect(this.stubs, { depth: null })}\n\n`,
       ),
-      null as unknown as JsonRpcResponse<U>,
+      null,
     );
   }
 
-  private buildStubsFrom(givenStubs: FakeProviderStub[]): FakeProviderStub[] {
+  private buildStubsFrom(
+    givenStubs: FakeProviderStub[keyof SupportedRpcMethods][],
+  ): FakeProviderStub[keyof SupportedRpcMethods][] {
     const stubs = givenStubs.slice();
 
     if (!stubs.some((stub) => stub.methodName === 'eth_blockNumber')) {
@@ -205,7 +224,11 @@ async function withBlockTracker<T extends BlockTracker>(
           ...options.blockTracker,
         } as unknown as BlockTrackerOptions<T>);
   const blockTracker = new BlockTracker(blockTrackerOptions);
-  await callback({ provider, blockTracker });
+  try {
+    await callback({ provider, blockTracker });
+  } finally {
+    await blockTracker.destroy();
+  }
 }
 
 export default withBlockTracker;

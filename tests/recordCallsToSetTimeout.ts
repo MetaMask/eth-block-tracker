@@ -80,6 +80,18 @@ class SetTimeoutRecorder {
   }
 
   /**
+   * Calls all of the `setTimeout` calls that have been queued so far, then
+   * clears the queue.
+   */
+  playRemaining(): void {
+    this.calls.forEach((call) => {
+      call.callback();
+    });
+
+    this.calls = [];
+  }
+
+  /**
    * Registers a callback that will be called when `setTimeout` is called and
    * the expected number of `setTimeout` calls (as specified via
    * `numAutomaticCalls`) is exceeded.

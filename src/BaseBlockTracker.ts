@@ -1,5 +1,4 @@
 import SafeEventEmitter from '@metamask/safe-event-emitter';
-import { JsonRpcRequest, JsonRpcResponse } from 'json-rpc-engine';
 
 const sec = 1000;
 
@@ -7,14 +6,77 @@ const calculateSum = (accumulator: number, currentValue: number) =>
   accumulator + currentValue;
 const blockTrackerEvents: (string | symbol)[] = ['sync', 'latest'];
 
-export interface Provider extends SafeEventEmitter {
-  sendAsync: <T, U>(
-    req: JsonRpcRequest<T>,
-    cb: (err: Error, response: JsonRpcResponse<U>) => void,
-  ) => void;
+type SimpleJson = boolean | number | string | null;
+
+interface JsonRpcBase {
+  jsonrpc: '2.0';
+  id: number | string | null;
 }
 
-interface BaseBlockTrackerArgs {
+export type JsonRpcRequest<
+  M extends string,
+  P extends Record<string, SimpleJson> | SimpleJson[] = never,
+> = JsonRpcBase & {
+  method: M;
+  params?: P;
+};
+
+export type JsonRpcSuccess<T> = JsonRpcBase & {
+  result: T;
+};
+export type JsonRpcFailure = JsonRpcBase & {
+  error: {
+    code: number;
+    message: string;
+    data?: any;
+  };
+};
+export type JsonRpcResponse<T> = JsonRpcSuccess<T> | JsonRpcFailure;
+
+// This seems to be the community-recommended way to say "everything except null
+// or undefined". See: <https://github.com/microsoft/TypeScript/issues/7648>
+/* eslint-disable-next-line @typescript-eslint/ban-types */
+export type ErrorLike = string | number | boolean | symbol | object;
+
+export interface SendAsyncCallback<T> {
+  (err: null, providerRes: JsonRpcResponse<T>): void;
+  (err: ErrorLike, providerRes: null): void;
+}
+
+export interface SupportedRpcMethods {
+  /* eslint-disable-next-line camelcase */
+  eth_blockNumber: {
+    requestParams: never[];
+    responseResult: string;
+  };
+  /* eslint-disable-next-line camelcase */
+  eth_subscribe: {
+    requestParams: ['newHeads'];
+    responseResult: string;
+  };
+  /* eslint-disable-next-line camelcase */
+  eth_unsubscribe: {
+    requestParams: [string];
+    responseResult: boolean;
+  };
+}
+
+export type SendAsyncCallbackArguments = {
+  [K in keyof SupportedRpcMethods]: {
+    request: JsonRpcRequest<K, SupportedRpcMethods[K]['requestParams']>;
+    callback: SendAsyncCallback<SupportedRpcMethods[K]['responseResult']>;
+  };
+};
+
+export interface Provider extends SafeEventEmitter {
+  sendAsync<T extends keyof SendAsyncCallbackArguments>(
+    req: SendAsyncCallbackArguments[T]['request'],
+    callback: SendAsyncCallbackArguments[T]['callback'],
+  ): void;
+}
+
+export interface BaseBlockTrackerOptions {
+  provider?: Provider;
   blockResetDuration?: number | undefined;
 }
 
@@ -27,7 +89,7 @@ export class BaseBlockTracker extends SafeEventEmitter {
 
   private _blockResetTimeout?: ReturnType<typeof setTimeout>;
 
-  constructor(opts: BaseBlockTrackerArgs = {}) {
+  constructor(opts: BaseBlockTrackerOptions = {}) {
     super();
 
     // config
@@ -43,6 +105,15 @@ export class BaseBlockTracker extends SafeEventEmitter {
 
     // listen for handler changes
     this._setupInternalEvents();
+  }
+
+  // TODO: This is new
+  async destroy() {
+    // NEW CHANGE: end first before removing the listeners —
+    // that way we can still emit 'error' if unsubscribe doesn't work
+    await this._maybeEnd();
+    this._cancelBlockResetTimeout();
+    super.removeAllListeners();
   }
 
   isRunning(): boolean {
@@ -77,6 +148,7 @@ export class BaseBlockTracker extends SafeEventEmitter {
 
     // re-add internal events
     this._setupInternalEvents();
+
     // trigger stop check just in case
     this._onRemoveListener();
 
@@ -102,23 +174,23 @@ export class BaseBlockTracker extends SafeEventEmitter {
     this.removeListener('newListener', this._onNewListener);
     this.removeListener('removeListener', this._onRemoveListener);
     // then add them
-    this.on('newListener', this._onNewListener);
+    // (UPDATE: add removeListener first so it doesn't trigger newListener)
     this.on('removeListener', this._onRemoveListener);
+    this.on('newListener', this._onNewListener);
   }
 
-  private _onNewListener(eventName: string | symbol): void {
-    // `newListener` is called *before* the listener is added
+  // Called *before* the listener is added
+  protected _onNewListener(eventName: string | symbol): void {
     if (blockTrackerEvents.includes(eventName)) {
       this._maybeStart();
     }
   }
 
-  private _onRemoveListener(): void {
-    // `removeListener` is called *after* the listener is removed
-    if (this._getBlockTrackerEventCount() > 0) {
-      return;
+  // Called *after* the listener is removed
+  protected _onRemoveListener(): void {
+    if (this._getBlockTrackerEventCount() === 0) {
+      this._maybeEnd();
     }
-    this._maybeEnd();
   }
 
   private _maybeStart(): void {
@@ -133,15 +205,14 @@ export class BaseBlockTracker extends SafeEventEmitter {
     });
   }
 
-  private _maybeEnd(): void {
+  private async _maybeEnd(): Promise<void> {
     if (!this._isRunning) {
       return;
     }
     this._isRunning = false;
     this._setupBlockResetTimeout();
-    this._end().then(() => {
-      this.emit('_ended');
-    });
+    await this._end();
+    this.emit('_ended');
   }
 
   private _getBlockTrackerEventCount(): number {

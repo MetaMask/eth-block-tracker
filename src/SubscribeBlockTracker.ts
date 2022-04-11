@@ -1,13 +1,25 @@
 import getCreateRandomId from 'json-rpc-random-id';
-import { JsonRpcNotification, JsonRpcSuccess } from 'json-rpc-engine';
-import { BaseBlockTracker, Provider } from './BaseBlockTracker';
+import { JsonRpcNotification } from 'json-rpc-engine';
+import {
+  BaseBlockTracker,
+  BaseBlockTrackerOptions,
+  ErrorLike,
+  JsonRpcResponse,
+  Provider,
+  SendAsyncCallbackArguments,
+  SupportedRpcMethods,
+} from './BaseBlockTracker';
 
 const createRandomId = getCreateRandomId();
 
+<<<<<<< HEAD
 export interface SubscribeBlockTrackerOptions {
   provider?: Provider;
   blockResetDuration?: number;
 }
+=======
+export type SubscribeBlockTrackerOptions = BaseBlockTrackerOptions;
+>>>>>>> a27dfea (Convert tests to Jest, clean up behavior)
 
 interface SubscriptionNotificationParams {
   subscription: string;
@@ -37,47 +49,83 @@ export class SubscribeBlockTracker extends BaseBlockTracker {
   }
 
   protected async _start(): Promise<void> {
+    await super._start();
+
     if (this._subscriptionId === undefined || this._subscriptionId === null) {
+      let latestBlockNumber;
+
       try {
-        const blockNumber = (await this._call('eth_blockNumber')) as string;
-        this._subscriptionId = (await this._call(
-          'eth_subscribe',
-          'newHeads',
-          {},
-        )) as string;
-        this._provider.on('data', this._handleSubData.bind(this));
-        this._newPotentialLatest(blockNumber);
-      } catch (e) {
-        this.emit('error', e);
+        latestBlockNumber = await this._call('eth_blockNumber');
+      } catch (error: any) {
+        const newErr = new Error(
+          `SubscribeBlockTracker - encountered an error while attempting to update latest block:\n${
+            error.stack ?? error.message ?? error
+          }`,
+        );
+        this.emit('error', newErr);
+      }
+
+      try {
+        this._subscriptionId = await this._call('eth_subscribe', ['newHeads']);
+      } catch (error: any) {
+        const newErr = new Error(
+          `SubscribeBlockTracker - encountered an error while attempting to subscribe:\n${
+            error.stack ?? error.message ?? error
+          }`,
+        );
+        this.emit('error', newErr);
+      }
+      this._provider.on('data', this._handleSubData.bind(this));
+
+      if (latestBlockNumber !== undefined) {
+        this._newPotentialLatest(latestBlockNumber);
       }
     }
   }
 
-  protected async _end() {
+  protected async _end(): Promise<void> {
+    await super._end();
+
     if (this._subscriptionId !== null && this._subscriptionId !== undefined) {
       try {
-        await this._call('eth_unsubscribe', this._subscriptionId);
+        await this._call('eth_unsubscribe', [this._subscriptionId]);
         this._subscriptionId = null;
-      } catch (e) {
-        this.emit('error', e);
+      } catch (error: any) {
+        const newErr = new Error(
+          `SubscribeBlockTracker - encountered an error while attempting to unsubscribe:\n${
+            error.stack ?? error.message ?? error
+          }`,
+        );
+        this.emit('error', newErr);
       }
     }
   }
 
-  private _call(method: string, ...params: unknown[]): Promise<unknown> {
+  private _call<T extends keyof SupportedRpcMethods>(
+    method: T,
+    params: SupportedRpcMethods[T]['requestParams'] = [],
+  ): Promise<SupportedRpcMethods[T]['responseResult']> {
     return new Promise((resolve, reject) => {
+      const request: SendAsyncCallbackArguments[T]['request'] = {
+        id: createRandomId(),
+        method,
+        params,
+        jsonrpc: '2.0',
+      };
       this._provider.sendAsync(
-        {
-          id: createRandomId(),
-          method,
-          params,
-          jsonrpc: '2.0',
-        },
-        (err, res) => {
+        request,
+        (
+          err: ErrorLike | null,
+          res: JsonRpcResponse<SupportedRpcMethods[T]['responseResult']> | null,
+        ) => {
           if (err) {
             reject(err);
-          } else {
-            resolve((res as JsonRpcSuccess<unknown>).result);
+          } else if (res) {
+            if ('error' in res) {
+              reject(res.error);
+            } else {
+              resolve(res.result);
+            }
           }
         },
       );
@@ -90,6 +138,7 @@ export class SubscribeBlockTracker extends BaseBlockTracker {
   ): void {
     if (
       response.method === 'eth_subscription' &&
+      // TODO: Test
       response.params?.subscription === this._subscriptionId
     ) {
       this._newPotentialLatest(response.params.result.number);

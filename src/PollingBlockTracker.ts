@@ -1,13 +1,17 @@
 import getCreateRandomId from 'json-rpc-random-id';
 import pify from 'pify';
-import { JsonRpcRequest } from 'json-rpc-engine';
-import { BaseBlockTracker, Provider } from './BaseBlockTracker';
+import {
+  BaseBlockTracker,
+  BaseBlockTrackerOptions,
+  JsonRpcRequest,
+  JsonRpcResponse,
+  Provider,
+} from './BaseBlockTracker';
 
 const createRandomId = getCreateRandomId();
 const sec = 1000;
 
-export interface PollingBlockTrackerOptions {
-  provider?: Provider;
+export interface PollingBlockTrackerOptions extends BaseBlockTrackerOptions {
   pollingInterval?: number;
   retryTimeout?: number;
   keepEventLoopActive?: boolean;
@@ -31,7 +35,6 @@ export class PollingBlockTracker extends BaseBlockTracker {
   private _setSkipCacheFlag: boolean;
 
   constructor(opts: PollingBlockTrackerOptions = {}) {
-    // parse + validate args
     if (!opts.provider) {
       throw new Error('PollingBlockTracker - no provider specified.');
     }
@@ -56,11 +59,8 @@ export class PollingBlockTracker extends BaseBlockTracker {
   }
 
   protected async _start(): Promise<void> {
-    try {
-      this._synchronize();
-    } catch (err) {
-      this.emit('error', err);
-    }
+    await super._start();
+    await this._synchronize();
   }
 
   private async _synchronize(): Promise<void> {
@@ -73,17 +73,13 @@ export class PollingBlockTracker extends BaseBlockTracker {
         );
         this.emit('_waitingForNextIteration');
         await promise;
-      } catch (err: any) {
-        const newErr = new Error(
+      } catch (error: any) {
+        const newError = new Error(
           `PollingBlockTracker - encountered an error while attempting to update latest block:\n${
-            err.stack ?? err
+            error.stack ?? error.message ?? error
           }`,
         );
-        try {
-          this.emit('error', newErr);
-        } catch (emitErr) {
-          console.error(newErr);
-        }
+        this.emit('error', newError);
         await timeout(this._retryTimeout, !this._keepEventLoopActive);
       }
     }
@@ -96,20 +92,20 @@ export class PollingBlockTracker extends BaseBlockTracker {
   }
 
   private async _fetchLatestBlock(): Promise<string> {
-    const req: ExtendedJsonRpcRequest<[]> = {
-      jsonrpc: '2.0',
+    const req = {
+      jsonrpc: '2.0' as const,
       id: createRandomId(),
-      method: 'eth_blockNumber',
+      method: 'eth_blockNumber' as const,
       params: [],
+      ...(this._setSkipCacheFlag ? { skipCache: true } : {}),
     };
-    if (this._setSkipCacheFlag) {
-      req.skipCache = true;
-    }
 
-    const res = await pify((cb) => this._provider.sendAsync(req, cb))();
-    if (res.error) {
+    const res: JsonRpcResponse<string> = await pify((cb) =>
+      this._provider.sendAsync(req, cb),
+    )();
+    if ('error' in res) {
       throw new Error(
-        `PollingBlockTracker - encountered error fetching block:\n${res.error}`,
+        `PollingBlockTracker - encountered error fetching block:\n${res.error.message}`,
       );
     }
     return res.result;

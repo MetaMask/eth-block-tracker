@@ -82,6 +82,199 @@ describe('SubscribeBlockTracker', () => {
     });
   });
 
+  describe('destroy', () => {
+    it('should stop the block tracker if any "latest" and "sync" events were added previously', async () => {
+      recordCallsToSetTimeout();
+
+      await withSubscribeBlockTracker(async ({ blockTracker }) => {
+        blockTracker.on('latest', EMPTY_FUNCTION);
+        await new Promise((resolve) => {
+          blockTracker.on('sync', resolve);
+        });
+        expect(blockTracker.isRunning()).toBe(true);
+
+        await blockTracker.destroy();
+        expect(blockTracker.isRunning()).toBe(false);
+      });
+    });
+
+    it('should not clear the current block number cache if called after removing all listeners but before enough time passes that the cache would have been cleared', async () => {
+      const setTimeoutRecorder = recordCallsToSetTimeout();
+      const blockTrackerOptions = {
+        pollingInterval: 100,
+        blockResetDuration: 200,
+      };
+
+      await withSubscribeBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
+                },
+              },
+            ],
+          },
+          blockTracker: blockTrackerOptions,
+        },
+        async ({ blockTracker }) => {
+          blockTracker.on('latest', EMPTY_FUNCTION);
+          await new Promise((resolve) => {
+            blockTracker.on('sync', resolve);
+          });
+          expect(blockTracker.getCurrentBlock()).toStrictEqual('0x0');
+          blockTracker.removeAllListeners();
+          expect(setTimeoutRecorder.calls).toHaveLength(1);
+
+          await blockTracker.destroy();
+
+          expect(setTimeoutRecorder.calls).toHaveLength(0);
+          expect(blockTracker.getCurrentBlock()).toStrictEqual('0x0');
+        },
+      );
+    });
+
+    METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
+      it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request to unsubscribe returns an error response`, async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker[methodToAddListener]('error', resolve);
+            });
+            await new Promise((resolve) => {
+              blockTracker.on('latest', resolve);
+            });
+
+            blockTracker.destroy();
+
+            const caughtError = await promiseForCaughtError;
+            expect(caughtError.message).toMatch(
+              /^SubscribeBlockTracker - encountered an error while attempting to unsubscribe:\nboom/u,
+            );
+          },
+        );
+      });
+
+      it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request to unsubscribe, the provider throws an error that is an Error`, async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker[methodToAddListener]('error', resolve);
+            });
+            await new Promise((resolve) => {
+              blockTracker.on('latest', resolve);
+            });
+
+            blockTracker.destroy();
+
+            const caughtError = await promiseForCaughtError;
+            expect(caughtError.message).toMatch(
+              /^SubscribeBlockTracker - encountered an error while attempting to unsubscribe:\nError: boom/u,
+            );
+          },
+        );
+      });
+
+      it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request to unsubscribe, the provider throws an error that is a string`, async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker[methodToAddListener]('error', resolve);
+            });
+            await new Promise((resolve) => {
+              blockTracker.on('latest', resolve);
+            });
+
+            blockTracker.destroy();
+
+            const caughtError = await promiseForCaughtError;
+            expect(caughtError.message).toMatch(
+              /^SubscribeBlockTracker - encountered an error while attempting to unsubscribe:\nboom/u,
+            );
+          },
+        );
+      });
+
+      it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request to unsubscribe, the provider rejects with an error`, async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker[methodToAddListener]('error', resolve);
+            });
+            await new Promise((resolve) => {
+              blockTracker.on('latest', resolve);
+            });
+
+            blockTracker.destroy();
+
+            const caughtError = await promiseForCaughtError;
+            expect(caughtError.message).toMatch(
+              /^SubscribeBlockTracker - encountered an error while attempting to unsubscribe:\nboom/u,
+            );
+          },
+        );
+      });
+    });
+  });
+
   METHODS_TO_GET_LATEST_BLOCK.forEach((methodToGetLatestBlock) => {
     describe(`${methodToGetLatestBlock}`, () => {
       it('should start the block tracker immediately after being called', async () => {
@@ -216,6 +409,333 @@ describe('SubscribeBlockTracker', () => {
             expect(requestsForLatestBlock).toHaveLength(2);
           },
         );
+      });
+
+      METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request for the latest block number returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestBlock =
+                blockTracker[methodToGetLatestBlock]();
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
+              );
+              const latestBlock = await promiseForLatestBlock;
+              expect(latestBlock).toStrictEqual('0x0');
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestBlock =
+                blockTracker[methodToGetLatestBlock]();
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom\n/u,
+              );
+              const latestBlock = await promiseForLatestBlock;
+              expect(latestBlock).toStrictEqual('0x0');
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    implementation: () => {
+                      throw 'boom';
+                    },
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestBlock =
+                blockTracker[methodToGetLatestBlock]();
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
+              );
+              const latestBlock = await promiseForLatestBlock;
+              expect(latestBlock).toStrictEqual('0x0');
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    error: 'boom',
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestBlock = await blockTracker[
+                methodToGetLatestBlock
+              ]();
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom/u,
+              );
+              const latestBlock = await promiseForLatestBlock;
+              expect(latestBlock).toStrictEqual('0x0');
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request to subscribe returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToGetLatestBlock]();
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request to subscribe, the provider throws an error that is an Error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToGetLatestBlock]();
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nError: boom\n/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    implementation: () => {
+                      throw 'boom';
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToGetLatestBlock]();
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request to subscribe, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    error: 'boom',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              await blockTracker[methodToGetLatestBlock]();
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nError: boom/u,
+              );
+            },
+          );
+        });
       });
 
       it('should update the current block number', async () => {
@@ -551,6 +1071,251 @@ describe('SubscribeBlockTracker', () => {
           });
         });
 
+        it(`should emit the "error" event and should not kill the block tracker if the request for the latest block number returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestBlock = new Promise((resolve) => {
+                blockTracker[methodToAddListener]('latest', resolve);
+              });
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
+              );
+              const latestBlock = await promiseForLatestBlock;
+              expect(latestBlock).toStrictEqual('0x0');
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if, while making the request for the latest block number, the provider throws an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestBlock = new Promise((resolve) => {
+                blockTracker[methodToAddListener]('latest', resolve);
+              });
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom\n/u,
+              );
+              const latestBlock = await promiseForLatestBlock;
+              expect(latestBlock).toStrictEqual('0x0');
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    error: 'boom',
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestBlock = new Promise((resolve) => {
+                blockTracker[methodToAddListener]('latest', resolve);
+              });
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom/u,
+              );
+              const latestBlock = await promiseForLatestBlock;
+              expect(latestBlock).toStrictEqual('0x0');
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if the request to subscribe returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if, while making the request to subscribe, the provider throws an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nError: boom\n/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if, while making the request to subscribe, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    error: 'boom',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nError: boom/u,
+              );
+            },
+          );
+        });
+
         it('should update the current block number', async () => {
           recordCallsToSetTimeout();
 
@@ -842,6 +1607,251 @@ describe('SubscribeBlockTracker', () => {
           });
         });
 
+        it(`should emit the "error" event and should not kill the block tracker if the request for the latest block number returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestSync = new Promise((resolve) => {
+                blockTracker[methodToAddListener]('sync', resolve);
+              });
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
+              );
+              const sync = await promiseForLatestSync;
+              expect(sync).toStrictEqual({ oldBlock: null, newBlock: '0x0' });
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if, while making a request for the latest block number, the provider throws an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestSync = new Promise((resolve) => {
+                blockTracker[methodToAddListener]('sync', resolve);
+              });
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom\n/u,
+              );
+              const sync = await promiseForLatestSync;
+              expect(sync).toStrictEqual({ oldBlock: null, newBlock: '0x0' });
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if, while making a request for the latest block number, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    error: 'boom',
+                  },
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      result: '0x64',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+              blockTracker.on('_started', () => {
+                provider.emit('data', null, {
+                  method: 'eth_subscription',
+                  params: {
+                    subscription: '0x64',
+                    result: {
+                      number: '0x0',
+                    },
+                  },
+                });
+              });
+
+              const promiseForLatestSync = new Promise((resolve) => {
+                blockTracker[methodToAddListener]('sync', resolve);
+              });
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom/u,
+              );
+              const sync = await promiseForLatestSync;
+              expect(sync).toStrictEqual({ oldBlock: null, newBlock: '0x0' });
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if the request to subscribe returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToAddListener]('sync', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if, while making the request to subscribe, the provider throws an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToAddListener]('sync', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nError: boom\n/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event and should not kill the block tracker if, while making the request to subscribe, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    error: 'boom',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker[methodToAddListener]('sync', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nError: boom/u,
+              );
+            },
+          );
+        });
+
         it('should update the current block number', async () => {
           recordCallsToSetTimeout();
 
@@ -1128,6 +2138,252 @@ describe('SubscribeBlockTracker', () => {
           },
         );
       });
+
+      METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request for the latest block number returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom\n/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    implementation: () => {
+                      throw 'boom';
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    error: 'boom',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request to subscribe returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request to subscribe, the provider throws an error that is an Error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nError: boom\n/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request to subscribe, the provider throws an error that is a string`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    implementation: () => {
+                      throw 'boom';
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request to subscribe, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_subscribe',
+                    error: 'boom',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nError: boom/u,
+              );
+            },
+          );
+        });
+      });
     });
 
     describe('"sync"', () => {
@@ -1184,6 +2440,130 @@ describe('SubscribeBlockTracker', () => {
             expect(blockTracker.getCurrentBlock()).toBeNull();
           },
         );
+      });
+
+      METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request for the latest block number returns an error response`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    response: {
+                      error: 'boom',
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    implementation: () => {
+                      throw new Error('boom');
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom\n/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    implementation: () => {
+                      throw 'boom';
+                    },
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
+              );
+            },
+          );
+        });
+
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+          recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+          await withSubscribeBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    error: 'boom',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              const promiseForCaughtError = new Promise<any>((resolve) => {
+                blockTracker[methodToAddListener]('error', resolve);
+              });
+
+              blockTracker.once('latest', EMPTY_FUNCTION);
+
+              const caughtError = await promiseForCaughtError;
+              expect(caughtError.message).toMatch(
+                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nError: boom/u,
+              );
+            },
+          );
+        });
       });
     });
 
