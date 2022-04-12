@@ -11,9 +11,6 @@ module.exports = {
 
     {
       files: ['*.js'],
-      parserOptions: {
-        sourceType: 'script',
-      },
       extends: ['@metamask/eslint-config-nodejs'],
     },
 
