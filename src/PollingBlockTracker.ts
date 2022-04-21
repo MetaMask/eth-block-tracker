@@ -56,11 +56,8 @@ export class PollingBlockTracker extends BaseBlockTracker {
   }
 
   protected async _start(): Promise<void> {
-    try {
-      this._synchronize();
-    } catch (err) {
-      this.emit('error', err);
-    }
+    await super._start();
+    this._synchronize();
   }
 
   private async _synchronize(): Promise<void> {

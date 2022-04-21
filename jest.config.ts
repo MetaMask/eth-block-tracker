@@ -47,6 +47,10 @@ const config: Config.InitialOptions = {
       functions: 100,
       lines: 100,
       statements: 100,
+      // branches: 92.1,
+      // functions: 97.05,
+      // lines: 96.59,
+      // statements: 96.59,
     },
   },
 
