@@ -835,7 +835,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that, if it throws an error, causes that error to be re-thrown eventually out-of-band', async () => {
+        it('should re-throw any error out of band that occurs in the listener', async () => {
           await withPollingBlockTracker(async ({ blockTracker }) => {
             const thrownError = new Error('boom');
             const promiseForCaughtError = new Promise<unknown>((resolve) => {
@@ -1204,7 +1204,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that, if it throws an error, causes that error to be re-thrown eventually out-of-band', async () => {
+        it('should re-throw any error out of band that occurs in the listener', async () => {
           await withPollingBlockTracker(async ({ blockTracker }) => {
             const thrownError = new Error('boom');
             const promiseForCaughtError = new Promise<unknown>((resolve) => {

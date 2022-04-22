@@ -219,7 +219,7 @@ describe('SubscribeBlockTracker', () => {
       });
 
       METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
-        it.skip(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request for the latest block number returns an error response`, async () => {
+        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should resolve with undefined if the request for the latest block number returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -260,17 +260,14 @@ describe('SubscribeBlockTracker', () => {
               const promiseForLatestBlock =
                 blockTracker[methodToGetLatestBlock]();
 
-              const caughtError = await promiseForCaughtError;
-              expect(caughtError.message).toMatch(
-                /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
-              );
+              expect(promiseForCaughtError).toNeverResolve();
               const latestBlock = await promiseForLatestBlock;
-              expect(latestBlock).toStrictEqual('0x0');
+              expect(latestBlock).toBeUndefined();
             },
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -302,7 +299,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -334,7 +331,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent resolution of the promise if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -363,7 +360,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it.skip(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request to subscribe returns an error response`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should still resolve with the latest block number if the request to subscribe returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -384,17 +381,17 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              blockTracker[methodToGetLatestBlock]();
+              const promiseForLatestBlock =
+                blockTracker[methodToGetLatestBlock]();
 
-              const caughtError = await promiseForCaughtError;
-              expect(caughtError.message).toMatch(
-                /^SubscribeBlockTracker - encountered an error while attempting to subscribe:\nboom/u,
-              );
+              expect(promiseForCaughtError).toNeverResolve();
+              const latestBlockNumber = await promiseForLatestBlock;
+              expect(latestBlockNumber).toStrictEqual('0x0');
             },
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request to subscribe, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request to subscribe, the provider throws an error that is an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -426,7 +423,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -458,7 +455,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent resolution of the promise if, while making the request to subscribe, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request to subscribe, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -793,7 +790,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it('should take a listener that, if it throws an error, causes that error to be re-thrown eventually out-of-band', async () => {
+        it('should re-throw any error out of band that occurs in the listener', async () => {
           await withSubscribeBlockTracker(async ({ blockTracker }) => {
             const thrownError = new Error('boom');
             const promiseForCaughtError = new Promise<unknown>((resolve) => {
@@ -821,7 +818,7 @@ describe('SubscribeBlockTracker', () => {
           });
         });
 
-        it.skip(`should emit the "error" event and should not kill the block tracker if the request for the latest block number returns an error response`, async () => {
+        it(`should not emit the "error" event and should take a listener that is called with undefined if the request for the latest block number returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -834,46 +831,26 @@ describe('SubscribeBlockTracker', () => {
                       error: 'boom',
                     },
                   },
-                  {
-                    methodName: 'eth_subscribe',
-                    response: {
-                      result: '0x64',
-                    },
-                  },
                 ],
               },
             },
-            async ({ provider, blockTracker }) => {
+            async ({ blockTracker }) => {
               const promiseForCaughtError = new Promise<any>((resolve) => {
                 blockTracker[methodToAddListener]('error', resolve);
-              });
-              blockTracker.on('_started', () => {
-                provider.emit('data', null, {
-                  method: 'eth_subscription',
-                  params: {
-                    subscription: '0x64',
-                    result: {
-                      number: '0x0',
-                    },
-                  },
-                });
               });
 
               const promiseForLatestBlock = new Promise((resolve) => {
                 blockTracker[methodToAddListener]('latest', resolve);
               });
 
-              // const caughtError = await promiseForCaughtError;
-              // expect(caughtError.message).toMatch(
-              // /^SubscribeBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
-              // );
+              expect(promiseForCaughtError).toNeverResolve();
               const latestBlock = await promiseForLatestBlock;
-              expect(latestBlock).toStrictEqual('0x0');
+              expect(latestBlock).toBeUndefined();
             },
           );
         });
 
-        it(`should emit the "error" event and should prevent emitting "latest" if, while making the request for the latest block number, the provider throws an error`, async () => {
+        it(`should emit the "error" event and should take a listener that is not called if, while making the request for the latest block number, the provider throws an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -905,7 +882,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event and should prevent emitting "latest" if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event and should take a listener that is not called if, while making the request for the latest block number, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -941,7 +918,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should not emit the "error" event and should not prevent "latest" from being emitted once if the request to subscribe returns an error response`, async () => {
+        it(`should not emit the "error" event and should take a listener that is still called with the latest block number if the request to subscribe returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -978,7 +955,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event and should prevent emitting "latest" if, while making the request to subscribe, the provider throws an error`, async () => {
+        it(`should emit the "error" event and should take a listener that is not called if, while making the request to subscribe, the provider throws an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1010,7 +987,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event and should prevent emitting "latest" if, while making the request to subscribe, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event and should take a listener that is not called if, while making the request to subscribe, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1303,7 +1280,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it('should take a listener that, if it throws an error, causes that error to be re-thrown eventually out-of-band', async () => {
+        it('should re-throw any error out of band that occurs in the listener', async () => {
           await withSubscribeBlockTracker(async ({ blockTracker }) => {
             const thrownError = new Error('boom');
             const promiseForCaughtError = new Promise<unknown>((resolve) => {
@@ -1331,7 +1308,7 @@ describe('SubscribeBlockTracker', () => {
           });
         });
 
-        it(`should not emit the "error" event and should still emit "sync" once (with undefined in place of the latest block) if the request for the latest block number returns an error response`, async () => {
+        it(`should not emit the "error" event and should take a listener that is called with undefined in place of the latest block if the request for the latest block number returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1344,29 +1321,12 @@ describe('SubscribeBlockTracker', () => {
                       error: 'boom',
                     },
                   },
-                  {
-                    methodName: 'eth_subscribe',
-                    response: {
-                      result: '0x64',
-                    },
-                  },
                 ],
               },
             },
-            async ({ provider, blockTracker }) => {
+            async ({ blockTracker }) => {
               const promiseForCaughtError = new Promise<any>((resolve) => {
                 blockTracker[methodToAddListener]('error', resolve);
-              });
-              blockTracker.on('_started', () => {
-                provider.emit('data', null, {
-                  method: 'eth_subscription',
-                  params: {
-                    subscription: '0x64',
-                    result: {
-                      number: '0x0',
-                    },
-                  },
-                });
               });
 
               const promiseForSync = new Promise((resolve) => {
@@ -1383,7 +1343,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event and should prevent emitting "sync" if, while making a request for the latest block number, the provider throws an error`, async () => {
+        it(`should emit the "error" event and should take a listener that is not called if, while making a request for the latest block number, the provider throws an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1415,7 +1375,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event and should prevent emitting "sync" if, while making a request for the latest block number, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event and should take a listener that is not called if, while making a request for the latest block number, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1445,7 +1405,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should not emit the "error" event and should still emit "sync" once if the request to subscribe returns an error response`, async () => {
+        it(`should not emit the "error" event and should take a listener that is still called with the latest block number if the request to subscribe returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1480,7 +1440,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event and should prevent emitting "sync" if, while making the request to subscribe, the provider throws an error`, async () => {
+        it(`should emit the "error" event and should take a listener that is not called if, while making the request to subscribe, the provider throws an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1512,7 +1472,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event and should prevent emitting "sync" if, while making the request to subscribe, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event and should take a listener that is not called if, while making the request to subscribe, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1830,7 +1790,7 @@ describe('SubscribeBlockTracker', () => {
       });
 
       METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
-        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should emit "latest" with undefined if the request for the latest block number returns an error response`, async () => {
+        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is called with undefined if the request for the latest block number returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1862,7 +1822,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -1895,7 +1855,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -1917,15 +1877,18 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              blockTracker.once('latest', EMPTY_FUNCTION);
+              const promiseForLatestBlock = new Promise((resolve) => {
+                blockTracker.once('latest', resolve);
+              });
 
               const caughtError = await promiseForCaughtError;
               expect(caughtError).toMatch(thrownError);
+              expect(promiseForLatestBlock).toNeverResolve();
             },
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1955,7 +1918,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should not prevent "latest" from being emitted once if the request to subscribe returns an error response`, async () => {
+        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is called with undefined if the request to subscribe returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -1986,7 +1949,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request to subscribe, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request to subscribe, the provider throws an error that is an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -2019,7 +1982,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request to subscribe, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request to subscribe, the provider throws an error that is a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -2052,7 +2015,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request to subscribe, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request to subscribe, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -2141,7 +2104,7 @@ describe('SubscribeBlockTracker', () => {
       });
 
       METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
-        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should emit "latest" with undefined if the request for the latest block number returns an error response`, async () => {
+        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is called with undefined in place of the latest block number if the request for the latest block number returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -2162,18 +2125,21 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock = new Promise((resolve) => {
-                blockTracker.once('latest', resolve);
+              const promiseForSync = new Promise((resolve) => {
+                blockTracker.once('sync', resolve);
               });
 
               expect(promiseForCaughtError).toNeverResolve();
-              const latestBlockNumber = await promiseForLatestBlock;
-              expect(latestBlockNumber).toBeUndefined();
+              const sync = await promiseForSync;
+              expect(sync).toStrictEqual({
+                oldBlock: null,
+                newBlock: undefined,
+              });
             },
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -2195,18 +2161,18 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock = new Promise((resolve) => {
-                blockTracker.once('latest', resolve);
+              const promiseForSync = new Promise((resolve) => {
+                blockTracker.once('sync', resolve);
               });
 
               const caughtError = await promiseForCaughtError;
               expect(caughtError).toBe(thrownError);
-              expect(promiseForLatestBlock).toNeverResolve();
+              expect(promiseForSync).toNeverResolve();
             },
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -2228,15 +2194,18 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              blockTracker.once('latest', EMPTY_FUNCTION);
+              const promiseForSync = new Promise((resolve) => {
+                blockTracker.once('sync', resolve);
+              });
 
               const caughtError = await promiseForCaughtError;
               expect(caughtError).toBe(thrownError);
+              expect(promiseForSync).toNeverResolve();
             },
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should prevent emitting "latest" if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider rejects with an error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
@@ -2255,13 +2224,13 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock = new Promise((resolve) => {
-                blockTracker.once('latest', resolve);
+              const promiseForSync = new Promise((resolve) => {
+                blockTracker.once('sync', resolve);
               });
 
               const caughtError = await promiseForCaughtError;
               expect(caughtError.message).toStrictEqual('boom');
-              expect(promiseForLatestBlock).toNeverResolve();
+              expect(promiseForSync).toNeverResolve();
             },
           );
         });
