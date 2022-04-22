@@ -267,7 +267,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -299,7 +299,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -391,7 +391,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request to subscribe, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request to subscribe, the provider throws an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -423,7 +423,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -1822,7 +1822,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -1855,7 +1855,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -1949,7 +1949,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request to subscribe, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request to subscribe, the provider throws an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -1982,7 +1982,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request to subscribe, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request to subscribe, the provider throws a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 
@@ -2139,7 +2139,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an error that is an Error`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = new Error('boom');
 
@@ -2172,7 +2172,7 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws an error that is a string`, async () => {
+        it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should take a listener that is never called if, while making the request for the latest block number, the provider throws a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
           const thrownError = 'boom';
 

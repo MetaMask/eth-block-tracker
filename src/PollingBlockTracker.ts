@@ -81,7 +81,9 @@ export class PollingBlockTracker extends BaseBlockTracker {
         } catch (emitErr) {
           console.error(newErr);
         }
-        await timeout(this._retryTimeout, !this._keepEventLoopActive);
+        const promise = timeout(this._retryTimeout, !this._keepEventLoopActive);
+        this.emit('_waitingForNextIteration');
+        await promise;
       }
     }
   }
@@ -106,7 +108,7 @@ export class PollingBlockTracker extends BaseBlockTracker {
     const res = await pify((cb) => this._provider.sendAsync(req, cb))();
     if (res.error) {
       throw new Error(
-        `PollingBlockTracker - encountered error fetching block:\n${res.error}`,
+        `PollingBlockTracker - encountered error fetching block:\n${res.error.message}`,
       );
     }
     return res.result;
