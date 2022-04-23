@@ -81,7 +81,7 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should cause the request for the latest block to be made with `skipCache: true` if setSkipCacheFlag: true is given', async () => {
+    it('should make the request with `skipCache: true` if the block tracker was initialized with `setSkipCacheFlag: true`', async () => {
       recordCallsToSetTimeout();
 
       await withPollingBlockTracker(
@@ -105,7 +105,7 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should not cause the block tracker to make a request for the latest block number more than once when called more than once while the current block number cache is still fresh', async () => {
+    it('should not fetch the latest block more than once while the current block number is cached', async () => {
       recordCallsToSetTimeout();
 
       await withPollingBlockTracker(async ({ provider, blockTracker }) => {
@@ -121,7 +121,7 @@ describe('PollingBlockTracker', () => {
       });
     });
 
-    it('should cause the block tracker to make a request for the latest block number again if called again after the current block number cache becomes stale', async () => {
+    it('should ask for a new block number after the cached one is cleared', async () => {
       const setTimeoutRecorder = recordCallsToSetTimeout();
       const blockTrackerOptions = {
         pollingInterval: 100,
@@ -591,7 +591,7 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should cause the request for the latest block to be made with `skipCache: true` if setSkipCacheFlag: true is given', async () => {
+    it('should make the request with `skipCache: true` if the block tracker was initialized with `setSkipCacheFlag: true`', async () => {
       recordCallsToSetTimeout();
 
       await withPollingBlockTracker(
