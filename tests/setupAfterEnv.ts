@@ -1,19 +1,22 @@
-'use strict';
-
-import jestConfig from '../jest.config';
-
 declare global {
   // Using `namespace` here is okay because this is how the Jest types are
   // defined.
   /* eslint-disable-next-line @typescript-eslint/no-namespace */
   namespace jest {
     interface Matchers<R> {
-      toNeverResolve(): R;
+      toNeverResolve(): Promise<R>;
     }
   }
 }
 
+// Export something so that TypeScript thinks that we are performing type
+// augmentation
+export {};
+
 const UNRESOLVED = Symbol('timedOut');
+// Store this in case it gets stubbed later
+const originalSetTimeout = global.setTimeout;
+const TIME_TO_WAIT_UNTIL_UNRESOLVED = 100;
 
 /**
  * Produces a sort of dummy promise which can be used in conjunction with a
@@ -25,11 +28,9 @@ const UNRESOLVED = Symbol('timedOut');
  * this function.
  * @returns A promise that resolves to a symbol.
  */
-const waitToJudgeAsUnresolved = (
-  duration: number,
-): Promise<typeof UNRESOLVED> => {
+const treatUnresolvedAfter = (duration: number): Promise<typeof UNRESOLVED> => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(UNRESOLVED), duration);
+    originalSetTimeout(resolve, duration, UNRESOLVED);
   });
 };
 
@@ -53,13 +54,12 @@ expect.extend({
       );
     }
 
-    const duration = jestConfig.testTimeout as number;
     let resolutionValue: any;
     let rejectionValue: any;
     try {
       resolutionValue = await Promise.race([
         promise,
-        waitToJudgeAsUnresolved(duration),
+        treatUnresolvedAfter(TIME_TO_WAIT_UNTIL_UNRESOLVED),
       ]);
     } catch (e) {
       rejectionValue = e;
@@ -68,12 +68,12 @@ expect.extend({
     return resolutionValue === UNRESOLVED
       ? {
           message: () =>
-            `Expected promise to resolve after ${duration}ms, but it did not`,
+            `Expected promise to resolve after ${TIME_TO_WAIT_UNTIL_UNRESOLVED}ms, but it did not`,
           pass: true,
         }
       : {
           message: () => {
-            return `Expected promise to never resolve after ${duration}ms, but it ${
+            return `Expected promise to never resolve after ${TIME_TO_WAIT_UNTIL_UNRESOLVED}ms, but it ${
               rejectionValue
                 ? `was rejected with ${rejectionValue}`
                 : `resolved with ${resolutionValue}`
