@@ -15,7 +15,7 @@ export interface Provider extends SafeEventEmitter {
 }
 
 interface BaseBlockTrackerArgs {
-  blockResetDuration?: number | undefined;
+  blockResetDuration?: number;
 }
 
 export class BaseBlockTracker extends SafeEventEmitter {
