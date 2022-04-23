@@ -1,9 +1,6 @@
 import EMPTY_FUNCTION from '../tests/emptyFunction';
 import recordCallsToSetTimeout from '../tests/recordCallsToSetTimeout';
-import withBlockTracker, {
-  WithBlockTrackerCallback,
-  WithBlockTrackerOptions,
-} from '../tests/withBlockTracker';
+import { withPollingBlockTracker } from '../tests/withBlockTracker';
 import buildDeferred from '../tests/buildDeferred';
 import { PollingBlockTracker } from '.';
 
@@ -14,46 +11,6 @@ interface Sync {
 
 const METHODS_TO_ADD_LISTENER = ['on', 'addListener'] as const;
 const METHODS_TO_REMOVE_LISTENER = ['off', 'removeListener'] as const;
-
-/**
- * Calls the given function with a built-in PollingBlockTracker, ensuring that
- * all listeners that are on the block tracker are removed and any timers or
- * loops that are running within the block tracker are properly stopped.
- *
- * @param options - Options that allow configuring the block tracker or
- *
- * provider.
- * @param callback - A callback which will be called with the built  * block
- * tracker.
- */
-async function withPollingBlockTracker(
-  options: WithBlockTrackerOptions<PollingBlockTracker>,
-  callback: WithBlockTrackerCallback<PollingBlockTracker>,
-): Promise<void>;
-/**
- * Calls the given function with a built-in PollingBlockTracker, ensuring that
- * all listeners that are on the block tracker are removed and any timers or
- * loops that are running within the block tracker are properly stopped.
- *
- * @param callback - A callback which will be called with the built block
- * tracker.
- */
-async function withPollingBlockTracker(
-  callback: WithBlockTrackerCallback<PollingBlockTracker>,
-): Promise<void>;
-/* eslint-disable-next-line jsdoc/require-jsdoc */
-async function withPollingBlockTracker(
-  ...args: [...any[], WithBlockTrackerCallback<PollingBlockTracker>]
-): Promise<void> {
-  const callback: WithBlockTrackerCallback<PollingBlockTracker> = args.pop();
-  const options =
-    (args[0] as WithBlockTrackerOptions<PollingBlockTracker>) ?? {};
-  await withBlockTracker<PollingBlockTracker>(
-    PollingBlockTracker,
-    options,
-    callback,
-  );
-}
 
 describe('PollingBlockTracker', () => {
   describe('constructor', () => {

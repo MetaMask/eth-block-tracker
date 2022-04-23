@@ -1,9 +1,6 @@
 import EMPTY_FUNCTION from '../tests/emptyFunction';
 import recordCallsToSetTimeout from '../tests/recordCallsToSetTimeout';
-import withBlockTracker, {
-  WithBlockTrackerCallback,
-  WithBlockTrackerOptions,
-} from '../tests/withBlockTracker';
+import { withSubscribeBlockTracker } from '../tests/withBlockTracker';
 import buildDeferred from '../tests/buildDeferred';
 import { SubscribeBlockTracker } from '.';
 
@@ -18,46 +15,6 @@ const METHODS_TO_GET_LATEST_BLOCK = [
   'getLatestBlock',
   'checkForLatestBlock',
 ] as const;
-
-/**
- * Calls the given function with a built-in SubscribeBlockTracker, ensuring that
- * all listeners that are on the block tracker are removed and any timers or
- * loops that are running within the block tracker are properly stopped.
- *
- * @param options - Options that allow configuring the block tracker or
- *
- * provider.
- * @param callback - A callback which will be called with the built  * block
- * tracker.
- */
-async function withSubscribeBlockTracker(
-  options: WithBlockTrackerOptions<SubscribeBlockTracker>,
-  callback: WithBlockTrackerCallback<SubscribeBlockTracker>,
-): Promise<void>;
-/**
- * Calls the given function with a built-in SubscribeBlockTracker, ensuring that
- * all listeners that are on the block tracker are removed and any timers or
- * loops that are running within the block tracker are properly stopped.
- *
- * @param callback - A callback which will be called with the built block
- * tracker.
- */
-async function withSubscribeBlockTracker(
-  callback: WithBlockTrackerCallback<SubscribeBlockTracker>,
-): Promise<void>;
-/* eslint-disable-next-line jsdoc/require-jsdoc */
-async function withSubscribeBlockTracker(
-  ...args: [...any[], WithBlockTrackerCallback<SubscribeBlockTracker>]
-): Promise<void> {
-  const callback: WithBlockTrackerCallback<SubscribeBlockTracker> = args.pop();
-  const options =
-    (args[0] as WithBlockTrackerOptions<SubscribeBlockTracker>) ?? {};
-  await withBlockTracker<SubscribeBlockTracker>(
-    SubscribeBlockTracker,
-    options,
-    callback,
-  );
-}
 
 describe('SubscribeBlockTracker', () => {
   describe('constructor', () => {

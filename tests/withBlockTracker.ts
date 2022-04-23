@@ -11,15 +11,27 @@ import {
   PollingBlockTrackerOptions,
 } from '../src/PollingBlockTracker';
 
-type BlockTracker = PollingBlockTracker | SubscribeBlockTracker;
-type BlockTrackerOptions<T> = T extends typeof PollingBlockTracker
-  ? PollingBlockTrackerOptions
-  : T extends typeof SubscribeBlockTracker
-  ? SubscribeBlockTrackerOptions
-  : never;
-type BlockTrackerConstructor<T extends BlockTracker> = new (
-  options?: BlockTrackerOptions<T>,
-) => T;
+interface WithPollingBlockTrackerTypes {
+  withBlockTrackerCallback: (args: {
+    provider: FakeProvider;
+    blockTracker: PollingBlockTracker;
+  }) => void | Promise<void>;
+  withBlockTrackerOptions: {
+    provider?: FakeProviderOptions;
+    blockTracker?: PollingBlockTrackerOptions;
+  };
+}
+
+interface WithSubscribeBlockTrackerTypes {
+  withBlockTrackerCallback: (args: {
+    provider: FakeProvider;
+    blockTracker: SubscribeBlockTracker;
+  }) => void | Promise<void>;
+  withBlockTrackerOptions: {
+    provider?: FakeProviderOptions;
+    blockTracker?: SubscribeBlockTrackerOptions;
+  };
+}
 
 type FakeProviderStub =
   | {
@@ -35,20 +47,8 @@ type FakeProviderStub =
       error: string;
     };
 
-export type WithBlockTrackerCallback<T extends BlockTracker> = (args: {
-  provider: FakeProvider;
-  blockTracker: T;
-}) => void | Promise<void>;
-
 interface FakeProviderOptions {
   stubs?: FakeProviderStub[];
-}
-
-export interface WithBlockTrackerOptions<T extends BlockTracker> {
-  blockTracker?: {
-    [K in keyof BlockTrackerOptions<T>]?: BlockTrackerOptions<T>[K];
-  };
-  provider?: FakeProviderOptions;
 }
 
 /**
@@ -153,59 +153,100 @@ class FakeProvider extends SafeEventEmitter implements Provider {
 }
 
 /**
- * Calls the given function with the given subclass of BaseBlockTracker,
- * ensuring that all listeners that are on the block tracker are removed and any
- * timers or loops that are running within the block tracker are properly
- * stopped.
+ * Calls the given function with a built-in PollingBlockTracker, ensuring that
+ * all listeners that are on the block tracker are removed and any timers or
+ * loops that are running within the block tracker are properly stopped.
  *
- * @param BlockTracker - A subclass of BaseBlockTracker.
  * @param options - Options that allow configuring the block tracker or
  * provider.
  * @param callback - A callback which will be called with the built block
  * tracker.
  */
-async function withBlockTracker<T extends BlockTracker>(
-  BlockTracker: BlockTrackerConstructor<T>,
-  options: WithBlockTrackerOptions<T>,
-  callback: WithBlockTrackerCallback<T>,
+async function withPollingBlockTracker(
+  options: WithPollingBlockTrackerTypes['withBlockTrackerOptions'],
+  callback: WithPollingBlockTrackerTypes['withBlockTrackerCallback'],
 ): Promise<void>;
 /**
- * Calls the given function with the given subclass of BaseBlockTracker,
- * ensuring that all listeners that are on the block tracker are removed and any
- * timers or loops that are running within the block tracker are properly
- * stopped.
+ * Calls the given function with a built-in PollingBlockTracker, ensuring that
+ * all listeners that are on the block tracker are removed and any timers or
+ * loops that are running within the block tracker are properly stopped.
  *
- * @param BlockTracker - A subclass of BaseBlockTracker.
- * @param callback - A callback which will be called with the built instance of
- * `BlockTracker`.
+ * @param callback - A callback which will be called with the built block
+ * tracker.
  */
-async function withBlockTracker<T extends BlockTracker>(
-  BlockTracker: BlockTrackerConstructor<T>,
-  callback: WithBlockTrackerCallback<T>,
+async function withPollingBlockTracker(
+  callback: WithPollingBlockTrackerTypes['withBlockTrackerCallback'],
 ): Promise<void>;
 /* eslint-disable-next-line jsdoc/require-jsdoc */
-async function withBlockTracker<T extends BlockTracker>(
-  ...args: [BlockTrackerConstructor<T>, ...any[], WithBlockTrackerCallback<T>]
-): Promise<void> {
-  const BlockTracker: BlockTrackerConstructor<T> = args.shift();
-  const callback: WithBlockTrackerCallback<T> = args.pop();
-  const options = (args[0] as WithBlockTrackerOptions<T>) ?? {};
+async function withPollingBlockTracker(...args: any[]) {
+  const callback: WithPollingBlockTrackerTypes['withBlockTrackerCallback'] =
+    args.pop();
+  const options =
+    (args[0] as WithPollingBlockTrackerTypes['withBlockTrackerOptions']) ?? {};
   const provider =
     options.provider === undefined
       ? new FakeProvider()
       : new FakeProvider(options.provider);
 
-  // I am honestly not sure why we have to do this — and we can't seem to check
-  // to see what BlockTracker is first
   const blockTrackerOptions =
     options.blockTracker === undefined
-      ? ({ provider } as unknown as BlockTrackerOptions<T>)
-      : ({
+      ? { provider }
+      : {
           provider,
           ...options.blockTracker,
-        } as unknown as BlockTrackerOptions<T>);
-  const blockTracker = new BlockTracker(blockTrackerOptions);
-  await callback({ provider, blockTracker });
+        };
+  const blockTracker = new PollingBlockTracker(blockTrackerOptions);
+  const callbackArgs = { provider, blockTracker };
+  await callback(callbackArgs);
 }
 
-export default withBlockTracker;
+/**
+ * Calls the given function with a built-in SubscribeBlockTracker, ensuring that
+ * all listeners that are on the block tracker are removed and any timers or
+ * loops that are running within the block tracker are properly stopped.
+ *
+ * @param options - Options that allow configuring the block tracker or
+ * provider.
+ * @param callback - A callback which will be called with the built block
+ * tracker.
+ */
+async function withSubscribeBlockTracker(
+  options: WithSubscribeBlockTrackerTypes['withBlockTrackerOptions'],
+  callback: WithSubscribeBlockTrackerTypes['withBlockTrackerCallback'],
+): Promise<void>;
+/**
+ * Calls the given function with a built-in SubscribeBlockTracker, ensuring that
+ * all listeners that are on the block tracker are removed and any timers or
+ * loops that are running within the block tracker are properly stopped.
+ *
+ * @param callback - A callback which will be called with the built block
+ * tracker.
+ */
+async function withSubscribeBlockTracker(
+  callback: WithSubscribeBlockTrackerTypes['withBlockTrackerCallback'],
+): Promise<void>;
+/* eslint-disable-next-line jsdoc/require-jsdoc */
+async function withSubscribeBlockTracker(...args: any[]): Promise<void> {
+  const callback: WithSubscribeBlockTrackerTypes['withBlockTrackerCallback'] =
+    args.pop();
+  const options =
+    (args[0] as WithSubscribeBlockTrackerTypes['withBlockTrackerOptions']) ??
+    {};
+  const provider =
+    options.provider === undefined
+      ? new FakeProvider()
+      : new FakeProvider(options.provider);
+
+  const blockTrackerOptions =
+    options.blockTracker === undefined
+      ? { provider }
+      : {
+          provider,
+          ...options.blockTracker,
+        };
+  const blockTracker = new SubscribeBlockTracker(blockTrackerOptions);
+  const callbackArgs = { provider, blockTracker };
+  await callback(callbackArgs);
+}
+
+export { withPollingBlockTracker, withSubscribeBlockTracker };

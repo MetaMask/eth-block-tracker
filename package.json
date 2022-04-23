@@ -50,7 +50,6 @@
     "eslint-plugin-jsdoc": "^36.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.3.1",
-    "events": "^3.3.0",
     "jest": "^27.5.1",
     "json-rpc-engine": "^6.1.0",
     "prettier": "^2.2.1",
