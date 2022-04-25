@@ -20,7 +20,7 @@ module.exports = {
     },
 
     {
-      files: ['*.test.ts', '*.test.js', './tests/setupAfterEnv.ts'],
+      files: ['*.test.ts', './tests/setupAfterEnv.ts'],
       extends: ['@metamask/eslint-config-jest'],
     },
   ],
