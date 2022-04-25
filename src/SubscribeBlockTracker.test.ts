@@ -87,7 +87,7 @@ describe('SubscribeBlockTracker', () => {
         );
       });
 
-      it('should not cause the block tracker to make a request for the latest block number more than once when called more than once while the current block number cache is still fresh', async () => {
+      it('should not ask for a new block number while the current block number is cached', async () => {
         recordCallsToSetTimeout();
 
         await withSubscribeBlockTracker(async ({ provider, blockTracker }) => {
@@ -103,7 +103,7 @@ describe('SubscribeBlockTracker', () => {
         });
       });
 
-      it('should cause the block tracker to make a request for the latest block number again if called again after the current block number cache becomes stale', async () => {
+      it('should ask for a new block number after the cached one is cleared', async () => {
         const setTimeoutRecorder = recordCallsToSetTimeout();
         const blockTrackerOptions = {
           pollingInterval: 100,
