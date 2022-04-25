@@ -23,13 +23,6 @@ module.exports = {
       files: ['*.test.ts', '*.test.js', './tests/setupAfterEnv.ts'],
       extends: ['@metamask/eslint-config-jest'],
     },
-
-    {
-      files: './tests/setupAfterEnv.ts',
-      parserOptions: {
-        sourceType: 'script',
-      },
-    },
   ],
 
   ignorePatterns: ['!.eslintrc.js', '!.prettierrc.js', 'dist/'],
