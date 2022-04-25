@@ -4,10 +4,10 @@
     "inlineSources": true,
     "lib": ["ES2020"],
     "module": "CommonJS",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "noEmit": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2017"
+    "target": "es2017"
   }
 }
