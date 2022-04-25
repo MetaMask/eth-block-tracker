@@ -27,7 +27,7 @@ export class BaseBlockTracker extends SafeEventEmitter {
 
   private _blockResetTimeout?: ReturnType<typeof setTimeout>;
 
-  constructor(opts: BaseBlockTrackerArgs = {}) {
+  constructor(opts: BaseBlockTrackerArgs) {
     super();
 
     // config
