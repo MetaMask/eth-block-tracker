@@ -27,8 +27,8 @@ export class BaseBlockTracker extends SafeEventEmitter {
 
   private _blockResetTimeout?: ReturnType<typeof setTimeout>;
 
-  // None of the subclasses call the constructor without any arguments, so the
-  // `= {}` here is useless. Leaving this in for backward compatibility.
+  // NOTE: None of the subclasses call the constructor without any arguments, so
+  // the `= {}` here is useless. Leaving this in for backward compatibility.
   /* istanbul ignore next */
   constructor(opts: BaseBlockTrackerArgs = {}) {
     super();
