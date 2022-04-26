@@ -18,7 +18,7 @@ interface BaseBlockTrackerArgs {
   blockResetDuration?: number;
 }
 
-export class BaseBlockTracker extends SafeEventEmitter {
+export abstract class BaseBlockTracker extends SafeEventEmitter {
   protected _isRunning: boolean;
 
   private _blockResetDuration: number;
