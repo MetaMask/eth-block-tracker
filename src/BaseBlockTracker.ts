@@ -86,16 +86,12 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
   /**
    * To be implemented in subclass.
    */
-  protected async _start(): Promise<void> {
-    // default behavior is noop
-  }
+  protected abstract _start(): Promise<void>;
 
   /**
    * To be implemented in subclass.
    */
-  protected async _end(): Promise<void> {
-    // default behavior is noop
-  }
+  protected abstract _end(): Promise<void>;
 
   private _setupInternalEvents(): void {
     // first remove listeners for idempotence
