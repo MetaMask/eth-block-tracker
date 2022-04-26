@@ -37,6 +37,7 @@ export class SubscribeBlockTracker extends BaseBlockTracker {
   }
 
   protected async _start(): Promise<void> {
+    await super._start();
     if (this._subscriptionId === undefined || this._subscriptionId === null) {
       try {
         const blockNumber = (await this._call('eth_blockNumber')) as string;
