@@ -34,20 +34,21 @@ type WithSubscribeBlockTrackerCallback = (args: {
 /**
  * An object that allows specifying the behavior of a specific invocation of
  * `sendAsync`. The `methodName` always identifies the stub, but the behavior
- * may be specified multiple ways. First, `sendAsync` can either return a
- * promise or throw an error, and if it returns a promise, that promise can
- * either be resolved with a response object or reject.
+ * may be specified multiple ways: `sendAsync` can either return a promise or
+ * throw an error, and if it returns a promise, that promise can either be
+ * resolved with a response object or reject with an error.
  *
  * @property methodName - The RPC method to which this stub will be matched.
- * @property response - Instructs `sendAsync` to resolve with a response
- * object.
+ * @property response - Instructs `sendAsync` to return a promise that resolves
+ * with a response object.
  * @property response.result - Specifies a successful response, with this as the
  * `result`.
  * @property response.error - Specifies an error response, with this as the
  * `error`.
  * @property implementation - Allows overriding `sendAsync` entirely. Useful if
  * you want it to throw an error.
- * @property error - Instructs `sendAsync` to reject with this error.
+ * @property error - Instructs `sendAsync` to return a promise that rejects with
+ * this error.
  */
 type FakeProviderStub =
   | {

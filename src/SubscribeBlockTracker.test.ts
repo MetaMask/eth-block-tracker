@@ -39,6 +39,89 @@ describe('SubscribeBlockTracker', () => {
     });
   });
 
+  describe('destroy', () => {
+    it('should stop the block tracker if any "latest" and "sync" events were added previously', async () => {
+      recordCallsToSetTimeout();
+
+      await withSubscribeBlockTracker(async ({ blockTracker }) => {
+        blockTracker.on('latest', EMPTY_FUNCTION);
+        await new Promise<void>((resolve) => {
+          blockTracker.on('sync', resolve);
+        });
+        expect(blockTracker.isRunning()).toBe(true);
+
+        await blockTracker.destroy();
+
+        expect(blockTracker.isRunning()).toBe(false);
+      });
+    });
+
+    it('should not clear the current block number if called after removing all listeners but before enough time passes that the cache would have been cleared', async () => {
+      const setTimeoutRecorder = recordCallsToSetTimeout();
+
+      await withSubscribeBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
+                },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          blockTracker.on('latest', EMPTY_FUNCTION);
+          await new Promise((resolve) => {
+            blockTracker.on('sync', resolve);
+          });
+          expect(blockTracker.getCurrentBlock()).toStrictEqual('0x0');
+          blockTracker.removeAllListeners();
+          expect(setTimeoutRecorder.calls).not.toHaveLength(0);
+
+          await blockTracker.destroy();
+
+          expect(setTimeoutRecorder.calls).toHaveLength(0);
+          expect(blockTracker.getCurrentBlock()).toStrictEqual('0x0');
+        },
+      );
+    });
+
+    it('should only clear the current block number if enough time passes after all "latest" and "sync" events are removed', async () => {
+      const setTimeoutRecorder = recordCallsToSetTimeout();
+
+      await withSubscribeBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
+                },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          blockTracker.on('latest', EMPTY_FUNCTION);
+          await new Promise((resolve) => {
+            blockTracker.on('sync', resolve);
+          });
+          expect(blockTracker.getCurrentBlock()).toStrictEqual('0x0');
+          blockTracker.removeAllListeners();
+          await setTimeoutRecorder.next();
+
+          await blockTracker.destroy();
+
+          expect(blockTracker.getCurrentBlock()).toBeNull();
+        },
+      );
+    });
+  });
+
   METHODS_TO_GET_LATEST_BLOCK.forEach((methodToGetLatestBlock) => {
     describe(`${methodToGetLatestBlock}`, () => {
       it('should start the block tracker immediately after being called', async () => {
