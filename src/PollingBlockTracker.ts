@@ -12,7 +12,7 @@ export interface PollingBlockTrackerOptions {
   retryTimeout?: number;
   keepEventLoopActive?: boolean;
   setSkipCacheFlag?: boolean;
-  blockResetDuration?: number | undefined;
+  blockResetDuration?: number;
 }
 
 interface ExtendedJsonRpcRequest<T> extends JsonRpcRequest<T> {
