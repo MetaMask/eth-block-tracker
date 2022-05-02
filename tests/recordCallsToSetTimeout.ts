@@ -109,7 +109,7 @@ class SetTimeoutRecorder {
     const timeout = originalSetTimeout(EMPTY_FUNCTION, 0);
     const interceptedCallback = this.#interceptCallback(
       callback,
-      this._stopPassingThroughCalls,
+      this.#stopPassingThroughCalls.bind(this),
     );
     const call = {
       callback: interceptedCallback,
@@ -144,9 +144,9 @@ class SetTimeoutRecorder {
     }
   };
 
-  _stopPassingThroughCalls = () => {
+  #stopPassingThroughCalls() {
     this.#numAutomaticCallsRemaining = 0;
-  };
+  }
 }
 
 /**
