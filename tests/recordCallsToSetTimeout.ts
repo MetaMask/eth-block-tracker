@@ -59,16 +59,17 @@ class SetTimeoutRecorder {
       if (index === -1) {
         const listener = (call: SetTimeoutCall, callIndex: number) => {
           if (call.duration === duration) {
-            call.callback();
             this.calls.splice(callIndex, 1);
+            call.callback();
             this.#events.off('setTimeoutAdded', listener);
             resolve();
           }
         };
         this.#events.on('setTimeoutAdded', listener);
       } else {
-        this.calls[index].callback();
+        const call = this.calls[index];
         this.calls.splice(index, 1);
+        call.callback();
         resolve();
       }
     });
