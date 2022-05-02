@@ -21,13 +21,13 @@ const originalSetTimeout = setTimeout;
  * the callback given so that it can be replayed later.
  */
 class SetTimeoutRecorder {
-  private interceptCallback: InterceptingCallback;
-
   public calls: SetTimeoutCall[];
 
-  private events: EventEmitter;
+  #interceptCallback: InterceptingCallback;
 
-  private numAutomaticCallsRemaining: number;
+  #events: EventEmitter;
+
+  #numAutomaticCallsRemaining: number;
 
   constructor({
     numAutomaticCalls = 0,
@@ -36,11 +36,11 @@ class SetTimeoutRecorder {
     numAutomaticCalls?: number;
     interceptCallback?: InterceptingCallback;
   }) {
-    this.interceptCallback = interceptCallback;
+    this.#interceptCallback = interceptCallback;
 
     this.calls = [];
-    this.events = new EventEmitter();
-    this.numAutomaticCallsRemaining = numAutomaticCalls;
+    this.#events = new EventEmitter();
+    this.#numAutomaticCallsRemaining = numAutomaticCalls;
   }
 
   /**
@@ -61,11 +61,11 @@ class SetTimeoutRecorder {
           if (call.duration === duration) {
             call.callback();
             this.calls.splice(callIndex, 1);
-            this.events.off('setTimeoutAdded', listener);
+            this.#events.off('setTimeoutAdded', listener);
             resolve();
           }
         };
-        this.events.on('setTimeoutAdded', listener);
+        this.#events.on('setTimeoutAdded', listener);
       } else {
         this.calls[index].callback();
         this.calls.splice(index, 1);
@@ -82,7 +82,7 @@ class SetTimeoutRecorder {
    * @param callback - The callback to register.
    */
   onNumAutomaticCallsExhausted(callback: () => void): void {
-    this.events.on('numCallsToPassThroughExhausted', callback);
+    this.#events.on('numCallsToPassThroughExhausted', callback);
   }
 
   /**
@@ -107,7 +107,7 @@ class SetTimeoutRecorder {
     // do anything, we just need the object, so we need to call the unstubbed
     // version of `setTimeout` in order to obtain that.
     const timeout = originalSetTimeout(EMPTY_FUNCTION, 0);
-    const interceptedCallback = this.interceptCallback(
+    const interceptedCallback = this.#interceptCallback(
       callback,
       this._stopPassingThroughCalls,
     );
@@ -118,13 +118,13 @@ class SetTimeoutRecorder {
     };
     this.calls.push(call);
 
-    if (this.numAutomaticCallsRemaining > 0) {
+    if (this.#numAutomaticCallsRemaining > 0) {
       call.callback();
-      this.numAutomaticCallsRemaining -= 1;
+      this.#numAutomaticCallsRemaining -= 1;
     } else {
-      this.events.emit('numCallsToPassThroughExhausted');
+      this.#events.emit('numCallsToPassThroughExhausted');
     }
-    this.events.emit('setTimeoutAdded');
+    this.#events.emit('setTimeoutAdded');
     return timeout;
   };
 
@@ -145,7 +145,7 @@ class SetTimeoutRecorder {
   };
 
   _stopPassingThroughCalls = () => {
-    this.numAutomaticCallsRemaining = 0;
+    this.#numAutomaticCallsRemaining = 0;
   };
 }
 
