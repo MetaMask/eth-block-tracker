@@ -615,59 +615,57 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
-      it(`should not emit the "error" event (added via \`${methodToAddListener}\`), but should throw instead if the request for the latest block number returns an error response`, async () => {
-        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+    it(`should not emit the "error" event, but should throw instead if the request for the latest block number returns an error response`, async () => {
+      recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
-        await withPollingBlockTracker(
-          {
-            provider: {
-              stubs: [
-                {
-                  methodName: 'eth_blockNumber',
-                  response: {
-                    error: 'boom',
-                  },
-                },
-              ],
-            },
-          },
-          async ({ blockTracker }) => {
-            const promiseForLatestBlock = blockTracker.checkForLatestBlock();
-            await expect(promiseForLatestBlock).rejects.toThrow(
-              'PollingBlockTracker - encountered error fetching block:\nboom',
-            );
-          },
-        );
-      });
-
-      it(`should not emit the "error" event (added via \`${methodToAddListener}\`), but should throw instead, if, while making the request for the latest block number, the provider rejects with an error`, async () => {
-        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-        const thrownError = new Error('boom');
-
-        await withPollingBlockTracker(
-          {
-            provider: {
-              stubs: [
-                {
-                  methodName: 'eth_blockNumber',
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                response: {
                   error: 'boom',
                 },
-                {
-                  methodName: 'eth_blockNumber',
-                  response: {
-                    result: '0x0',
-                  },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForLatestBlock = blockTracker.checkForLatestBlock();
+          await expect(promiseForLatestBlock).rejects.toThrow(
+            'PollingBlockTracker - encountered error fetching block:\nboom',
+          );
+        },
+      );
+    });
+
+    it(`should not emit the "error" event, but should throw instead, if, while making the request for the latest block number, the provider rejects with an error`, async () => {
+      recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+      const thrownError = new Error('boom');
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                error: 'boom',
+              },
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
                 },
-              ],
-            },
+              },
+            ],
           },
-          async ({ blockTracker }) => {
-            const promiseForLatestBlock = blockTracker.checkForLatestBlock();
-            await expect(promiseForLatestBlock).rejects.toThrow(thrownError);
-          },
-        );
-      });
+        },
+        async ({ blockTracker }) => {
+          const promiseForLatestBlock = blockTracker.checkForLatestBlock();
+          await expect(promiseForLatestBlock).rejects.toThrow(thrownError);
+        },
+      );
     });
 
     it('should update the current block number', async () => {
