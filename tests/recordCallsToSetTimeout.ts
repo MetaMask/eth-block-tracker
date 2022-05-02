@@ -1,8 +1,6 @@
 import EventEmitter from 'events';
 import EMPTY_FUNCTION from './emptyFunction';
 
-type OriginalSetTimeout = typeof global.setTimeout;
-
 type SetTimeoutCallback = () => any;
 
 interface SetTimeoutCall {
@@ -15,6 +13,8 @@ type InterceptingCallback = (
   callback: SetTimeoutCallback,
   stopPassingThroughCalls: () => void,
 ) => SetTimeoutCallback;
+
+const originalSetTimeout = setTimeout;
 
 /**
  * A class that provides a mock implementation for `setTimeout` which records
@@ -148,8 +148,6 @@ class SetTimeoutRecorder {
     this.numAutomaticCallsRemaining = 0;
   };
 }
-
-const originalSetTimeout = setTimeout;
 
 /**
  * Replaces the global `setTimeout` function with one which, upon being called,
