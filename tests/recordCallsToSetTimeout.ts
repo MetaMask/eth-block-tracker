@@ -21,8 +21,6 @@ type InterceptingCallback = (
  * the callback given so that it can be replayed later.
  */
 class SetTimeoutRecorder {
-  private originalSetTimeout: OriginalSetTimeout;
-
   private interceptCallback: InterceptingCallback;
 
   public calls: SetTimeoutCall[];
@@ -32,15 +30,12 @@ class SetTimeoutRecorder {
   private numAutomaticCallsRemaining: number;
 
   constructor({
-    originalSetTimeout,
     numAutomaticCalls = 0,
     interceptCallback = (callback) => callback,
   }: {
-    originalSetTimeout: OriginalSetTimeout;
     numAutomaticCalls?: number;
     interceptCallback?: InterceptingCallback;
   }) {
-    this.originalSetTimeout = originalSetTimeout;
     this.interceptCallback = interceptCallback;
 
     this.calls = [];
@@ -106,8 +101,12 @@ class SetTimeoutRecorder {
     callback: SetTimeoutCallback,
     duration: number | undefined = 0,
   ): NodeJS.Timeout => {
-    // Build a "fake" Timeout object
-    const timeout = this.originalSetTimeout(EMPTY_FUNCTION, 0);
+    // We still need `setTimeout` to return some kind of Timeout object, as this
+    // is what the signature of `setTimeout` demands, and anyway, we need an
+    // object that has an `unref` method on it. We don't need this timeout to
+    // do anything, we just need the object, so we need to call the unstubbed
+    // version of `setTimeout` in order to obtain that.
+    const timeout = originalSetTimeout(EMPTY_FUNCTION, 0);
     const interceptedCallback = this.interceptCallback(
       callback,
       this._stopPassingThroughCalls,
@@ -150,6 +149,8 @@ class SetTimeoutRecorder {
   };
 }
 
+const originalSetTimeout = setTimeout;
+
 /**
  * Replaces the global `setTimeout` function with one which, upon being called,
  * records the callback given to it. The callback may be stored in a queue to be
@@ -174,9 +175,7 @@ export default function recordCallsToSetTimeout({
   numAutomaticCalls?: number;
   interceptCallback?: InterceptingCallback;
 } = {}): SetTimeoutRecorder {
-  const originalSetTimeout = global.setTimeout;
   const setTimeoutRecorder = new SetTimeoutRecorder({
-    originalSetTimeout,
     numAutomaticCalls,
     interceptCallback,
   });
