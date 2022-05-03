@@ -799,7 +799,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should change the Timeout object created when the poll loop waits for the next iteration such that Node does not have to wait for it to finish before exiting', async () => {
+        it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
           const blockTrackerOptions = {
             pollingInterval: 100,
@@ -1372,7 +1372,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should change the Timeout object created when the poll loop waits for the next iteration such that Node does not have to wait for it to finish before exiting', async () => {
+        it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
           const blockTrackerOptions = {
             pollingInterval: 100,
@@ -2064,7 +2064,7 @@ describe('PollingBlockTracker', () => {
         });
       });
 
-      it('should change the Timeout object created when the poll loop waits for the next iteration such that Node does not have to wait for it to finish before exiting', async () => {
+      it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
         const setTimeoutRecorder = recordCallsToSetTimeout();
         const blockTrackerOptions = {
           pollingInterval: 100,
