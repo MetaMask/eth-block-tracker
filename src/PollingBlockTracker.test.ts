@@ -731,7 +731,7 @@ describe('PollingBlockTracker', () => {
           });
         });
 
-        it('should take a listener that is called soon after being added', async () => {
+        it('should emit "latest" soon afterward', async () => {
           recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -756,7 +756,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that is called periodically after being added', async () => {
+        it('should emit "latest" periodically afterward', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -845,7 +845,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that is not called after the latest block is fetched if the new block number is less than the current block number', async () => {
+        it('should not emit "latest" if the newly fetched block number is less than the current block number', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -1304,7 +1304,7 @@ describe('PollingBlockTracker', () => {
           });
         });
 
-        it('should take a listener that is called soon after being added', async () => {
+        it('should emit "sync" soon afterward', async () => {
           recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1329,7 +1329,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that is called periodically after being added', async () => {
+        it('should emit "sync" periodically afterward', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -1418,7 +1418,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that is not called after the latest block is fetched if the new block number is less than the current block number', async () => {
+        it('should not emit "sync" if the newly fetched block number is less than the current block number', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
