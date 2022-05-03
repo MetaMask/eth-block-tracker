@@ -693,11 +693,7 @@ describe('PollingBlockTracker', () => {
     });
 
     it('should never clear the current block number later', async () => {
-      recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-      const blockTrackerOptions = {
-        pollingInterval: 100,
-        blockResetDuration: 200,
-      };
+      const setTimeoutRecorder = recordCallsToSetTimeout();
 
       await withPollingBlockTracker(
         {
@@ -711,10 +707,10 @@ describe('PollingBlockTracker', () => {
               },
             ],
           },
-          blockTracker: blockTrackerOptions,
         },
         async ({ blockTracker }) => {
           await blockTracker.checkForLatestBlock();
+          expect(setTimeoutRecorder.calls).toHaveLength(0);
           const currentBlockNumber = blockTracker.getCurrentBlock();
           expect(currentBlockNumber).toStrictEqual('0x0');
         },
