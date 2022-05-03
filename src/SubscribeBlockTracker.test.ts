@@ -81,7 +81,7 @@ describe('SubscribeBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            const latestBlockNumber = await blockTracker.getLatestBlock();
+            const latestBlockNumber = await blockTracker[methodToGetLatestBlock]();
             expect(latestBlockNumber).toStrictEqual('0x0');
           },
         );
