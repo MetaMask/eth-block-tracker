@@ -1209,7 +1209,7 @@ describe('SubscribeBlockTracker', () => {
             },
             async ({ blockTracker }) => {
               const sync = await new Promise<Sync>((resolve) => {
-                blockTracker.on('sync', resolve);
+                blockTracker[methodToAddListener]('sync', resolve);
               });
               expect(sync).toStrictEqual({ oldBlock: null, newBlock: '0x0' });
             },
