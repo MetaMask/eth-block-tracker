@@ -798,11 +798,7 @@ describe('PollingBlockTracker', () => {
     });
 
     it('should never clear the current block number later', async () => {
-      recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-      const blockTrackerOptions = {
-        pollingInterval: 100,
-        blockResetDuration: 200,
-      };
+      const setTimeoutRecorder = recordCallsToSetTimeout();
 
       await withPollingBlockTracker(
         {
@@ -816,10 +812,10 @@ describe('PollingBlockTracker', () => {
               },
             ],
           },
-          blockTracker: blockTrackerOptions,
         },
         async ({ blockTracker }) => {
           await blockTracker.checkForLatestBlock();
+          expect(setTimeoutRecorder.calls).toHaveLength(0);
           const currentBlockNumber = blockTracker.getCurrentBlock();
           expect(currentBlockNumber).toStrictEqual('0x0');
         },
@@ -840,7 +836,7 @@ describe('PollingBlockTracker', () => {
           });
         });
 
-        it('should take a listener that is called soon after being added', async () => {
+        it('should emit "latest" soon afterward', async () => {
           recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -865,7 +861,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that is called periodically after being added', async () => {
+        it('should emit "latest" periodically afterward', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -908,7 +904,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should change the Timeout object created when the poll loop waits for the next iteration such that Node does not have to wait for it to finish before exiting', async () => {
+        it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
           const blockTrackerOptions = {
             pollingInterval: 100,
@@ -954,7 +950,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that is not called after the latest block is fetched if the new block number is less than the current block number', async () => {
+        it('should not emit "latest" if the newly fetched block number is less than the current block number', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -1413,7 +1409,7 @@ describe('PollingBlockTracker', () => {
           });
         });
 
-        it('should take a listener that is called soon after being added', async () => {
+        it('should emit "sync" soon afterward', async () => {
           recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1438,7 +1434,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that is called periodically after being added', async () => {
+        it('should emit "sync" periodically afterward', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -1481,7 +1477,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should change the Timeout object created when the poll loop waits for the next iteration such that Node does not have to wait for it to finish before exiting', async () => {
+        it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
           const blockTrackerOptions = {
             pollingInterval: 100,
@@ -1527,7 +1523,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should take a listener that is not called after the latest block is fetched if the new block number is less than the current block number', async () => {
+        it('should not emit "sync" if the newly fetched block number is less than the current block number', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -2173,7 +2169,7 @@ describe('PollingBlockTracker', () => {
         });
       });
 
-      it('should change the Timeout object created when the poll loop waits for the next iteration such that Node does not have to wait for it to finish before exiting', async () => {
+      it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
         const setTimeoutRecorder = recordCallsToSetTimeout();
         const blockTrackerOptions = {
           pollingInterval: 100,
