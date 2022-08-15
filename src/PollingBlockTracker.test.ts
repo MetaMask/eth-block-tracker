@@ -11,6 +11,7 @@ interface Sync {
 
 const METHODS_TO_ADD_LISTENER = ['on', 'addListener'] as const;
 const METHODS_TO_REMOVE_LISTENER = ['off', 'removeListener'] as const;
+const originalSetTimeout = setTimeout;
 
 describe('PollingBlockTracker', () => {
   describe('constructor', () => {
@@ -797,11 +798,15 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should never clear the current block number later', async () => {
+    it('should never start a timer to clear the current block number later', async () => {
       const setTimeoutRecorder = recordCallsToSetTimeout();
+      const blockResetDuration = 1000;
 
       await withPollingBlockTracker(
         {
+          blockTracker: {
+            blockResetDuration,
+          },
           provider: {
             stubs: [
               {
@@ -815,9 +820,13 @@ describe('PollingBlockTracker', () => {
         },
         async ({ blockTracker }) => {
           await blockTracker.checkForLatestBlock();
+
+          await new Promise((resolve) =>
+            originalSetTimeout(resolve, blockResetDuration),
+          );
+
           expect(setTimeoutRecorder.calls).toHaveLength(0);
-          const currentBlockNumber = blockTracker.getCurrentBlock();
-          expect(currentBlockNumber).toStrictEqual('0x0');
+          expect(blockTracker.getCurrentBlock()).toStrictEqual('0x0');
         },
       );
     });
