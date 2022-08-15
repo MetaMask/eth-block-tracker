@@ -1,5 +1,5 @@
 import SafeEventEmitter from '@metamask/safe-event-emitter';
-import { JsonRpcRequest, JsonRpcResponse } from 'json-rpc-engine';
+import {JsonRpcRequest, JsonRpcResponse} from 'json-rpc-engine';
 
 const sec = 1000;
 
@@ -46,8 +46,8 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
   }
 
   async destroy() {
-    await this._maybeEnd();
     this._cancelBlockResetTimeout();
+    await this._maybeEnd();
     super.removeAllListeners();
   }
 
@@ -163,7 +163,7 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
     const oldBlock = this._currentBlock;
     this._currentBlock = newBlock;
     this.emit('latest', newBlock);
-    this.emit('sync', { oldBlock, newBlock });
+    this.emit('sync', {oldBlock, newBlock});
   }
 
   private _setupBlockResetTimeout(): void {
