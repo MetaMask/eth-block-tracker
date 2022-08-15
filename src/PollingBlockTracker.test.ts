@@ -53,7 +53,7 @@ describe('PollingBlockTracker', () => {
       });
     });
 
-    it('should not clear the current block number if called after removing all listeners but before enough time passes that the cache would have been cleared', async () => {
+    it('should not start a timer to clear the current block number if called after removing all listeners but before enough time passes that the cache would have been cleared', async () => {
       const setTimeoutRecorder = recordCallsToSetTimeout();
       const blockTrackerOptions = {
         pollingInterval: 100,
@@ -95,6 +95,10 @@ describe('PollingBlockTracker', () => {
               return call.duration === blockTrackerOptions.blockResetDuration;
             }),
           ).toBe(false);
+
+          await new Promise((resolve) =>
+            originalSetTimeout(resolve, blockTrackerOptions.blockResetDuration),
+          );
           expect(blockTracker.getCurrentBlock()).toStrictEqual('0x0');
         },
       );

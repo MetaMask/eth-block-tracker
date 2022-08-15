@@ -15,6 +15,7 @@ const METHODS_TO_GET_LATEST_BLOCK = [
   'getLatestBlock',
   'checkForLatestBlock',
 ] as const;
+const originalSetTimeout = setTimeout;
 
 describe('SubscribeBlockTracker', () => {
   describe('constructor', () => {
@@ -56,11 +57,15 @@ describe('SubscribeBlockTracker', () => {
       });
     });
 
-    it('should not clear the current block number if called after removing all listeners but before enough time passes that the cache would have been cleared', async () => {
+    it('should not start a timer to clear the current block number if called after removing all listeners but before enough time passes that the cache would have been cleared', async () => {
       const setTimeoutRecorder = recordCallsToSetTimeout();
+      const blockResetDuration = 500;
 
       await withSubscribeBlockTracker(
         {
+          blockTracker: {
+            blockResetDuration,
+          },
           provider: {
             stubs: [
               {
@@ -84,6 +89,9 @@ describe('SubscribeBlockTracker', () => {
           await blockTracker.destroy();
 
           expect(setTimeoutRecorder.calls).toHaveLength(0);
+          await new Promise((resolve) =>
+            originalSetTimeout(resolve, blockResetDuration),
+          );
           expect(blockTracker.getCurrentBlock()).toStrictEqual('0x0');
         },
       );
