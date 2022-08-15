@@ -191,29 +191,12 @@ describe('SubscribeBlockTracker', () => {
                       error: 'boom',
                     },
                   },
-                  {
-                    methodName: 'eth_subscribe',
-                    response: {
-                      result: '0x64',
-                    },
-                  },
                 ],
               },
             },
-            async ({ provider, blockTracker }) => {
+            async ({ blockTracker }) => {
               const promiseForCaughtError = new Promise<any>((resolve) => {
                 blockTracker[methodToAddListener]('error', resolve);
-              });
-              blockTracker.on('_started', () => {
-                provider.emit('data', null, {
-                  method: 'eth_subscription',
-                  params: {
-                    subscription: '0x64',
-                    result: {
-                      number: '0x0',
-                    },
-                  },
-                });
               });
 
               const promiseForLatestBlock =
