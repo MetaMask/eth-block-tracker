@@ -6,6 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.0]
+### Uncategorized
+- Bump @metamask/auto-changelog from 2.5.0 to 2.6.1 ([#109](https://github.com/MetaMask/eth-block-tracker/pull/109))
+- Add `destroy` method to block tracker classes ([#106](https://github.com/MetaMask/eth-block-tracker/pull/106))
+- Rewrite tests using Jest ([#103](https://github.com/MetaMask/eth-block-tracker/pull/103))
+- Remove sometimes-unsupported newHeads parameter ([#108](https://github.com/MetaMask/eth-block-tracker/pull/108))
+- Standardize repo (minus tests) ([#97](https://github.com/MetaMask/eth-block-tracker/pull/97))
+- Update dev dependencies ([#96](https://github.com/MetaMask/eth-block-tracker/pull/96))
+- Bump simple-get from 2.8.1 to 2.8.2 ([#99](https://github.com/MetaMask/eth-block-tracker/pull/99))
+- Bump ajv from 6.10.2 to 6.12.6 ([#100](https://github.com/MetaMask/eth-block-tracker/pull/100))
+- Bump copy-props from 2.0.4 to 2.0.5 ([#98](https://github.com/MetaMask/eth-block-tracker/pull/98))
+- Bump minimist from 1.2.5 to 1.2.6 ([#95](https://github.com/MetaMask/eth-block-tracker/pull/95))
+- Bump tar from 4.4.17 to 4.4.19 ([#87](https://github.com/MetaMask/eth-block-tracker/pull/87))
+- Migrate from CircleCI to GitHub Actions ([#88](https://github.com/MetaMask/eth-block-tracker/pull/88))
+- Bump tar from 4.4.8 to 4.4.17 ([#86](https://github.com/MetaMask/eth-block-tracker/pull/86))
+- Bump path-parse from 1.0.6 to 1.0.7 ([#85](https://github.com/MetaMask/eth-block-tracker/pull/85))
+- Bump normalize-url from 4.3.0 to 4.5.1 ([#83](https://github.com/MetaMask/eth-block-tracker/pull/83))
+- Bump hosted-git-info from 2.8.4 to 2.8.9 ([#81](https://github.com/MetaMask/eth-block-tracker/pull/81))
+- Bump lodash from 4.17.19 to 4.17.21 ([#80](https://github.com/MetaMask/eth-block-tracker/pull/80))
+- Repo standardization ([#79](https://github.com/MetaMask/eth-block-tracker/pull/79))
+- Bump y18n from 3.2.1 to 3.2.2 ([#78](https://github.com/MetaMask/eth-block-tracker/pull/78))
+
 ## [5.0.1] - 2021-03-25
 ### Fixed
 - Add missing `types` field to `package.json` ([#75](https://github.com/MetaMask/eth-block-tracker/pull/75))
@@ -73,7 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add RpcBlockTracker
 
-[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v5.0.1...HEAD
+[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v6.0.0...HEAD
+[6.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v5.0.1...v6.0.0
 [5.0.1]: https://github.com/MetaMask/eth-block-tracker/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v4.4.3...v5.0.0
 [4.4.3]: https://github.com/MetaMask/eth-block-tracker/compare/v4.0.0...v4.4.3
