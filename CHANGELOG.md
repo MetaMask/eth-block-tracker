@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.0]
+### Uncategorized
+- Align Provider type w/ other packages & re-expose ([#117](https://github.com/MetaMask/eth-block-tracker/pull/117))
+- Bump @metamask/auto-changelog from 3.0.0 to 3.1.0 ([#123](https://github.com/MetaMask/eth-block-tracker/pull/123))
+- Bump @metamask/auto-changelog from 2.6.1 to 3.0.0 ([#121](https://github.com/MetaMask/eth-block-tracker/pull/121))
+- Bump @metamask/utils from 3.0.1 to 3.3.1 ([#122](https://github.com/MetaMask/eth-block-tracker/pull/122))
+
 ## [6.0.0]
 ### Added
 - Add logging ([#112](https://github.com/MetaMask/eth-block-tracker/pull/112))
@@ -97,7 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add RpcBlockTracker
 
-[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v6.0.0...HEAD
+[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v6.1.0...HEAD
+[6.1.0]: https://github.com/MetaMask/eth-block-tracker/compare/v6.0.0...v6.1.0
 [6.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v5.0.1...v6.0.0
 [5.0.1]: https://github.com/MetaMask/eth-block-tracker/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v4.4.3...v5.0.0
