@@ -126,7 +126,7 @@ function getFakeProvider({
     .mockImplementation(
       (
         request: JsonRpcRequest<unknown>,
-        callback: (err: Error, response: JsonRpcResponse<unknown>) => void,
+        callback: (err: unknown, response?: JsonRpcResponse<unknown>) => void,
       ) => {
         const index = stubs.findIndex(
           (stub) => stub.methodName === request.method,
@@ -139,13 +139,13 @@ function getFakeProvider({
             stub.implementation();
           } else if ('response' in stub) {
             if ('result' in stub.response) {
-              callback(null as unknown as Error, {
+              callback(null, {
                 jsonrpc: '2.0',
                 id: 1,
                 result: stub.response.result,
               });
             } else if ('error' in stub.response) {
-              callback(null as unknown as Error, {
+              callback(null, {
                 jsonrpc: '2.0',
                 id: 1,
                 error: {
@@ -155,10 +155,7 @@ function getFakeProvider({
               });
             }
           } else if ('error' in stub) {
-            callback(
-              new Error(stub.error),
-              null as unknown as JsonRpcResponse<unknown>,
-            );
+            callback(new Error(stub.error));
           }
           return;
         }
@@ -171,7 +168,6 @@ function getFakeProvider({
               'Current set of stubs:\n\n' +
               `${util.inspect(stubs, { depth: null })}\n\n`,
           ),
-          null as unknown as JsonRpcResponse<unknown>,
         );
       },
     );
