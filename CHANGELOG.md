@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [7.0.0]
-### Uncategorized
-- Update `SafeEventEmitterProvider` type ([#130](https://github.com/MetaMask/eth-block-tracker/pull/130))
-- Bump @metamask/utils from 3.4.0 to 3.4.1 ([#127](https://github.com/MetaMask/eth-block-tracker/pull/127))
-- Bump json5 from 1.0.1 to 1.0.2 ([#126](https://github.com/MetaMask/eth-block-tracker/pull/126))
-- Bump @metamask/utils from 3.3.1 to 3.4.0 ([#125](https://github.com/MetaMask/eth-block-tracker/pull/125))
+### Changed
+- **BREAKING:** The type of the `provider` option for `PollingBlockTracker` and `SubscribeBlockTracker` has changed ([#130](https://github.com/MetaMask/eth-block-tracker/pull/130))
+  - The `provider` option must be compatible with the `SafeEventEmitterProvider` type from `@metamask/eth-json-rpc-middleware`.
+  - The new provider type should be mostly equivalent, except that it's now expected to have a `send` method. We don't use that `send` method in this package though.
+
+### Removed
+- **BREAKING:** Remove the `Provider` exported type ([#130](https://github.com/MetaMask/eth-block-tracker/pull/130))
+  - We now use `@metamask/eth-json-rpc-provider` for this instead, so there was no need to re-export it.
 
 ## [6.1.0]
 ### Added
