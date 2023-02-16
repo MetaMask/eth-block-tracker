@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.0]
+### Uncategorized
+- Update `SafeEventEmitterProvider` type ([#130](https://github.com/MetaMask/eth-block-tracker/pull/130))
+- Bump @metamask/utils from 3.4.0 to 3.4.1 ([#127](https://github.com/MetaMask/eth-block-tracker/pull/127))
+- Bump json5 from 1.0.1 to 1.0.2 ([#126](https://github.com/MetaMask/eth-block-tracker/pull/126))
+- Bump @metamask/utils from 3.3.1 to 3.4.0 ([#125](https://github.com/MetaMask/eth-block-tracker/pull/125))
+
 ## [6.1.0]
 ### Added
 - Add back Provider type that was accidentally removed in 6.0.0 ([#117](https://github.com/MetaMask/eth-block-tracker/pull/117))
@@ -104,7 +111,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add RpcBlockTracker
 
-[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v6.1.0...HEAD
+[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v7.0.0...HEAD
+[7.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v6.1.0...v7.0.0
 [6.1.0]: https://github.com/MetaMask/eth-block-tracker/compare/v6.0.0...v6.1.0
 [6.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v5.0.1...v6.0.0
 [5.0.1]: https://github.com/MetaMask/eth-block-tracker/compare/v5.0.0...v5.0.1
