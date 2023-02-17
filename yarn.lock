@@ -612,9 +612,9 @@
   integrity sha512-/kSXhY692qiV1MXu6EeOZvg5nECLclxNXcKCxJ3cXQgYuRymRHpdx/t7JXfsK+JLjwA1e1c1/SBrlQYpusC29Q==
 
 "@metamask/utils@^3.0.1":
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-3.4.1.tgz#7df750733960ee2bde27a00eb58fcfdf80570be2"
-  integrity sha512-FjhJrplzFiPNlNNuYXkY1ave55ULLZ3+kY/d3zaW5SjS5AjszlN7gsWz74VI32qME6VyD/gdoTOgqVbKlcEnag==
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-3.5.0.tgz#2b0050baaefff3e42fd75069d9503a18345c0cee"
+  integrity sha512-TqZBbL12VtRL4oz1Z0cubKr4cgxLtLFjgEaGeW6L5GTDna+R5gFy8nANTCClTj7SFxLhpJtqT18am9uIbZIy5Q==
   dependencies:
     "@types/debug" "^4.1.7"
     debug "^4.3.4"
