@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.1]
+### Uncategorized
+- Bump @metamask/utils from 5.0.1 to 5.0.2 ([#144](https://github.com/MetaMask/eth-block-tracker/pull/144))
+- Bump @metamask/safe-event-emitter from 2.0.0 to 3.0.0 ([#143](https://github.com/MetaMask/eth-block-tracker/pull/143))
+- Bump @metamask/utils from 3.4.1 to 5.0.1 ([#141](https://github.com/MetaMask/eth-block-tracker/pull/141))
+
 ## [7.0.0]
 ### Changed
 - **BREAKING:** The type of the `provider` option for `PollingBlockTracker` and `SubscribeBlockTracker` has changed ([#130](https://github.com/MetaMask/eth-block-tracker/pull/130))
@@ -114,7 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add RpcBlockTracker
 
-[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v7.0.0...HEAD
+[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v7.0.1...HEAD
+[7.0.1]: https://github.com/MetaMask/eth-block-tracker/compare/v7.0.0...v7.0.1
 [7.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v6.1.0...v7.0.0
 [6.1.0]: https://github.com/MetaMask/eth-block-tracker/compare/v6.0.0...v6.1.0
 [6.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v5.0.1...v6.0.0
