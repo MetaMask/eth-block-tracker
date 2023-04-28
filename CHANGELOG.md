@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [7.0.1]
-### Uncategorized
-- Bump @metamask/utils from 5.0.1 to 5.0.2 ([#144](https://github.com/MetaMask/eth-block-tracker/pull/144))
-- Bump @metamask/safe-event-emitter from 2.0.0 to 3.0.0 ([#143](https://github.com/MetaMask/eth-block-tracker/pull/143))
-- Bump @metamask/utils from 3.4.1 to 5.0.1 ([#141](https://github.com/MetaMask/eth-block-tracker/pull/141))
+### Changed
+- Dependency updates:
+  - Bump @metamask/utils from 5.0.1 to 5.0.2
+    - [#141](https://github.com/MetaMask/eth-block-tracker/pull/141)
+    - [#144](https://github.com/MetaMask/eth-block-tracker/pull/144)
+  - Bump @metamask/safe-event-emitter from 2.0.0 to 3.0.0 ([#143](https://github.com/MetaMask/eth-block-tracker/pull/143))
 
 ## [7.0.0]
 ### Changed
