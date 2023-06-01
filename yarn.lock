@@ -697,10 +697,10 @@
   resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-3.0.0.tgz#8c2b9073fe0722d48693143b0dc8448840daa3bd"
   integrity sha512-j6Z47VOmVyGMlnKXZmL0fyvWfEYtKWCA9yGZkU3FCsGZUT5lHGmvaV9JA5F2Y+010y7+ROtR3WMXIkvl/nVzqQ==
 
-"@metamask/utils@^5.0.1":
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-5.0.2.tgz#140ba5061d90d9dac0280c19cab101bc18c8857c"
-  integrity sha512-yfmE79bRQtnMzarnKfX7AEJBwFTxvTyw3nBQlu/5rmGXrjAeAMltoGxO62TFurxrQAFMNa/fEjIHNvungZp0+g==
+"@metamask/utils@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-6.0.0.tgz#9eb9c76050f0a465a10186fdc9b25b4fddda523f"
+  integrity sha512-/0GkcKBFok7ZMwScYef/4YbsJYqFBzTPoQHp+oUF9HFikx1OJe7joG0J8Rnpcbr5NB2dhvAY/aOjZqyJN8yDBQ==
   dependencies:
     "@ethereumjs/tx" "^4.1.2"
     "@types/debug" "^4.1.7"
