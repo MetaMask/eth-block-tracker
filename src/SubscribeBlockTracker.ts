@@ -8,7 +8,7 @@ const createRandomId = getCreateRandomId();
 export interface SubscribeBlockTrackerOptions {
   provider?: SafeEventEmitterProvider;
   blockResetDuration?: number;
-  useAnyLatest?: boolean;
+  allowOldLatest?: boolean;
 }
 
 interface SubscriptionNotificationParams {
