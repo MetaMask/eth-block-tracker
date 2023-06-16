@@ -279,128 +279,6 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should only consider new blocks by default', async () => {
-      recordCallsToSetTimeout();
-
-      await withPollingBlockTracker(
-        {
-          provider: {
-            stubs: [
-              {
-                methodName: 'eth_blockNumber',
-                response: {
-                  result: '0x0',
-                },
-              },
-              {
-                methodName: 'eth_blockNumber',
-                response: {
-                  result: '0x1',
-                },
-              },
-              {
-                methodName: 'eth_blockNumber',
-                response: {
-                  result: '0x1',
-                },
-              },
-              {
-                methodName: 'eth_blockNumber',
-                response: {
-                  result: '0x0',
-                },
-              },
-            ],
-          },
-          // blockTracker: blockTrackerOptions,
-        },
-        async ({ provider, blockTracker }) => {
-          const sendAsyncSpy = jest.spyOn(provider, 'sendAsync');
-          const receivedBlockNumbers: string[] = [];
-
-          // subscribing will trigger the first block update
-          blockTracker.on('latest', (blockNumber: string) => {
-            receivedBlockNumbers.push(blockNumber);
-          });
-          expect(await blockTracker.getLatestBlock()).toStrictEqual('0x0');
-          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x1');
-          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x1');
-          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x1');
-
-          expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1']);
-
-          const requestsForLatestBlock = sendAsyncSpy.mock.calls.filter(
-            (args) => {
-              return args[0].method === 'eth_blockNumber';
-            },
-          );
-          expect(requestsForLatestBlock).toHaveLength(4);
-        },
-      );
-    });
-
-    it('should use older blocks when usePastBlocks is set', async () => {
-      recordCallsToSetTimeout();
-
-      await withPollingBlockTracker(
-        {
-          provider: {
-            stubs: [
-              {
-                methodName: 'eth_blockNumber',
-                response: {
-                  result: '0x0',
-                },
-              },
-              {
-                methodName: 'eth_blockNumber',
-                response: {
-                  result: '0x1',
-                },
-              },
-              {
-                methodName: 'eth_blockNumber',
-                response: {
-                  result: '0x0',
-                },
-              },
-              {
-                methodName: 'eth_blockNumber',
-                response: {
-                  result: '0x0',
-                },
-              },
-            ],
-          },
-          blockTracker: {
-            usePastBlocks: true,
-          },
-        },
-        async ({ provider, blockTracker }) => {
-          const sendAsyncSpy = jest.spyOn(provider, 'sendAsync');
-          const receivedBlockNumbers: string[] = [];
-
-          // subscribing will trigger the first block update
-          blockTracker.on('latest', (blockNumber: string) => {
-            receivedBlockNumbers.push(blockNumber);
-          });
-          expect(await blockTracker.getLatestBlock()).toStrictEqual('0x0');
-          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x1');
-          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x0');
-          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x0');
-
-          expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1', '0x0']);
-
-          const requestsForLatestBlock = sendAsyncSpy.mock.calls.filter(
-            (args) => {
-              return args[0].method === 'eth_blockNumber';
-            },
-          );
-          expect(requestsForLatestBlock).toHaveLength(4);
-        },
-      );
-    });
-
     METHODS_TO_ADD_LISTENER.forEach((methodToAddListener) => {
       it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should not throw if the request for the latest block number returns an error response`, async () => {
         recordCallsToSetTimeout({ numAutomaticCalls: 1 });
@@ -899,6 +777,7 @@ describe('PollingBlockTracker', () => {
         },
       );
     });
+
 
     it('should update the current block number', async () => {
       recordCallsToSetTimeout();
@@ -3253,6 +3132,129 @@ describe('PollingBlockTracker', () => {
             blockTrackerOptions.blockResetDuration,
           );
           expect(blockTracker.getCurrentBlock()).toBeNull();
+        },
+      );
+    });
+  });
+
+  describe('_newPotentialLatest', () => {
+    it('should only consider new blocks by default', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
+                },
+              },
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x1',
+                },
+              },
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x1',
+                },
+              },
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
+                },
+              },
+            ],
+          },
+        },
+        async ({ provider, blockTracker }) => {
+          const sendAsyncSpy = jest.spyOn(provider, 'sendAsync');
+          const receivedBlockNumbers: string[] = [];
+
+          // subscribing will trigger the first block update
+          blockTracker.on('latest', (blockNumber: string) => {
+            receivedBlockNumbers.push(blockNumber);
+          });
+          expect(await blockTracker.getLatestBlock()).toStrictEqual('0x0');
+          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x1');
+          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x1');
+          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x1');
+
+          expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1']);
+
+          const requestsForLatestBlock = sendAsyncSpy.mock.calls.filter(
+            (args) => {
+              return args[0].method === 'eth_blockNumber';
+            },
+          );
+          expect(requestsForLatestBlock).toHaveLength(4);
+        },
+      );
+    });
+
+    it('should use older blocks when usePastBlocks is set', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
+                },
+              },
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x1',
+                },
+              },
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
+                },
+              },
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  result: '0x0',
+                },
+              },
+            ],
+          },
+          blockTracker: {
+            usePastBlocks: true,
+          },
+        },
+        async ({ provider, blockTracker }) => {
+          const sendAsyncSpy = jest.spyOn(provider, 'sendAsync');
+          const receivedBlockNumbers: string[] = [];
+
+          // subscribing will trigger the first block update
+          blockTracker.on('latest', (blockNumber: string) => {
+            receivedBlockNumbers.push(blockNumber);
+          });
+          expect(await blockTracker.getLatestBlock()).toStrictEqual('0x0');
+          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x1');
+          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x0');
+          expect(await blockTracker.checkForLatestBlock()).toStrictEqual('0x0');
+
+          expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1', '0x0']);
+
+          const requestsForLatestBlock = sendAsyncSpy.mock.calls.filter(
+            (args) => {
+              return args[0].method === 'eth_blockNumber';
+            },
+          );
+          expect(requestsForLatestBlock).toHaveLength(4);
         },
       );
     });
