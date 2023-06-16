@@ -778,7 +778,6 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-
     it('should update the current block number', async () => {
       recordCallsToSetTimeout();
 
