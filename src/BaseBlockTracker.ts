@@ -8,7 +8,7 @@ const blockTrackerEvents: (string | symbol)[] = ['sync', 'latest'];
 
 interface BaseBlockTrackerArgs {
   blockResetDuration?: number;
-  allowOldLatest?: boolean;
+  usePastBlocks?: boolean;
 }
 
 export abstract class BaseBlockTracker extends SafeEventEmitter {
@@ -16,7 +16,7 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
 
   private _blockResetDuration: number;
 
-  private _allowOldLatest: boolean;
+  private _usePastBlocks: boolean;
 
   private _currentBlock: string | null;
 
@@ -27,7 +27,7 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
 
     // config
     this._blockResetDuration = opts.blockResetDuration || 20 * sec;
-    this._allowOldLatest = Boolean(opts.allowOldLatest);
+    this._usePastBlocks = Boolean(opts.usePastBlocks);
     // state
     this._currentBlock = null;
     this._isRunning = false;
@@ -149,20 +149,20 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
   protected _shouldUseNewBlock(newBlock: string) {
     const currentBlock = this._currentBlock;
     if (!currentBlock) {
-      return true
+      return true;
     }
-    const newBlockInt = hexToInt(newBlock)
-    const currentBlockInt = hexToInt(currentBlock)
+    const newBlockInt = hexToInt(newBlock);
+    const currentBlockInt = hexToInt(currentBlock);
 
     return (
-      (this._allowOldLatest && newBlockInt < currentBlockInt) ||
+      (this._usePastBlocks && newBlockInt < currentBlockInt) ||
       newBlockInt > currentBlockInt
-    )
+    );
   }
 
   protected _newPotentialLatest(newBlock: string): void {
     if (!this._shouldUseNewBlock(newBlock)) {
-      return
+      return;
     }
     this._setCurrentBlock(newBlock);
   }
