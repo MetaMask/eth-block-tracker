@@ -3138,7 +3138,7 @@ describe('PollingBlockTracker', () => {
   });
 
   describe('_newPotentialLatest', () => {
-    it('should only consider new blocks by default', async () => {
+    it('should only use new blocks by default', async () => {
       recordCallsToSetTimeout();
 
       await withPollingBlockTracker(
@@ -3197,7 +3197,7 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should use older blocks when usePastBlocks is set', async () => {
+    it('should use older blocks if the block tracker was initialized with `usePastBlocks: true', async () => {
       recordCallsToSetTimeout();
 
       await withPollingBlockTracker(
