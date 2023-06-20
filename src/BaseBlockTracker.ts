@@ -27,7 +27,7 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
 
     // config
     this._blockResetDuration = opts.blockResetDuration || 20 * sec;
-    this._usePastBlocks = Boolean(opts.usePastBlocks);
+    this._usePastBlocks = opts.usePastBlocks || false;
     // state
     this._currentBlock = null;
     this._isRunning = false;
