@@ -1151,7 +1151,7 @@ describe('SubscribeBlockTracker', () => {
         });
 
         describe('after a block number is cached', () => {
-          it('should emit "latest" if the published block number is higher than the current block number', async () => {
+          it('should emit "latest" if the published block number is greater than the current block number', async () => {
             recordCallsToSetTimeout();
 
             await withSubscribeBlockTracker(
@@ -1204,7 +1204,7 @@ describe('SubscribeBlockTracker', () => {
             );
           });
 
-          it('should not emit "latest" if the published block number is lower than the current block number', async () => {
+          it('should not emit "latest" if the published block number is less than the current block number', async () => {
             recordCallsToSetTimeout();
 
             await withSubscribeBlockTracker(
@@ -1310,7 +1310,7 @@ describe('SubscribeBlockTracker', () => {
         });
 
         describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
-          it('should emit "latest" if the published block number is higher than the current block number', async () => {
+          it('should emit "latest" if the published block number is greater than the current block number', async () => {
             recordCallsToSetTimeout();
 
             await withSubscribeBlockTracker(
@@ -1364,7 +1364,7 @@ describe('SubscribeBlockTracker', () => {
             );
           });
 
-          it('should not emit "latest" if the published block number is lower than the current block number', async () => {
+          it('should not emit "latest" if the published block number is less than the current block number', async () => {
             recordCallsToSetTimeout();
 
             await withSubscribeBlockTracker(
@@ -1917,7 +1917,7 @@ describe('SubscribeBlockTracker', () => {
         });
 
         describe('after a block number is cached', () => {
-          it('should emit "sync" if the published block number is higher than the current block number', async () => {
+          it('should emit "sync" if the published block number is greater than the current block number', async () => {
             recordCallsToSetTimeout();
 
             await withSubscribeBlockTracker(
@@ -1970,7 +1970,7 @@ describe('SubscribeBlockTracker', () => {
             );
           });
 
-          it('should not emit "sync" if the published block number is lower than the current block number', async () => {
+          it('should not emit "sync" if the published block number is less than the current block number', async () => {
             recordCallsToSetTimeout();
 
             await withSubscribeBlockTracker(
@@ -2074,7 +2074,7 @@ describe('SubscribeBlockTracker', () => {
         });
 
         describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
-          it('should emit "sync" if the published block number is higher than the current block number', async () => {
+          it('should emit "sync" if the published block number is greater than the current block number', async () => {
             recordCallsToSetTimeout();
 
             await withSubscribeBlockTracker(
@@ -2128,7 +2128,7 @@ describe('SubscribeBlockTracker', () => {
             );
           });
 
-          it('should emit "sync" if the published block number is lower than the current block number', async () => {
+          it('should emit "sync" if the published block number is less than the current block number', async () => {
             recordCallsToSetTimeout();
 
             await withSubscribeBlockTracker(

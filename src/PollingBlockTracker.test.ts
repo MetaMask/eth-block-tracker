@@ -836,7 +836,7 @@ describe('PollingBlockTracker', () => {
     });
 
     describe('after a block number is cached', () => {
-      it('should return the fetched block number if the fetched blocked number is higher than the current block number', async () => {
+      it('should return the fetched block number if the fetched blocked number is greater than the current block number', async () => {
         recordCallsToSetTimeout();
 
         await withPollingBlockTracker(
@@ -867,7 +867,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should update the current block number if the fetched blocked number is higher than the current block number', async () => {
+      it('should update the current block number if the fetched blocked number is greater than the current block number', async () => {
         recordCallsToSetTimeout();
 
         await withPollingBlockTracker(
@@ -898,7 +898,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should return the current block number if the fetched blocked number is lower than the current block number', async () => {
+      it('should return the current block number if the fetched blocked number is less than the current block number', async () => {
         recordCallsToSetTimeout();
 
         await withPollingBlockTracker(
@@ -929,7 +929,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should not update the current block number if the fetched blocked number is lower than the current block number', async () => {
+      it('should not update the current block number if the fetched blocked number is less than the current block number', async () => {
         recordCallsToSetTimeout();
 
         await withPollingBlockTracker(
@@ -962,7 +962,7 @@ describe('PollingBlockTracker', () => {
     });
 
     describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
-      it('should return the fetched block number if the fetched blocked number is higher than the current block number', async () => {
+      it('should return the fetched block number if the fetched blocked number is greater than the current block number', async () => {
         recordCallsToSetTimeout();
 
         await withPollingBlockTracker(
@@ -994,7 +994,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should update the current block number if the fetched blocked number is higher than the current block number', async () => {
+      it('should update the current block number if the fetched blocked number is greater than the current block number', async () => {
         recordCallsToSetTimeout();
 
         await withPollingBlockTracker(
@@ -1026,7 +1026,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should return the fetched block number if the fetched blocked number is lower than the current block number', async () => {
+      it('should return the fetched block number if the fetched blocked number is less than the current block number', async () => {
         recordCallsToSetTimeout();
 
         await withPollingBlockTracker(
@@ -1058,7 +1058,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should update the current block number if the fetched blocked number is lower than the current block number', async () => {
+      it('should update the current block number if the fetched blocked number is less than the current block number', async () => {
         recordCallsToSetTimeout();
 
         await withPollingBlockTracker(
@@ -1581,7 +1581,7 @@ describe('PollingBlockTracker', () => {
         });
 
         describe('after a block number is cached', () => {
-          it('should emit "latest" if the fetched block number is higher than the current block number', async () => {
+          it('should emit "latest" if the fetched block number is greater than the current block number', async () => {
             const setTimeoutRecorder = recordCallsToSetTimeout({
               numAutomaticCalls: 1,
             });
@@ -1624,7 +1624,7 @@ describe('PollingBlockTracker', () => {
             );
           });
 
-          it('should not emit "latest" if the fetched block number is lower than the current block number', async () => {
+          it('should not emit "latest" if the fetched block number is less than the current block number', async () => {
             const setTimeoutRecorder = recordCallsToSetTimeout({
               numAutomaticCalls: 1,
             });
@@ -1712,7 +1712,7 @@ describe('PollingBlockTracker', () => {
         });
 
         describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
-          it('should emit "latest" if the fetched block number is higher than the current block number', async () => {
+          it('should emit "latest" if the fetched block number is greater than the current block number', async () => {
             const setTimeoutRecorder = recordCallsToSetTimeout({
               numAutomaticCalls: 1,
             });
@@ -2309,7 +2309,7 @@ describe('PollingBlockTracker', () => {
         });
 
         describe('after a block number is cached', () => {
-          it('should emit "sync" if the fetched block number is higher than the current block number', async () => {
+          it('should emit "sync" if the fetched block number is greater than the current block number', async () => {
             const setTimeoutRecorder = recordCallsToSetTimeout({
               numAutomaticCalls: 1,
             });
@@ -2438,7 +2438,7 @@ describe('PollingBlockTracker', () => {
         });
 
         describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
-          it('should emit "sync" if the fetched block number is higher than the current block number', async () => {
+          it('should emit "sync" if the fetched block number is greater than the current block number', async () => {
             const setTimeoutRecorder = recordCallsToSetTimeout({
               numAutomaticCalls: 1,
             });
