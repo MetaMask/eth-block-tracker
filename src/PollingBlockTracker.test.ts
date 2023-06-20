@@ -1130,49 +1130,6 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should emit "latest" periodically afterward', async () => {
-          const setTimeoutRecorder = recordCallsToSetTimeout({
-            numAutomaticCalls: 1,
-          });
-
-          await withPollingBlockTracker(
-            {
-              provider: {
-                stubs: [
-                  {
-                    methodName: 'eth_blockNumber',
-                    response: {
-                      result: '0x0',
-                    },
-                  },
-                  {
-                    methodName: 'eth_blockNumber',
-                    response: {
-                      result: '0x1',
-                    },
-                  },
-                ],
-              },
-            },
-            async ({ blockTracker }) => {
-              const receivedBlockNumbers: string[] = [];
-
-              await new Promise<void>((resolve) => {
-                setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
-
-                blockTracker[methodToAddListener](
-                  'latest',
-                  (blockNumber: string) => {
-                    receivedBlockNumbers.push(blockNumber);
-                  },
-                );
-              });
-
-              expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1']);
-            },
-          );
-        });
-
         it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
           const blockTrackerOptions = {
@@ -1219,47 +1176,269 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should not emit "latest" if the newly fetched block number is less than the current block number', async () => {
-          const setTimeoutRecorder = recordCallsToSetTimeout({
-            numAutomaticCalls: 1,
+        describe('after a block number is cached', () => {
+          it('should emit "latest" if the newly fetched block number is higher than the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x1',
+                      },
+                    },
+                  ],
+                },
+              },
+              async ({ blockTracker }) => {
+                const receivedBlockNumbers: string[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener](
+                    'latest',
+                    (blockNumber: string) => {
+                      receivedBlockNumbers.push(blockNumber);
+                    },
+                  );
+                });
+
+                expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1']);
+              },
+            );
           });
 
-          await withPollingBlockTracker(
-            {
-              provider: {
-                stubs: [
-                  {
-                    methodName: 'eth_blockNumber',
-                    response: {
-                      result: '0x1',
+          it('should not emit "latest" if the newly fetched block number is less than the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x1',
+                      },
                     },
-                  },
-                  {
-                    methodName: 'eth_blockNumber',
-                    response: {
-                      result: '0x0',
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
                     },
-                  },
-                ],
+                  ],
+                },
               },
-            },
-            async ({ blockTracker }) => {
-              const receivedBlockNumbers: string[] = [];
+              async ({ blockTracker }) => {
+                const receivedBlockNumbers: string[] = [];
 
-              await new Promise<void>((resolve) => {
-                setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
 
-                blockTracker[methodToAddListener](
-                  'latest',
-                  (blockNumber: string) => {
-                    receivedBlockNumbers.push(blockNumber);
-                  },
-                );
-              });
+                  blockTracker[methodToAddListener](
+                    'latest',
+                    (blockNumber: string) => {
+                      receivedBlockNumbers.push(blockNumber);
+                    },
+                  );
+                });
 
-              expect(receivedBlockNumbers).toStrictEqual(['0x1']);
-            },
-          );
+                expect(receivedBlockNumbers).toStrictEqual(['0x1']);
+              },
+            );
+          });
+
+          it('should not emit "latest" if the newly fetched block number is the same as the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                  ],
+                },
+              },
+              async ({ blockTracker }) => {
+                const receivedBlockNumbers: string[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener](
+                    'latest',
+                    (blockNumber: string) => {
+                      receivedBlockNumbers.push(blockNumber);
+                    },
+                  );
+                });
+
+                expect(receivedBlockNumbers).toStrictEqual(['0x0']);
+              },
+            );
+          });
+        });
+
+        describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
+          it('should emit "latest" if the newly fetched block number is higher than the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x1',
+                      },
+                    },
+                  ],
+                },
+                blockTracker: { usePastBlocks: true },
+              },
+              async ({ blockTracker }) => {
+                const receivedBlockNumbers: string[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener](
+                    'latest',
+                    (blockNumber: string) => {
+                      receivedBlockNumbers.push(blockNumber);
+                    },
+                  );
+                });
+
+                expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1']);
+              },
+            );
+          });
+
+          it('should emit "latest" if the newly fetched block number is less than the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x1',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                  ],
+                },
+                blockTracker: { usePastBlocks: true },
+              },
+              async ({ blockTracker }) => {
+                const receivedBlockNumbers: string[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener](
+                    'latest',
+                    (blockNumber: string) => {
+                      receivedBlockNumbers.push(blockNumber);
+                    },
+                  );
+                });
+
+                expect(receivedBlockNumbers).toStrictEqual(['0x1', '0x0']);
+              },
+            );
+          });
+
+          it('should not emit "latest" if the newly fetched block number is the same as the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                  ],
+                },
+                blockTracker: { usePastBlocks: true },
+              },
+              async ({ blockTracker }) => {
+                const receivedBlockNumbers: string[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener](
+                    'latest',
+                    (blockNumber: string) => {
+                      receivedBlockNumbers.push(blockNumber);
+                    },
+                  );
+                });
+
+                expect(receivedBlockNumbers).toStrictEqual(['0x0']);
+              },
+            );
+          });
         });
 
         it('should re-throw any error out of band that occurs in the listener', async () => {
