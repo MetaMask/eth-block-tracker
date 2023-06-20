@@ -1882,47 +1882,266 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should emit "sync" periodically afterward', async () => {
-          const setTimeoutRecorder = recordCallsToSetTimeout({
-            numAutomaticCalls: 1,
+        describe('after a block number is cached', () => {
+          it('should emit "sync" if the newly fetched block number is higher than the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x1',
+                      },
+                    },
+                  ],
+                },
+              },
+              async ({ blockTracker }) => {
+                const syncs: Sync[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                    syncs.push(sync);
+                  });
+                });
+
+                expect(syncs).toStrictEqual([
+                  { oldBlock: null, newBlock: '0x0' },
+                  { oldBlock: '0x0', newBlock: '0x1' },
+                ]);
+              },
+            );
           });
 
-          await withPollingBlockTracker(
-            {
-              provider: {
-                stubs: [
-                  {
-                    methodName: 'eth_blockNumber',
-                    response: {
-                      result: '0x0',
+          it('should not emit "sync" if the newly fetched block number is less than the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x1',
+                      },
                     },
-                  },
-                  {
-                    methodName: 'eth_blockNumber',
-                    response: {
-                      result: '0x1',
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
                     },
-                  },
-                ],
+                  ],
+                },
               },
-            },
-            async ({ blockTracker }) => {
-              const syncs: Sync[] = [];
+              async ({ blockTracker }) => {
+                const syncs: Sync[] = [];
 
-              await new Promise<void>((resolve) => {
-                setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
 
-                blockTracker[methodToAddListener]('sync', (sync: Sync) => {
-                  syncs.push(sync);
+                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                    syncs.push(sync);
+                  });
                 });
-              });
 
-              expect(syncs).toStrictEqual([
-                { oldBlock: null, newBlock: '0x0' },
-                { oldBlock: '0x0', newBlock: '0x1' },
-              ]);
-            },
-          );
+                expect(syncs).toStrictEqual([
+                  { oldBlock: null, newBlock: '0x1' },
+                ]);
+              },
+            );
+          });
+
+          it('should not emit "sync" if the newly fetched block number is the same as the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                  ],
+                },
+              },
+              async ({ blockTracker }) => {
+                const syncs: Sync[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                    syncs.push(sync);
+                  });
+                });
+
+                expect(syncs).toStrictEqual([
+                  { oldBlock: null, newBlock: '0x0' },
+                ]);
+              },
+            );
+          });
+        });
+
+        describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
+          it('should emit "sync" if the newly fetched block number is higher than the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x1',
+                      },
+                    },
+                  ],
+                },
+                blockTracker: { usePastBlocks: true },
+              },
+              async ({ blockTracker }) => {
+                const syncs: Sync[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                    syncs.push(sync);
+                  });
+                });
+
+                expect(syncs).toStrictEqual([
+                  { oldBlock: null, newBlock: '0x0' },
+                  { oldBlock: '0x0', newBlock: '0x1' },
+                ]);
+              },
+            );
+          });
+
+          it('should emit "sync" if the newly fetched block number is less than the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x1',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                  ],
+                },
+                blockTracker: { usePastBlocks: true },
+              },
+              async ({ blockTracker }) => {
+                const syncs: Sync[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                    syncs.push(sync);
+                  });
+                });
+
+                expect(syncs).toStrictEqual([
+                  { oldBlock: null, newBlock: '0x1' },
+                  { oldBlock: '0x1', newBlock: '0x0' },
+                ]);
+              },
+            );
+          });
+
+          it('should not emit "sync" if the newly fetched block number is the same as the current block number', async () => {
+            const setTimeoutRecorder = recordCallsToSetTimeout({
+              numAutomaticCalls: 1,
+            });
+
+            await withPollingBlockTracker(
+              {
+                provider: {
+                  stubs: [
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                    {
+                      methodName: 'eth_blockNumber',
+                      response: {
+                        result: '0x0',
+                      },
+                    },
+                  ],
+                },
+                blockTracker: { usePastBlocks: true },
+              },
+              async ({ blockTracker }) => {
+                const syncs: Sync[] = [];
+
+                await new Promise<void>((resolve) => {
+                  setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
+
+                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                    syncs.push(sync);
+                  });
+                });
+
+                expect(syncs).toStrictEqual([
+                  { oldBlock: null, newBlock: '0x0' },
+                ]);
+              },
+            );
+          });
         });
 
         it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
@@ -1967,48 +2186,6 @@ describe('PollingBlockTracker', () => {
               );
               expect(nextIterationTimeout).not.toBeUndefined();
               expect(nextIterationTimeout?.timeout.hasRef()).toBe(false);
-            },
-          );
-        });
-
-        it('should not emit "sync" if the newly fetched block number is less than the current block number', async () => {
-          const setTimeoutRecorder = recordCallsToSetTimeout({
-            numAutomaticCalls: 1,
-          });
-
-          await withPollingBlockTracker(
-            {
-              provider: {
-                stubs: [
-                  {
-                    methodName: 'eth_blockNumber',
-                    response: {
-                      result: '0x1',
-                    },
-                  },
-                  {
-                    methodName: 'eth_blockNumber',
-                    response: {
-                      result: '0x0',
-                    },
-                  },
-                ],
-              },
-            },
-            async ({ blockTracker }) => {
-              const syncs: Sync[] = [];
-
-              await new Promise<void>((resolve) => {
-                setTimeoutRecorder.onNumAutomaticCallsExhausted(resolve);
-
-                blockTracker[methodToAddListener]('sync', (sync: Sync) => {
-                  syncs.push(sync);
-                });
-              });
-
-              expect(syncs).toStrictEqual([
-                { oldBlock: null, newBlock: '0x1' },
-              ]);
             },
           );
         });
