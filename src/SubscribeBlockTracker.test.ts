@@ -1150,164 +1150,173 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        describe('after a block number is cached', () => {
-          it('should emit "latest" if the published block number is greater than the current block number', async () => {
-            recordCallsToSetTimeout();
+        describe.each([
+          ['not initialized with `usePastBlocks`', {}],
+          ['initialized with `usePastBlocks: false`', { usePastBlocks: false }],
+        ] as const)(
+          'after a block number is cached if the block tracker was %s',
+          (_description, blockTrackerOptions) => {
+            it('should emit "latest" if the published block number is greater than the current block number', async () => {
+              recordCallsToSetTimeout();
 
-            await withSubscribeBlockTracker(
-              {
-                provider: {
-                  stubs: [
-                    {
-                      methodName: 'eth_blockNumber',
-                      response: {
-                        result: '0x0',
+              await withSubscribeBlockTracker(
+                {
+                  provider: {
+                    stubs: [
+                      {
+                        methodName: 'eth_blockNumber',
+                        response: {
+                          result: '0x0',
+                        },
                       },
-                    },
-                    {
-                      methodName: 'eth_subscribe',
-                      response: {
-                        result: '0x64',
+                      {
+                        methodName: 'eth_subscribe',
+                        response: {
+                          result: '0x64',
+                        },
                       },
-                    },
-                  ],
+                    ],
+                  },
+                  blockTracker: blockTrackerOptions,
                 },
-              },
-              async ({ provider, blockTracker }) => {
-                const receivedBlockNumbers: string[] = [];
-                blockTracker.on('_started', () => {
-                  provider.emit('data', null, {
-                    method: 'eth_subscription',
-                    params: {
-                      subscription: '0x64',
-                      result: {
-                        number: '0x1',
-                      },
-                    },
-                  });
-                });
-
-                await new Promise<void>((resolve) => {
-                  blockTracker[methodToAddListener](
-                    'latest',
-                    (blockNumber: string) => {
-                      receivedBlockNumbers.push(blockNumber);
-                      if (receivedBlockNumbers.length === 2) {
-                        resolve();
-                      }
-                    },
-                  );
-                });
-
-                expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1']);
-              },
-            );
-          });
-
-          it('should not emit "latest" if the published block number is less than the current block number', async () => {
-            recordCallsToSetTimeout();
-
-            await withSubscribeBlockTracker(
-              {
-                provider: {
-                  stubs: [
-                    {
-                      methodName: 'eth_blockNumber',
-                      response: {
-                        result: '0x1',
-                      },
-                    },
-                    {
-                      methodName: 'eth_subscribe',
-                      response: {
-                        result: '0x64',
-                      },
-                    },
-                  ],
-                },
-              },
-              async ({ provider, blockTracker }) => {
-                const receivedBlockNumbers: string[] = [];
-
-                await new Promise<void>((resolve) => {
+                async ({ provider, blockTracker }) => {
+                  const receivedBlockNumbers: string[] = [];
                   blockTracker.on('_started', () => {
                     provider.emit('data', null, {
                       method: 'eth_subscription',
                       params: {
                         subscription: '0x64',
                         result: {
-                          number: '0x0',
+                          number: '0x1',
                         },
                       },
                     });
-                    resolve();
                   });
 
-                  blockTracker[methodToAddListener](
-                    'latest',
-                    (blockNumber: string) => {
-                      receivedBlockNumbers.push(blockNumber);
-                    },
-                  );
-                });
-
-                expect(receivedBlockNumbers).toStrictEqual(['0x1']);
-              },
-            );
-          });
-
-          it('should not emit "latest" if the published block number is the same as the current block number', async () => {
-            recordCallsToSetTimeout();
-
-            await withSubscribeBlockTracker(
-              {
-                provider: {
-                  stubs: [
-                    {
-                      methodName: 'eth_blockNumber',
-                      response: {
-                        result: '0x0',
+                  await new Promise<void>((resolve) => {
+                    blockTracker[methodToAddListener](
+                      'latest',
+                      (blockNumber: string) => {
+                        receivedBlockNumbers.push(blockNumber);
+                        if (receivedBlockNumbers.length === 2) {
+                          resolve();
+                        }
                       },
-                    },
-                    {
-                      methodName: 'eth_subscribe',
-                      response: {
-                        result: '0x64',
-                      },
-                    },
-                  ],
+                    );
+                  });
+
+                  expect(receivedBlockNumbers).toStrictEqual(['0x0', '0x1']);
                 },
-              },
-              async ({ provider, blockTracker }) => {
-                const receivedBlockNumbers: string[] = [];
+              );
+            });
 
-                await new Promise<void>((resolve) => {
-                  blockTracker.on('_started', () => {
-                    provider.emit('data', null, {
-                      method: 'eth_subscription',
-                      params: {
-                        subscription: '0x64',
-                        result: {
-                          number: '0x0',
+            it('should not emit "latest" if the published block number is less than the current block number', async () => {
+              recordCallsToSetTimeout();
+
+              await withSubscribeBlockTracker(
+                {
+                  provider: {
+                    stubs: [
+                      {
+                        methodName: 'eth_blockNumber',
+                        response: {
+                          result: '0x1',
                         },
                       },
+                      {
+                        methodName: 'eth_subscribe',
+                        response: {
+                          result: '0x64',
+                        },
+                      },
+                    ],
+                  },
+                  blockTracker: blockTrackerOptions,
+                },
+                async ({ provider, blockTracker }) => {
+                  const receivedBlockNumbers: string[] = [];
+
+                  await new Promise<void>((resolve) => {
+                    blockTracker.on('_started', () => {
+                      provider.emit('data', null, {
+                        method: 'eth_subscription',
+                        params: {
+                          subscription: '0x64',
+                          result: {
+                            number: '0x0',
+                          },
+                        },
+                      });
+                      resolve();
                     });
-                    resolve();
+
+                    blockTracker[methodToAddListener](
+                      'latest',
+                      (blockNumber: string) => {
+                        receivedBlockNumbers.push(blockNumber);
+                      },
+                    );
                   });
 
-                  blockTracker[methodToAddListener](
-                    'latest',
-                    (blockNumber: string) => {
-                      receivedBlockNumbers.push(blockNumber);
-                    },
-                  );
-                });
+                  expect(receivedBlockNumbers).toStrictEqual(['0x1']);
+                },
+              );
+            });
 
-                expect(receivedBlockNumbers).toStrictEqual(['0x0']);
-              },
-            );
-          });
-        });
+            it('should not emit "latest" if the published block number is the same as the current block number', async () => {
+              recordCallsToSetTimeout();
+
+              await withSubscribeBlockTracker(
+                {
+                  provider: {
+                    stubs: [
+                      {
+                        methodName: 'eth_blockNumber',
+                        response: {
+                          result: '0x0',
+                        },
+                      },
+                      {
+                        methodName: 'eth_subscribe',
+                        response: {
+                          result: '0x64',
+                        },
+                      },
+                    ],
+                  },
+                  blockTracker: blockTrackerOptions,
+                },
+                async ({ provider, blockTracker }) => {
+                  const receivedBlockNumbers: string[] = [];
+
+                  await new Promise<void>((resolve) => {
+                    blockTracker.on('_started', () => {
+                      provider.emit('data', null, {
+                        method: 'eth_subscription',
+                        params: {
+                          subscription: '0x64',
+                          result: {
+                            number: '0x0',
+                          },
+                        },
+                      });
+                      resolve();
+                    });
+
+                    blockTracker[methodToAddListener](
+                      'latest',
+                      (blockNumber: string) => {
+                        receivedBlockNumbers.push(blockNumber);
+                      },
+                    );
+                  });
+
+                  expect(receivedBlockNumbers).toStrictEqual(['0x0']);
+                },
+              );
+            });
+          },
+        );
 
         describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
           it('should emit "latest" if the published block number is greater than the current block number', async () => {
@@ -1916,162 +1925,171 @@ describe('SubscribeBlockTracker', () => {
           );
         });
 
-        describe('after a block number is cached', () => {
-          it('should emit "sync" if the published block number is greater than the current block number', async () => {
-            recordCallsToSetTimeout();
+        describe.each([
+          ['not initialized with `usePastBlocks`', {}],
+          ['initialized with `usePastBlocks: false`', { usePastBlocks: false }],
+        ] as const)(
+          'after a block number is cached if the block tracker was %s',
+          (_description, blockTrackerOptions) => {
+            it('should emit "sync" if the published block number is greater than the current block number', async () => {
+              recordCallsToSetTimeout();
 
-            await withSubscribeBlockTracker(
-              {
-                provider: {
-                  stubs: [
-                    {
-                      methodName: 'eth_blockNumber',
-                      response: {
-                        result: '0x0',
+              await withSubscribeBlockTracker(
+                {
+                  provider: {
+                    stubs: [
+                      {
+                        methodName: 'eth_blockNumber',
+                        response: {
+                          result: '0x0',
+                        },
                       },
-                    },
-                    {
-                      methodName: 'eth_subscribe',
-                      response: {
-                        result: '0x64',
+                      {
+                        methodName: 'eth_subscribe',
+                        response: {
+                          result: '0x64',
+                        },
                       },
-                    },
-                  ],
+                    ],
+                  },
+                  blockTracker: blockTrackerOptions,
                 },
-              },
-              async ({ provider, blockTracker }) => {
-                const syncs: Sync[] = [];
-                blockTracker.on('_started', () => {
-                  provider.emit('data', null, {
-                    method: 'eth_subscription',
-                    params: {
-                      subscription: '0x64',
-                      result: {
-                        number: '0x1',
+                async ({ provider, blockTracker }) => {
+                  const syncs: Sync[] = [];
+                  blockTracker.on('_started', () => {
+                    provider.emit('data', null, {
+                      method: 'eth_subscription',
+                      params: {
+                        subscription: '0x64',
+                        result: {
+                          number: '0x1',
+                        },
                       },
-                    },
+                    });
                   });
-                });
 
-                await new Promise<void>((resolve) => {
-                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
-                    syncs.push(sync);
-                    if (syncs.length === 2) {
+                  await new Promise<void>((resolve) => {
+                    blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                      syncs.push(sync);
+                      if (syncs.length === 2) {
+                        resolve();
+                      }
+                    });
+                  });
+
+                  expect(syncs).toStrictEqual([
+                    { oldBlock: null, newBlock: '0x0' },
+                    { oldBlock: '0x0', newBlock: '0x1' },
+                  ]);
+                },
+              );
+            });
+
+            it('should not emit "sync" if the published block number is less than the current block number', async () => {
+              recordCallsToSetTimeout();
+
+              await withSubscribeBlockTracker(
+                {
+                  provider: {
+                    stubs: [
+                      {
+                        methodName: 'eth_blockNumber',
+                        response: {
+                          result: '0x1',
+                        },
+                      },
+                      {
+                        methodName: 'eth_subscribe',
+                        response: {
+                          result: '0x64',
+                        },
+                      },
+                    ],
+                  },
+                  blockTracker: blockTrackerOptions,
+                },
+                async ({ provider, blockTracker }) => {
+                  const syncs: Sync[] = [];
+
+                  await new Promise<void>((resolve) => {
+                    blockTracker.on('_started', () => {
+                      provider.emit('data', null, {
+                        method: 'eth_subscription',
+                        params: {
+                          subscription: '0x64',
+                          result: {
+                            number: '0x0',
+                          },
+                        },
+                      });
                       resolve();
-                    }
+                    });
+
+                    blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                      syncs.push(sync);
+                    });
                   });
-                });
 
-                expect(syncs).toStrictEqual([
-                  { oldBlock: null, newBlock: '0x0' },
-                  { oldBlock: '0x0', newBlock: '0x1' },
-                ]);
-              },
-            );
-          });
-
-          it('should not emit "sync" if the published block number is less than the current block number', async () => {
-            recordCallsToSetTimeout();
-
-            await withSubscribeBlockTracker(
-              {
-                provider: {
-                  stubs: [
-                    {
-                      methodName: 'eth_blockNumber',
-                      response: {
-                        result: '0x1',
-                      },
-                    },
-                    {
-                      methodName: 'eth_subscribe',
-                      response: {
-                        result: '0x64',
-                      },
-                    },
-                  ],
+                  expect(syncs).toStrictEqual([
+                    { oldBlock: null, newBlock: '0x1' },
+                  ]);
                 },
-              },
-              async ({ provider, blockTracker }) => {
-                const syncs: Sync[] = [];
+              );
+            });
 
-                await new Promise<void>((resolve) => {
-                  blockTracker.on('_started', () => {
-                    provider.emit('data', null, {
-                      method: 'eth_subscription',
-                      params: {
-                        subscription: '0x64',
-                        result: {
-                          number: '0x0',
+            it('should not emit "sync" if the published block number is the same as the current block number', async () => {
+              recordCallsToSetTimeout();
+
+              await withSubscribeBlockTracker(
+                {
+                  provider: {
+                    stubs: [
+                      {
+                        methodName: 'eth_blockNumber',
+                        response: {
+                          result: '0x0',
                         },
                       },
-                    });
-                    resolve();
-                  });
-
-                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
-                    syncs.push(sync);
-                  });
-                });
-
-                expect(syncs).toStrictEqual([
-                  { oldBlock: null, newBlock: '0x1' },
-                ]);
-              },
-            );
-          });
-
-          it('should not emit "sync" if the published block number is the same as the current block number', async () => {
-            recordCallsToSetTimeout();
-
-            await withSubscribeBlockTracker(
-              {
-                provider: {
-                  stubs: [
-                    {
-                      methodName: 'eth_blockNumber',
-                      response: {
-                        result: '0x0',
-                      },
-                    },
-                    {
-                      methodName: 'eth_subscribe',
-                      response: {
-                        result: '0x64',
-                      },
-                    },
-                  ],
-                },
-              },
-              async ({ provider, blockTracker }) => {
-                const syncs: Sync[] = [];
-
-                await new Promise<void>((resolve) => {
-                  blockTracker.on('_started', () => {
-                    provider.emit('data', null, {
-                      method: 'eth_subscription',
-                      params: {
-                        subscription: '0x64',
-                        result: {
-                          number: '0x0',
+                      {
+                        methodName: 'eth_subscribe',
+                        response: {
+                          result: '0x64',
                         },
                       },
+                    ],
+                  },
+                  blockTracker: blockTrackerOptions,
+                },
+                async ({ provider, blockTracker }) => {
+                  const syncs: Sync[] = [];
+
+                  await new Promise<void>((resolve) => {
+                    blockTracker.on('_started', () => {
+                      provider.emit('data', null, {
+                        method: 'eth_subscription',
+                        params: {
+                          subscription: '0x64',
+                          result: {
+                            number: '0x0',
+                          },
+                        },
+                      });
+                      resolve();
                     });
-                    resolve();
+
+                    blockTracker[methodToAddListener]('sync', (sync: Sync) => {
+                      syncs.push(sync);
+                    });
                   });
 
-                  blockTracker[methodToAddListener]('sync', (sync: Sync) => {
-                    syncs.push(sync);
-                  });
-                });
-
-                expect(syncs).toStrictEqual([
-                  { oldBlock: null, newBlock: '0x0' },
-                ]);
-              },
-            );
-          });
-        });
+                  expect(syncs).toStrictEqual([
+                    { oldBlock: null, newBlock: '0x0' },
+                  ]);
+                },
+              );
+            });
+          },
+        );
 
         describe('after a block number is cached if the block tracker was initialized with `usePastBlocks: true`', () => {
           it('should emit "sync" if the published block number is greater than the current block number', async () => {
