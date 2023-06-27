@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [7.1.0]
-### Uncategorized
-- usePastBlocks flag ([#151](https://github.com/MetaMask/eth-block-tracker/pull/151))
-- devDeps: bump babel packages ([#147](https://github.com/MetaMask/eth-block-tracker/pull/147))
+### Added
+- Add `usePastBlocks` to constructor ([#151](https://github.com/MetaMask/eth-block-tracker/pull/151))
+  - Optional flag. When set to true, it allows blocks less than the current block number to be cached and returned.
 
 ## [7.0.1]
 ### Changed
