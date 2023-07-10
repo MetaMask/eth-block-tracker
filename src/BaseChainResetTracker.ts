@@ -1,35 +1,30 @@
 import SafeEventEmitter from '@metamask/safe-event-emitter';
 
-const sec = 1000;
-
 const calculateSum = (accumulator: number, currentValue: number) =>
   accumulator + currentValue;
-const blockTrackerEvents: (string | symbol)[] = ['sync', 'latest'];
+const chainResetTrackerEvents: (string | symbol)[] = ['reset'];
 
-interface BaseBlockTrackerArgs {
-  blockResetDuration?: number;
-  usePastBlocks?: boolean;
+interface Block {
+  number: string | null
+  hash: string | null
 }
 
-export abstract class BaseBlockTracker extends SafeEventEmitter {
+interface BaseChainResetTrackerArgs {
+}
+
+export abstract class BaseChainResetTracker extends SafeEventEmitter {
   protected _isRunning: boolean;
 
-  private _blockResetDuration: number;
+  private _currentBlock: Block;
 
-  private _usePastBlocks: boolean;
-
-  private _currentBlock: string | null;
-
-  private _blockResetTimeout?: ReturnType<typeof setTimeout>;
-
-  constructor(opts: BaseBlockTrackerArgs) {
+  constructor(opts: BaseChainResetTrackerArgs) {
     super();
 
-    // config
-    this._blockResetDuration = opts.blockResetDuration || 20 * sec;
-    this._usePastBlocks = opts.usePastBlocks || false;
     // state
-    this._currentBlock = null;
+    this._currentBlock = {
+      number: null,
+      hash: null
+    };
     this._isRunning = false;
 
     // bind functions for internal use
@@ -42,7 +37,6 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
   }
 
   async destroy() {
-    this._cancelBlockResetTimeout();
     await this._maybeEnd();
     super.removeAllListeners();
   }
@@ -51,21 +45,8 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
     return this._isRunning;
   }
 
-  getCurrentBlock(): string | null {
+  getCurrentBlock(): Block {
     return this._currentBlock;
-  }
-
-  async getLatestBlock(): Promise<string> {
-    // return if available
-    if (this._currentBlock) {
-      return this._currentBlock;
-    }
-    // wait for a new latest block
-    const latestBlock: string = await new Promise((resolve) =>
-      this.once('latest', resolve),
-    );
-    // return newly set current block
-    return latestBlock;
   }
 
   // dont allow module consumer to remove our internal event listeners
@@ -106,14 +87,14 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
 
   private _onNewListener(eventName: string | symbol): void {
     // `newListener` is called *before* the listener is added
-    if (blockTrackerEvents.includes(eventName)) {
+    if (chainResetTrackerEvents.includes(eventName)) {
       this._maybeStart();
     }
   }
 
   private _onRemoveListener(): void {
     // `removeListener` is called *after* the listener is removed
-    if (this._getBlockTrackerEventCount() > 0) {
+    if (this._getTrackerEventCount() > 0) {
       return;
     }
     this._maybeEnd();
@@ -124,8 +105,6 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
       return;
     }
     this._isRunning = true;
-    // cancel setting latest block to stale
-    this._cancelBlockResetTimeout();
     await this._start();
     this.emit('_started');
   }
@@ -135,68 +114,62 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
       return;
     }
     this._isRunning = false;
-    this._setupBlockResetTimeout();
     await this._end();
     this.emit('_ended');
   }
 
-  private _getBlockTrackerEventCount(): number {
-    return blockTrackerEvents
+  private _getTrackerEventCount(): number {
+    return chainResetTrackerEvents
       .map((eventName) => this.listenerCount(eventName))
       .reduce(calculateSum);
   }
 
-  protected _shouldUseNewBlock(newBlock: string) {
+  protected _useNewBlock(newBlock: Block): void {
     const currentBlock = this._currentBlock;
-    if (!currentBlock) {
-      return true;
+    if (!newBlock.number) {
+      //shouldn't be happening, ignore
+      return
     }
-    const newBlockInt = hexToInt(newBlock);
-    const currentBlockInt = hexToInt(currentBlock);
+    if (!currentBlock.number || !currentBlock.hash) {
+      this._setCurrentBlock(newBlock)
+      return
+    }
+    if (!newBlock.hash) {
+      this._emitReset(newBlock)
+      this._resetCurrentBlock()
+      return
+    }
 
-    return (
-      (this._usePastBlocks && newBlockInt < currentBlockInt) ||
-      newBlockInt > currentBlockInt
-    );
+    const newBlockNumberInt = hexToInt(newBlock.number);
+    const currentBlockNumberInt = hexToInt(currentBlock.number);
+
+    if (newBlockNumberInt < currentBlockNumberInt) {
+      this._emitReset(newBlock)
+    }
+
+    if (newBlockNumberInt === currentBlockNumberInt && newBlock.hash !== currentBlock.hash) {
+      this._emitReset(newBlock)
+    }
+
+    this._setCurrentBlock(newBlock)
   }
 
-  protected _newPotentialLatest(newBlock: string): void {
-    if (!this._shouldUseNewBlock(newBlock)) {
-      return;
-    }
-    this._setCurrentBlock(newBlock);
+  protected _emitReset(newBlock: Block): void {
+    this.emit('reset', {
+      oldBlock: this._currentBlock,
+      newBlock
+    })
   }
 
-  private _setCurrentBlock(newBlock: string): void {
-    const oldBlock = this._currentBlock;
-    this._currentBlock = newBlock;
-    this.emit('latest', newBlock);
-    this.emit('sync', { oldBlock, newBlock });
-  }
-
-  private _setupBlockResetTimeout(): void {
-    // clear any existing timeout
-    this._cancelBlockResetTimeout();
-    // clear latest block when stale
-    this._blockResetTimeout = setTimeout(
-      this._resetCurrentBlock,
-      this._blockResetDuration,
-    );
-
-    // nodejs - dont hold process open
-    if (this._blockResetTimeout.unref) {
-      this._blockResetTimeout.unref();
-    }
-  }
-
-  private _cancelBlockResetTimeout(): void {
-    if (this._blockResetTimeout) {
-      clearTimeout(this._blockResetTimeout);
-    }
+  private _setCurrentBlock(newBlock: Block): void {
+    this._currentBlock = newBlock
   }
 
   private _resetCurrentBlock(): void {
-    this._currentBlock = null;
+    this._currentBlock = {
+      number: null,
+      hash: null
+    };
   }
 }
 

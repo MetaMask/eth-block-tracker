@@ -1,20 +1,20 @@
-# eth-block-tracker
+# chain-reset-tracker
 
 This module walks the Ethereum blockchain, keeping track of the latest block. It uses a web3 provider as a data source and will continuously poll for the next block.
 
 ## Installation
 
-`yarn add eth-block-tracker`
+`yarn add chain-reset-tracker`
 
 or
 
-`npm install eth-block-tracker`
+`npm install chain-reset-tracker`
 
 ## Usage
 
 ```js
 const createInfuraProvider = require('eth-json-rpc-infura');
-const { PollingBlockTracker } = require('eth-block-tracker');
+const { PollingBlockTracker } = require('chain-reset-tracker');
 
 const provider = createInfuraProvider({
   network: 'mainnet',

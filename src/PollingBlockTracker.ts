@@ -2,7 +2,7 @@ import getCreateRandomId from 'json-rpc-random-id';
 import pify from 'pify';
 import { JsonRpcRequest } from 'json-rpc-engine';
 import type { SafeEventEmitterProvider } from '@metamask/eth-json-rpc-provider';
-import { BaseBlockTracker } from './BaseBlockTracker';
+import { BaseChainResetTracker } from './BaseChainResetTracker';
 import { projectLogger, createModuleLogger } from './logging-utils';
 
 const log = createModuleLogger(projectLogger, 'polling-block-tracker');
@@ -16,14 +16,13 @@ export interface PollingBlockTrackerOptions {
   keepEventLoopActive?: boolean;
   setSkipCacheFlag?: boolean;
   blockResetDuration?: number;
-  usePastBlocks?: boolean;
 }
 
 interface ExtendedJsonRpcRequest<T> extends JsonRpcRequest<T> {
   skipCache?: boolean;
 }
 
-export class PollingBlockTracker extends BaseBlockTracker {
+export class PollingChainResetTracker extends BaseChainResetTracker {
   private _provider: SafeEventEmitterProvider;
 
   private _pollingInterval: number;
@@ -54,10 +53,13 @@ export class PollingBlockTracker extends BaseBlockTracker {
     this._setSkipCacheFlag = opts.setSkipCacheFlag || false;
   }
 
-  // trigger block polling
-  async checkForLatestBlock() {
-    await this._updateLatestBlock();
-    return await this.getLatestBlock();
+  async checkNewBlock(newBlockNumber: string) {
+    await this._checkCurrentBlock()
+    const hash = await this._fetchBlockHash(newBlockNumber);
+    this._useNewBlock({
+      number: newBlockNumber,
+      hash
+    })
   }
 
   protected async _start(): Promise<void> {
@@ -71,7 +73,7 @@ export class PollingBlockTracker extends BaseBlockTracker {
   private async _synchronize(): Promise<void> {
     while (this._isRunning) {
       try {
-        await this._updateLatestBlock();
+        await this._checkCurrentBlock();
         const promise = timeout(
           this._pollingInterval,
           !this._keepEventLoopActive,
@@ -80,7 +82,7 @@ export class PollingBlockTracker extends BaseBlockTracker {
         await promise;
       } catch (err: any) {
         const newErr = new Error(
-          `PollingBlockTracker - encountered an error while attempting to update latest block:\n${
+          `PollingChainResetTracker - encountered an error while attempting to check current block:\n${
             err.stack ?? err
           }`,
         );
@@ -96,18 +98,24 @@ export class PollingBlockTracker extends BaseBlockTracker {
     }
   }
 
-  private async _updateLatestBlock(): Promise<void> {
-    // fetch + set latest block
-    const latestBlock = await this._fetchLatestBlock();
-    this._newPotentialLatest(latestBlock);
+  private async _checkCurrentBlock(): Promise<void> {
+    const currentBlock = this.getCurrentBlock()
+    if (!currentBlock.number || !currentBlock.hash) {
+      return
+    }
+    const hash = await this._fetchBlockHash(currentBlock.number);
+    this._useNewBlock({
+      ...currentBlock,
+      hash
+    })
   }
 
-  private async _fetchLatestBlock(): Promise<string> {
-    const req: ExtendedJsonRpcRequest<[]> = {
+  private async _fetchBlockHash(blockNumber: string): Promise<string | null> {
+    const req: ExtendedJsonRpcRequest<[string, boolean]> = {
       jsonrpc: '2.0',
       id: createRandomId(),
-      method: 'eth_blockNumber',
-      params: [],
+      method: 'eth_getBlockByNumber',
+      params: [blockNumber, false],
     };
     if (this._setSkipCacheFlag) {
       req.skipCache = true;
@@ -118,10 +126,10 @@ export class PollingBlockTracker extends BaseBlockTracker {
     log('Got response', res);
     if (res.error) {
       throw new Error(
-        `PollingBlockTracker - encountered error fetching block:\n${res.error.message}`,
+        `PollingChainResetTracker - encountered error fetching block:\n${res.error.message}`,
       );
     }
-    return res.result;
+    return res.result?.hash || null;
   }
 }
 
