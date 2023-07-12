@@ -107,6 +107,7 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
   private _onNewListener(eventName: string | symbol): void {
     // `newListener` is called *before* the listener is added
     if (blockTrackerEvents.includes(eventName)) {
+      // TODO: Handle dangling promise
       this._maybeStart();
     }
   }

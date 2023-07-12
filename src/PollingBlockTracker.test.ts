@@ -307,7 +307,7 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('error', resolve);
             });
 
-            const promiseForLatestBlock = await blockTracker.getLatestBlock();
+            const promiseForLatestBlock = blockTracker.getLatestBlock();
 
             const caughtError = await promiseForCaughtError;
             expect(caughtError.message).toMatch(
@@ -422,7 +422,7 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('error', resolve);
             });
 
-            const promiseForLatestBlock = await blockTracker.getLatestBlock();
+            const promiseForLatestBlock = blockTracker.getLatestBlock();
 
             const caughtError = await promiseForCaughtError;
             expect(caughtError.message).toMatch(
