@@ -8,6 +8,7 @@ module.exports = {
       files: ['*.ts'],
       extends: ['@metamask/eslint-config-typescript'],
       rules: {
+        '@typescript-eslint/consistent-type-definitions': 'off',
         // TODO: Move this to our shared config
         'no-invalid-this': 'off',
         '@typescript-eslint/no-invalid-this': ['error'],
