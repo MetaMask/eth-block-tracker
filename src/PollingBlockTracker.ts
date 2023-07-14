@@ -85,10 +85,11 @@ export class PollingBlockTracker extends BaseBlockTracker {
             err.stack ?? err
           }`,
         );
+        console.error(newErr);
         try {
           this.emit('error', newErr);
         } catch (emitErr) {
-          console.error(newErr);
+          // No "error" listener is attached
         }
         const promise = timeout(this._retryTimeout, !this._keepEventLoopActive);
         this.emit('_waitingForNextIteration');

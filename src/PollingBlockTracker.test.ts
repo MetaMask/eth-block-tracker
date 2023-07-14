@@ -14,6 +14,10 @@ const METHODS_TO_REMOVE_LISTENER = ['off', 'removeListener'] as const;
 const originalSetTimeout = setTimeout;
 
 describe('PollingBlockTracker', () => {
+  beforeEach(() => {
+    jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
+  });
+
   describe('constructor', () => {
     it('should throw if given no options', () => {
       expect(() => new PollingBlockTracker()).toThrow(
@@ -293,12 +297,6 @@ describe('PollingBlockTracker', () => {
                     error: 'boom',
                   },
                 },
-                {
-                  methodName: 'eth_blockNumber',
-                  response: {
-                    result: '0x0',
-                  },
-                },
               ],
             },
           },
@@ -307,14 +305,14 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('error', resolve);
             });
 
-            const promiseForLatestBlock = blockTracker.getLatestBlock();
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker.getLatestBlock();
 
             const caughtError = await promiseForCaughtError;
             expect(caughtError.message).toMatch(
               /^PollingBlockTracker - encountered an error while attempting to update latest block:\nError: PollingBlockTracker - encountered error fetching block:\nboom/u,
             );
-            const latestBlock = await promiseForLatestBlock;
-            expect(latestBlock).toBe('0x0');
           },
         );
       });
@@ -332,12 +330,6 @@ describe('PollingBlockTracker', () => {
                     throw new Error('boom');
                   },
                 },
-                {
-                  methodName: 'eth_blockNumber',
-                  response: {
-                    result: '0x0',
-                  },
-                },
               ],
             },
           },
@@ -346,14 +338,14 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('error', resolve);
             });
 
-            const promiseForLatestBlock = blockTracker.getLatestBlock();
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker.getLatestBlock();
 
             const caughtError = await promiseForCaughtError;
             expect(caughtError.message).toMatch(
-              /^PollingBlockTracker - encountered an error while attempting to update latest block:\nError: boom\n/u,
+              /^PollingBlockTracker - encountered an error while attempting to update latest block:\nError: boom/u,
             );
-            const latestBlock = await promiseForLatestBlock;
-            expect(latestBlock).toBe('0x0');
           },
         );
       });
@@ -371,12 +363,6 @@ describe('PollingBlockTracker', () => {
                     throw 'boom';
                   },
                 },
-                {
-                  methodName: 'eth_blockNumber',
-                  response: {
-                    result: '0x0',
-                  },
-                },
               ],
             },
           },
@@ -385,14 +371,14 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('error', resolve);
             });
 
-            const promiseForLatestBlock = blockTracker.getLatestBlock();
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker.getLatestBlock();
 
             const caughtError = await promiseForCaughtError;
             expect(caughtError.message).toMatch(
               /^PollingBlockTracker - encountered an error while attempting to update latest block:\nboom/u,
             );
-            const latestBlock = await promiseForLatestBlock;
-            expect(latestBlock).toBe('0x0');
           },
         );
       });
@@ -408,12 +394,6 @@ describe('PollingBlockTracker', () => {
                   methodName: 'eth_blockNumber',
                   error: 'boom',
                 },
-                {
-                  methodName: 'eth_blockNumber',
-                  response: {
-                    result: '0x0',
-                  },
-                },
               ],
             },
           },
@@ -422,20 +402,20 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('error', resolve);
             });
 
-            const promiseForLatestBlock = blockTracker.getLatestBlock();
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker.getLatestBlock();
 
             const caughtError = await promiseForCaughtError;
             expect(caughtError.message).toMatch(
               /^PollingBlockTracker - encountered an error while attempting to update latest block:\nError: boom/u,
             );
-            const latestBlock = await promiseForLatestBlock;
-            expect(latestBlock).toBe('0x0');
           },
         );
       });
     });
 
-    it('should log an error if the request for the latest block number returns an error response and there is nothing listening to "error"', async () => {
+    it('should log an error if the request for the latest block number returns an error response', async () => {
       recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
       await withPollingBlockTracker(
@@ -452,12 +432,14 @@ describe('PollingBlockTracker', () => {
           },
         },
         async ({ blockTracker }) => {
-          jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
-          blockTracker.getLatestBlock();
-          await new Promise((resolve) => {
-            blockTracker.on('_waitingForNextIteration', resolve);
+          const promiseForCaughtError = new Promise<any>((resolve) => {
+            blockTracker.on('error', resolve);
           });
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+          await promiseForCaughtError;
 
           expect(console.error).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -470,7 +452,72 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should log an error if, while making a request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
+    it('should stop the block tracker automatically after starting it if the request for the latest block number returns an error response', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  error: 'boom',
+                },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForError = new Promise((resolve) => {
+            blockTracker.on('error', resolve);
+          });
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+
+          expect(blockTracker.isRunning()).toBe(true);
+          await promiseForError;
+          expect(blockTracker.isRunning()).toBe(false);
+        },
+      );
+    });
+
+    it('should not stop the block tracker if the request for the latest block number returns an error response and the block tracker was already running', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                response: {
+                  error: 'boom',
+                },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForError = new Promise((resolve) => {
+            blockTracker.on('error', resolve);
+          });
+          blockTracker.on('latest', EMPTY_FUNCTION);
+          expect(blockTracker.isRunning()).toBe(true);
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+
+          await promiseForError;
+          expect(blockTracker.isRunning()).toBe(true);
+        },
+      );
+    });
+
+    it('should log an error if, while making the request for the latest block number, the provider throws an Error', async () => {
       recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
       await withPollingBlockTracker(
@@ -487,12 +534,14 @@ describe('PollingBlockTracker', () => {
           },
         },
         async ({ blockTracker }) => {
-          jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
-          blockTracker.getLatestBlock();
-          await new Promise((resolve) => {
-            blockTracker.on('_waitingForNextIteration', resolve);
+          const promiseForCaughtError = new Promise<any>((resolve) => {
+            blockTracker.on('error', resolve);
           });
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+          await promiseForCaughtError;
 
           expect(console.error).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -505,7 +554,72 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should log an error the request for the latest block number throws a string and there is nothing listening to "error"', async () => {
+    it('should stop the block tracker automatically after starting it if, while making the request for the latest block number, the provider throws an Error', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                implementation: () => {
+                  throw new Error('boom');
+                },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForError = new Promise((resolve) => {
+            blockTracker.on('error', resolve);
+          });
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+
+          expect(blockTracker.isRunning()).toBe(true);
+          await promiseForError;
+          expect(blockTracker.isRunning()).toBe(false);
+        },
+      );
+    });
+
+    it('should not stop the block tracker if, while making the request for the latest block number, the provider throws an Error, and the block tracker was already running before', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                implementation: () => {
+                  throw new Error('boom');
+                },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForError = new Promise((resolve) => {
+            blockTracker.on('error', resolve);
+          });
+          blockTracker.on('latest', EMPTY_FUNCTION);
+          expect(blockTracker.isRunning()).toBe(true);
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+
+          await promiseForError;
+          expect(blockTracker.isRunning()).toBe(true);
+        },
+      );
+    });
+
+    it('should log an error if, while making the request for the latest block number, the provider throws a string', async () => {
       recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
       await withPollingBlockTracker(
@@ -522,12 +636,14 @@ describe('PollingBlockTracker', () => {
           },
         },
         async ({ blockTracker }) => {
-          jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
-          blockTracker.getLatestBlock();
-          await new Promise((resolve) => {
-            blockTracker.on('_waitingForNextIteration', resolve);
+          const promiseForCaughtError = new Promise<any>((resolve) => {
+            blockTracker.on('error', resolve);
           });
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+          await promiseForCaughtError;
 
           expect(console.error).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -540,7 +656,72 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should log an error if, while requesting the latest block number, the provider rejects with an error and there is nothing listening to "error"', async () => {
+    it('should stop the block tracker automatically after starting it if, while making the request for the latest block number, the provider throws a string', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                implementation: () => {
+                  throw 'boom';
+                },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForError = new Promise((resolve) => {
+            blockTracker.on('error', resolve);
+          });
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+
+          expect(blockTracker.isRunning()).toBe(true);
+          await promiseForError;
+          expect(blockTracker.isRunning()).toBe(false);
+        },
+      );
+    });
+
+    it('should not stop the block tracker if, while making the request for the latest block number, the provider throws a string, and the block tracker was already running before', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                implementation: () => {
+                  throw 'boom';
+                },
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForError = new Promise((resolve) => {
+            blockTracker.on('error', resolve);
+          });
+          blockTracker.on('latest', EMPTY_FUNCTION);
+          expect(blockTracker.isRunning()).toBe(true);
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+
+          await promiseForError;
+          expect(blockTracker.isRunning()).toBe(true);
+        },
+      );
+    });
+
+    it('should log an error if, while making the request for the latest block number, the provider rejects with an error', async () => {
       recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
       await withPollingBlockTracker(
@@ -555,12 +736,14 @@ describe('PollingBlockTracker', () => {
           },
         },
         async ({ blockTracker }) => {
-          jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
-          blockTracker.getLatestBlock();
-          await new Promise((resolve) => {
-            blockTracker.on('_waitingForNextIteration', resolve);
+          const promiseForCaughtError = new Promise<any>((resolve) => {
+            blockTracker.on('error', resolve);
           });
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+          await promiseForCaughtError;
 
           expect(console.error).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -569,6 +752,67 @@ describe('PollingBlockTracker', () => {
               ),
             }),
           );
+        },
+      );
+    });
+
+    it('should stop the block tracker automatically after starting it if, while making the request for the latest block number, the provider rejects with an error', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                error: 'boom',
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForError = new Promise((resolve) => {
+            blockTracker.on('error', resolve);
+          });
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+
+          expect(blockTracker.isRunning()).toBe(true);
+          await promiseForError;
+          expect(blockTracker.isRunning()).toBe(false);
+        },
+      );
+    });
+
+    it('should not stop the block tracker if, while making the request for the latest block number, the provider rejects with an error', async () => {
+      recordCallsToSetTimeout();
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                error: 'boom',
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const promiseForError = new Promise((resolve) => {
+            blockTracker.on('error', resolve);
+          });
+          blockTracker.on('latest', EMPTY_FUNCTION);
+          expect(blockTracker.isRunning()).toBe(true);
+
+          // We're not awaiting this promise as it will never resolve.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          blockTracker.getLatestBlock();
+
+          await promiseForError;
+          expect(blockTracker.isRunning()).toBe(true);
         },
       );
     });
@@ -1451,8 +1695,6 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
@@ -1469,7 +1711,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should log an error if, while making a request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
+        it('should log an error if, while making the request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withPollingBlockTracker(
@@ -1492,8 +1734,6 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
@@ -1510,7 +1750,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should log an error if, while making a request for the latest block number, the provider throws a string and there is nothing listening to "error"', async () => {
+        it('should log an error if, while making the request for the latest block number, the provider throws a string and there is nothing listening to "error"', async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withPollingBlockTracker(
@@ -1533,8 +1773,6 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
@@ -1572,8 +1810,6 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
@@ -2206,8 +2442,6 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
               blockTracker[methodToAddListener]('sync', EMPTY_FUNCTION);
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
@@ -2224,7 +2458,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should log an error if, while making a request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
+        it('should log an error if, while making the request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withPollingBlockTracker(
@@ -2241,8 +2475,6 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
               blockTracker[methodToAddListener]('sync', EMPTY_FUNCTION);
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
@@ -2259,7 +2491,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should log an error if, while making a request for the latest block number, the provider throws a string and there is nothing listening to "error"', async () => {
+        it('should log an error if, while making the request for the latest block number, the provider throws a string and there is nothing listening to "error"', async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withPollingBlockTracker(
@@ -2276,8 +2508,6 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
               blockTracker[methodToAddListener]('sync', EMPTY_FUNCTION);
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
@@ -2309,8 +2539,6 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
               blockTracker[methodToAddListener]('sync', EMPTY_FUNCTION);
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
@@ -3094,8 +3322,6 @@ describe('PollingBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
             blockTracker.once('latest', EMPTY_FUNCTION);
             await new Promise((resolve) => {
               blockTracker.on('_waitingForNextIteration', resolve);
@@ -3112,7 +3338,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should log an error if, while making a request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
+      it('should log an error if, while making the request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
         recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
         await withPollingBlockTracker(
@@ -3135,8 +3361,6 @@ describe('PollingBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
             blockTracker.once('latest', EMPTY_FUNCTION);
             await new Promise((resolve) => {
               blockTracker.on('_waitingForNextIteration', resolve);
@@ -3153,7 +3377,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should log an error if, while making a request for the latest block number, the provider throws a string and there is nothing listening to "error"', async () => {
+      it('should log an error if, while making the request for the latest block number, the provider throws a string and there is nothing listening to "error"', async () => {
         recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
         await withPollingBlockTracker(
@@ -3176,8 +3400,6 @@ describe('PollingBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
             blockTracker.once('latest', EMPTY_FUNCTION);
             await new Promise((resolve) => {
               blockTracker.on('_waitingForNextIteration', resolve);
@@ -3215,8 +3437,6 @@ describe('PollingBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
             blockTracker.once('latest', EMPTY_FUNCTION);
             await new Promise((resolve) => {
               blockTracker.on('_waitingForNextIteration', resolve);
@@ -3477,8 +3697,6 @@ describe('PollingBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
             blockTracker.once('sync', EMPTY_FUNCTION);
             await new Promise((resolve) => {
               blockTracker.on('_waitingForNextIteration', resolve);
@@ -3495,7 +3713,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should log an error if, while making a request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
+      it('should log an error if, while making the request for the latest block number, the provider throws an Error and there is nothing listening to "error"', async () => {
         recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
         await withPollingBlockTracker(
@@ -3518,8 +3736,6 @@ describe('PollingBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
             blockTracker.once('sync', EMPTY_FUNCTION);
             await new Promise((resolve) => {
               blockTracker.on('_waitingForNextIteration', resolve);
@@ -3536,7 +3752,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should log an error if, while making a request for the latest block number, the provider throws a string and there is nothing listening to "error"', async () => {
+      it('should log an error if, while making the request for the latest block number, the provider throws a string and there is nothing listening to "error"', async () => {
         recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
         await withPollingBlockTracker(
@@ -3559,8 +3775,6 @@ describe('PollingBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
             blockTracker.once('sync', EMPTY_FUNCTION);
             await new Promise((resolve) => {
               blockTracker.on('_waitingForNextIteration', resolve);
@@ -3598,8 +3812,6 @@ describe('PollingBlockTracker', () => {
             },
           },
           async ({ blockTracker }) => {
-            jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
-
             blockTracker.once('sync', EMPTY_FUNCTION);
             await new Promise((resolve) => {
               blockTracker.on('_waitingForNextIteration', resolve);

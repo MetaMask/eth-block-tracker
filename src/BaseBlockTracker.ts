@@ -1,10 +1,17 @@
 import SafeEventEmitter from '@metamask/safe-event-emitter';
 
 const sec = 1000;
-
 const calculateSum = (accumulator: number, currentValue: number) =>
   accumulator + currentValue;
 const blockTrackerEvents: (string | symbol)[] = ['sync', 'latest'];
+
+/**
+ * The "latest" and "sync" events are "magic" and will automatically start the
+ * block tracker when listened to. That's okay for consumers, but internally, we
+ * want to make sure we always control when the block tracker starts and stops.
+ * Therefore we have an event that works like "latest" but is not magic.
+ */
+const INTERNAL_LATEST_EVENT = '__latest__';
 
 interface BaseBlockTrackerArgs {
   blockResetDuration?: number;
@@ -56,16 +63,38 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
   }
 
   async getLatestBlock(): Promise<string> {
-    // return if available
     if (this._currentBlock) {
       return this._currentBlock;
     }
-    // wait for a new latest block
-    const latestBlock: string = await new Promise((resolve) =>
-      this.once('latest', resolve),
-    );
-    // return newly set current block
-    return latestBlock;
+
+    const promiseForLatestBlock = new Promise<string>((resolve) => {
+      // eslint-disable-next-line prefer-const
+      let errorHandler: (error: unknown) => void;
+      // eslint-disable-next-line prefer-const
+      let successHandler: (blockNumber: string) => void;
+      // eslint-disable-next-line prefer-const
+      errorHandler = (error: unknown) => {
+        console.error(error);
+        this.removeListener('error', errorHandler);
+        this.removeListener(INTERNAL_LATEST_EVENT, successHandler);
+        this._onRemoveListener();
+        // Here we could reject (or even resolve) the promise, but we don't do
+        // this for backward compatibility reasons
+      };
+      // eslint-disable-next-line prefer-const
+      successHandler = (blockNumber: string) => {
+        this.removeListener('error', errorHandler);
+        this.removeListener(INTERNAL_LATEST_EVENT, successHandler);
+        this._onRemoveListener();
+        resolve(blockNumber);
+      };
+      this.addListener('error', errorHandler);
+      this.addListener(INTERNAL_LATEST_EVENT, successHandler);
+    });
+
+    await this._maybeStart();
+
+    return await promiseForLatestBlock;
   }
 
   // dont allow module consumer to remove our internal event listeners
@@ -117,7 +146,7 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
     if (this._getBlockTrackerEventCount() > 0) {
       return;
     }
-    this._maybeEnd();
+    this._maybeEnd().catch(console.error);
   }
 
   private async _maybeStart(): Promise<void> {
@@ -173,6 +202,7 @@ export abstract class BaseBlockTracker extends SafeEventEmitter {
     this._currentBlock = newBlock;
     this.emit('latest', newBlock);
     this.emit('sync', { oldBlock, newBlock });
+    this.emit(INTERNAL_LATEST_EVENT, newBlock);
   }
 
   private _setupBlockResetTimeout(): void {

@@ -18,6 +18,10 @@ const METHODS_TO_GET_LATEST_BLOCK = [
 const originalSetTimeout = setTimeout;
 
 describe('SubscribeBlockTracker', () => {
+  beforeEach(() => {
+    jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
+  });
+
   describe('constructor', () => {
     it('should throw if given no options', () => {
       expect(() => new SubscribeBlockTracker()).toThrow(
@@ -290,11 +294,9 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock =
-                blockTracker[methodToGetLatestBlock]();
+              const latestBlock = await blockTracker[methodToGetLatestBlock]();
 
               await expect(promiseForCaughtError).toNeverResolve();
-              const latestBlock = await promiseForLatestBlock;
               expect(latestBlock).toBeUndefined();
             },
           );
@@ -302,7 +304,6 @@ describe('SubscribeBlockTracker', () => {
 
         it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-          const thrownError = new Error('boom');
 
           await withSubscribeBlockTracker(
             {
@@ -311,7 +312,7 @@ describe('SubscribeBlockTracker', () => {
                   {
                     methodName: 'eth_blockNumber',
                     implementation: () => {
-                      throw thrownError;
+                      throw new Error('boom');
                     },
                   },
                 ],
@@ -322,19 +323,18 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock =
+              const promiseForBlockTracker =
                 blockTracker[methodToGetLatestBlock]();
 
               const caughtError = await promiseForCaughtError;
-              expect(caughtError).toBe(thrownError);
-              await expect(promiseForLatestBlock).toNeverResolve();
+              expect(caughtError.message).toBe('boom');
+              await expect(promiseForBlockTracker).toNeverResolve();
             },
           );
         });
 
         it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request for the latest block number, the provider throws a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-          const thrownString = 'boom';
 
           await withSubscribeBlockTracker(
             {
@@ -343,7 +343,7 @@ describe('SubscribeBlockTracker', () => {
                   {
                     methodName: 'eth_blockNumber',
                     implementation: () => {
-                      throw thrownString;
+                      throw 'boom';
                     },
                   },
                 ],
@@ -354,12 +354,12 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock =
+              const promiseForBlockTracker =
                 blockTracker[methodToGetLatestBlock]();
 
               const caughtError = await promiseForCaughtError;
-              expect(caughtError).toBe(thrownString);
-              await expect(promiseForLatestBlock).toNeverResolve();
+              expect(caughtError).toBe('boom');
+              await expect(promiseForBlockTracker).toNeverResolve();
             },
           );
         });
@@ -383,23 +383,29 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock =
+              const promiseForBlockTracker =
                 blockTracker[methodToGetLatestBlock]();
 
               const caughtError = await promiseForCaughtError;
               expect(caughtError.message).toBe('boom');
-              await expect(promiseForLatestBlock).toNeverResolve();
+              await expect(promiseForBlockTracker).toNeverResolve();
             },
           );
         });
 
-        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should still resolve with the latest block number if the request to subscribe returns an error response`, async () => {
+        it(`should not emit the "error" event (added via \`${methodToAddListener}\`) and should resolve with the block number if the request to subscribe returns an error response`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
           await withSubscribeBlockTracker(
             {
               provider: {
                 stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    response: {
+                      result: '0x42',
+                    },
+                  },
                   {
                     methodName: 'eth_subscribe',
                     response: {
@@ -414,19 +420,16 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock =
-                blockTracker[methodToGetLatestBlock]();
+              const latestBlock = await blockTracker[methodToGetLatestBlock]();
 
               await expect(promiseForCaughtError).toNeverResolve();
-              const latestBlockNumber = await promiseForLatestBlock;
-              expect(latestBlockNumber).toBe('0x0');
+              expect(latestBlock).toBe('0x42');
             },
           );
         });
 
         it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request to subscribe, the provider throws an Error`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-          const thrownError = new Error('boom');
 
           await withSubscribeBlockTracker(
             {
@@ -435,7 +438,7 @@ describe('SubscribeBlockTracker', () => {
                   {
                     methodName: 'eth_subscribe',
                     implementation: () => {
-                      throw thrownError;
+                      throw new Error('boom');
                     },
                   },
                 ],
@@ -446,19 +449,18 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock =
+              const promiseForBlockTracker =
                 blockTracker[methodToGetLatestBlock]();
 
               const caughtError = await promiseForCaughtError;
-              expect(caughtError).toBe(thrownError);
-              await expect(promiseForLatestBlock).toNeverResolve();
+              expect(caughtError.message).toBe('boom');
+              await expect(promiseForBlockTracker).toNeverResolve();
             },
           );
         });
 
         it(`should emit the "error" event (added via \`${methodToAddListener}\`) and should never resolve if, while making the request to subscribe, the provider throws a string`, async () => {
           recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-          const thrownString = 'boom';
 
           await withSubscribeBlockTracker(
             {
@@ -467,7 +469,7 @@ describe('SubscribeBlockTracker', () => {
                   {
                     methodName: 'eth_subscribe',
                     implementation: () => {
-                      throw thrownString;
+                      throw 'boom';
                     },
                   },
                 ],
@@ -478,12 +480,12 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock =
+              const promiseForBlockTracker =
                 blockTracker[methodToGetLatestBlock]();
 
               const caughtError = await promiseForCaughtError;
-              expect(caughtError).toBe(thrownString);
-              await expect(promiseForLatestBlock).toNeverResolve();
+              expect(caughtError).toBe('boom');
+              await expect(promiseForBlockTracker).toNeverResolve();
             },
           );
         });
@@ -507,12 +509,12 @@ describe('SubscribeBlockTracker', () => {
                 blockTracker[methodToAddListener]('error', resolve);
               });
 
-              const promiseForLatestBlock =
+              const promiseForBlockTracker =
                 blockTracker[methodToGetLatestBlock]();
 
               const caughtError = await promiseForCaughtError;
               expect(caughtError.message).toBe('boom');
-              await expect(promiseForLatestBlock).toNeverResolve();
+              await expect(promiseForBlockTracker).toNeverResolve();
             },
           );
         });
@@ -631,6 +633,981 @@ describe('SubscribeBlockTracker', () => {
             },
           );
         });
+      });
+
+      it('should not log an error if the request for the latest block number returns an error response', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(console.error).not.toHaveBeenCalled();
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if the request for the latest block number returns an error response', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForLatestBlock =
+              blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForLatestBlock;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if the request for the latest block number returns an error response and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should log an error if, while making the request for the latest block number, the provider throws an Error', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+            await promiseForCaughtError;
+
+            expect(console.error).toHaveBeenCalledWith(
+              expect.objectContaining({ message: 'boom' }),
+            );
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request for the latest block number, the provider throws an Error', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request for the latest block number, the provider throws an Error, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should log an error if, while making the request for the latest block number, the provider throws a string', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+            await promiseForCaughtError;
+
+            expect(console.error).toHaveBeenCalledWith('boom');
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request for the latest block number, the provider throws a string', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request for the latest block number, the provider throws a string, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should log an error if, while making the request for the latest block number, the provider rejects with an error', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  error: 'boom',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+            await promiseForCaughtError;
+
+            expect(console.error).toHaveBeenCalledWith(
+              expect.objectContaining({
+                message: 'boom',
+              }),
+            );
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request for the latest block number, the provider rejects with an error', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  error: 'boom',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request for the latest block number, the provider rejects with an error, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  error: 'boom',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should not log an error if the request to subscribe returns an error response', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(console.error).not.toHaveBeenCalled();
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if the request to subscribe returns an error response', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForLatestBlock =
+              blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForLatestBlock;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if the request to subscribe returns an error response and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should log an error if, while making the request to subscribe, the provider throws an Error', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+            await promiseForCaughtError;
+
+            expect(console.error).toHaveBeenCalledWith(
+              expect.objectContaining({ message: 'boom' }),
+            );
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request to subscribe, the provider throws an Error', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request to subscribe, the provider throws an Error, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should log an error if, while making the request to subscribe, the provider throws a string', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+            await promiseForCaughtError;
+
+            expect(console.error).toHaveBeenCalledWith('boom');
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request to subscribe, the provider throws a string', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request to subscribe, the provider throws a string, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should log an error if, while making the request to subscribe, the provider rejects with an error', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  error: 'boom',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForCaughtError = new Promise<any>((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+            await promiseForCaughtError;
+
+            expect(console.error).toHaveBeenCalledWith(
+              expect.objectContaining({
+                message: 'boom',
+              }),
+            );
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request to subscribe, the provider rejects with an error', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  error: 'boom',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request to subscribe, the provider rejects with an error, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_subscribe',
+                  error: 'boom',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            blockTracker[methodToGetLatestBlock]();
+
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should not log an error if the request to unsubscribe returns an error response', async () => {
+        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(console.error).not.toHaveBeenCalled();
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if the request to unsubscribe returns an error response', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForLatestBlock =
+              blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForLatestBlock;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if the request to unsubscribe returns an error response and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  response: {
+                    error: 'boom',
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request to unsubscribe, the provider throws an Error', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForError = new Promise((resolve) => {
+              blockTracker.on('error', resolve);
+            });
+
+            const promiseForLatestBlock =
+              blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForError;
+            expect(blockTracker.isRunning()).toBe(false);
+            await promiseForLatestBlock;
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request to unsubscribe, the provider throws an Error, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  implementation: () => {
+                    throw new Error('boom');
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request to unsubscribe, the provider throws a string', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            // We're not awaiting this promise as it will never resolve.
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            const promiseForLatestBlock =
+              blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForLatestBlock;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request to unsubscribe, the provider throws a string, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  implementation: () => {
+                    throw 'boom';
+                  },
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
+      });
+
+      it('should stop the block tracker automatically after starting it if, while making the request to unsubscribe, the provider rejects with an error', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  error: 'boom',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promiseForLatestBlock =
+              blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+            await promiseForLatestBlock;
+            expect(blockTracker.isRunning()).toBe(false);
+          },
+        );
+      });
+
+      it('should not stop the block tracker if, while making the request to unsubscribe, the provider rejects with an error, and the block tracker was already running', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_unsubscribe',
+                  error: 'boom',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            blockTracker.on('latest', EMPTY_FUNCTION);
+            expect(blockTracker.isRunning()).toBe(true);
+
+            await blockTracker[methodToGetLatestBlock]();
+
+            expect(blockTracker.isRunning()).toBe(true);
+          },
+        );
       });
 
       it('should update the current block number', async () => {
