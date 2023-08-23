@@ -793,13 +793,31 @@
   resolved "https://registry.yarnpkg.com/@metamask/eslint-config/-/eslint-config-12.0.0.tgz#2c1fb74bfb258e19386b47c97963cc18828781f9"
   integrity sha512-KPsLchIV36/gFM3rr25O2Ae9ICyu7XrqC9XL797SKKUYsxNq9k7TpwU3zQoIZjV2SyelvIN2nqBuhlr+TDRr8g==
 
-"@metamask/eth-json-rpc-provider@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-1.0.0.tgz#bb245491fff98dde74d4d13e58b88497692abd2a"
-  integrity sha512-Bl9FbSNctgh1FRjUX0Gpoo4BwFXBKplcZ198y9/gysUhgOBD4MKqe3V4XzaYXuvB7VhVA9TNH0ZsaK1MnolpWg==
+"@metamask/eth-json-rpc-provider@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-2.0.0.tgz#dccd530a2d3437dade04061972b44de8eb2acd41"
+  integrity sha512-mJHZpVi4Oo55RaYTU1S35EPe1Q7hfqEioOe6u1NBnKC8qGiifaXmVDvKWeN+LFaLfKraLRMASL23pa8jFZa8Bg==
   dependencies:
+    "@metamask/json-rpc-engine" "^7.0.0"
+    "@metamask/safe-event-emitter" "^3.0.0"
+    "@metamask/utils" "^5.0.1"
+
+"@metamask/json-rpc-engine@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/json-rpc-engine/-/json-rpc-engine-7.0.0.tgz#5110d7e90a75aab4e515621fafff5adf7174b6e3"
+  integrity sha512-qIfQvEOD3vFMZpXQUcXjuVDnkznzjARRSa9mUjZnYImhoxgvPdTery31I+zkRuksNLffvJc08SL2cQaC3uVfYA==
+  dependencies:
+    "@metamask/rpc-errors" "^5.0.0"
     "@metamask/safe-event-emitter" "^2.0.0"
-    json-rpc-engine "^6.1.0"
+    "@metamask/utils" "^5.0.1"
+
+"@metamask/rpc-errors@^5.0.0":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@metamask/rpc-errors/-/rpc-errors-5.1.1.tgz#f82732ad0952d34d219eca42699c0c74bee95a9e"
+  integrity sha512-JjZnDi2y2CfvbohhBl+FOQRzmFlJpybcQlIk37zEX8B96eVSPbH/T8S0p7cSF8IE33IWx6JkD8Ycsd+2TXFxCw==
+  dependencies:
+    "@metamask/utils" "^5.0.0"
+    fast-safe-stringify "^2.0.6"
 
 "@metamask/safe-event-emitter@^2.0.0":
   version "2.0.0"
@@ -811,7 +829,7 @@
   resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-3.0.0.tgz#8c2b9073fe0722d48693143b0dc8448840daa3bd"
   integrity sha512-j6Z47VOmVyGMlnKXZmL0fyvWfEYtKWCA9yGZkU3FCsGZUT5lHGmvaV9JA5F2Y+010y7+ROtR3WMXIkvl/nVzqQ==
 
-"@metamask/utils@^5.0.2":
+"@metamask/utils@^5.0.0", "@metamask/utils@^5.0.1", "@metamask/utils@^5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-5.0.2.tgz#140ba5061d90d9dac0280c19cab101bc18c8857c"
   integrity sha512-yfmE79bRQtnMzarnKfX7AEJBwFTxvTyw3nBQlu/5rmGXrjAeAMltoGxO62TFurxrQAFMNa/fEjIHNvungZp0+g==
