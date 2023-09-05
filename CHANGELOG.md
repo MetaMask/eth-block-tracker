@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.3.0]
+### Uncategorized
+- Bump @metamask/utils from 5.0.2 to 8.1.0 ([#178](https://github.com/MetaMask/eth-block-tracker/pull/178))
+- BREAKING: Increase minimum Node.js version to 16 ([#173](https://github.com/MetaMask/eth-block-tracker/pull/173))
+
 ## [7.2.0]
 ### Added
 - Typescript: Export `BlockTracker` interface ([#168](https://github.com/MetaMask/eth-block-tracker/pull/168))
@@ -136,7 +141,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add RpcBlockTracker
 
-[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v7.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v7.3.0...HEAD
+[7.3.0]: https://github.com/MetaMask/eth-block-tracker/compare/v7.2.0...v7.3.0
 [7.2.0]: https://github.com/MetaMask/eth-block-tracker/compare/v7.1.0...v7.2.0
 [7.1.0]: https://github.com/MetaMask/eth-block-tracker/compare/v7.0.1...v7.1.0
 [7.0.1]: https://github.com/MetaMask/eth-block-tracker/compare/v7.0.0...v7.0.1
