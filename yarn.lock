@@ -793,13 +793,31 @@
   resolved "https://registry.yarnpkg.com/@metamask/eslint-config/-/eslint-config-12.2.0.tgz#6cefc8331e4a34d26ae951882437371ecfe4e3c4"
   integrity sha512-BurYsht8MKdhvW2itUPPF8NkAhYtDdsCGHTSY7EzVvlmGP4jc9XrRZyfNwlt0zhB6MCMjHB1uNWwchtX7vBFjw==
 
-"@metamask/eth-json-rpc-provider@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-1.0.0.tgz#bb245491fff98dde74d4d13e58b88497692abd2a"
-  integrity sha512-Bl9FbSNctgh1FRjUX0Gpoo4BwFXBKplcZ198y9/gysUhgOBD4MKqe3V4XzaYXuvB7VhVA9TNH0ZsaK1MnolpWg==
+"@metamask/eth-json-rpc-provider@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-2.1.0.tgz#80244c10084c83092c4dd484b9027f83c5c01bfa"
+  integrity sha512-UqKpu5o8llTQRLzH5e/CrX+WVt7ysHqe6nVvlykQsU345X61qw5DpK0t1LbaWo2q4rjUO1puw5SMbHjKCSZ2EQ==
   dependencies:
-    "@metamask/safe-event-emitter" "^2.0.0"
-    json-rpc-engine "^6.1.0"
+    "@metamask/json-rpc-engine" "^7.1.0"
+    "@metamask/safe-event-emitter" "^3.0.0"
+    "@metamask/utils" "^8.1.0"
+
+"@metamask/json-rpc-engine@^7.1.0":
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/@metamask/json-rpc-engine/-/json-rpc-engine-7.1.1.tgz#90d4c1e1fe3bcfc983563f6e07715319b8857190"
+  integrity sha512-wPB8Or74OqMwcxa87JPOEjXwtgpyHPEXiLKblKRAtCjTJNQFp1Co//1CgFm5xj4Z5JbBGfGFiQNnj09Et40sig==
+  dependencies:
+    "@metamask/rpc-errors" "^6.0.0"
+    "@metamask/safe-event-emitter" "^3.0.0"
+    "@metamask/utils" "^8.1.0"
+
+"@metamask/rpc-errors@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/rpc-errors/-/rpc-errors-6.0.0.tgz#6cd2499a0f01e027e7b627eceae17141712fa734"
+  integrity sha512-sAZwcdmidJDPbZV3XSKcWZC7CSTdjqDNRsDDdb2SstCOLEJtNqHpx32FWgwWB0arqWxUcUxYxgR39edUbsWz7A==
+  dependencies:
+    "@metamask/utils" "^8.0.0"
+    fast-safe-stringify "^2.0.6"
 
 "@metamask/safe-event-emitter@^2.0.0":
   version "2.0.0"
@@ -811,7 +829,7 @@
   resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-3.0.0.tgz#8c2b9073fe0722d48693143b0dc8448840daa3bd"
   integrity sha512-j6Z47VOmVyGMlnKXZmL0fyvWfEYtKWCA9yGZkU3FCsGZUT5lHGmvaV9JA5F2Y+010y7+ROtR3WMXIkvl/nVzqQ==
 
-"@metamask/utils@^8.1.0":
+"@metamask/utils@^8.0.0", "@metamask/utils@^8.1.0":
   version "8.1.0"
   resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-8.1.0.tgz#b8e73f5b4696b1b668cf5c1421daad140a3f98ac"
   integrity sha512-sFNpzBKRicDgM2ZuU6vrPROlqNGm8/jDsjc5WrU1RzCkAMc4Xr3vUUf8p59uQ6B09etUWNb8d2GTCbISdmH/Ug==
