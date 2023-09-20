@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [8.0.0]
-### Uncategorized
-- Bump @metamask/utils from 5.0.2 to 8.1.0 ([#178](https://github.com/MetaMask/eth-block-tracker/pull/178))
-- BREAKING: Increase minimum Node.js version to 16 ([#173](https://github.com/MetaMask/eth-block-tracker/pull/173))
+### Changed
+- Bump @metamask/utils from ^5.0.2 to ^8.1.0 ([#178](https://github.com/MetaMask/eth-block-tracker/pull/178))
+- **BREAKING**: Bump @metamask/eth-json-rpc-provider from ^1.0.0 to ^2.1.0 ([#174](https://github.com/MetaMask/eth-block-tracker/pull/174))
+- **BREAKING**: Increase minimum Node.js version to 16 ([#173](https://github.com/MetaMask/eth-block-tracker/pull/173))
 
 ## [7.2.0]
 ### Added
