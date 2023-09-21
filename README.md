@@ -13,7 +13,7 @@ or
 ## Usage
 
 ```js
-const createInfuraProvider = require('eth-json-rpc-infura');
+const createInfuraProvider = require('@metamask/eth-json-rpc-infura');
 const { PollingBlockTracker } = require('@metamask/eth-block-tracker');
 
 const provider = createInfuraProvider({
