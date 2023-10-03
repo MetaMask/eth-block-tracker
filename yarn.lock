@@ -698,12 +698,13 @@
     yargs "^16.2.0"
 
 "@metamask/auto-changelog@^3.0.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@metamask/auto-changelog/-/auto-changelog-3.2.0.tgz#b0ada1017a9e529ad544a59b2fd9c33f93996642"
-  integrity sha512-Do1Lmsg/WsbEoGSNeJUm3tct5QMfVGyPUk9jMrsmf7JvN7twQUzq5Nu/WFoOQ/7v55OoA2Lh8il3unGdFaqzug==
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@metamask/auto-changelog/-/auto-changelog-3.3.0.tgz#9b9c2c4e4f5d65d85abcb3d9f6eedc32ea4518fd"
+  integrity sha512-Azv5WhR8N6iFUqcVfogM+aqkj/vWNv7CXD9TeSdlE1eoKV/TVtDe/dhRz+SjFJ8KK3u1dBuIrYypb2qBTh8Q8A==
   dependencies:
     diff "^5.0.0"
     execa "^5.1.1"
+    prettier "^2.8.8"
     semver "^7.3.5"
     yargs "^17.0.1"
 
@@ -728,9 +729,9 @@
   integrity sha512-BurYsht8MKdhvW2itUPPF8NkAhYtDdsCGHTSY7EzVvlmGP4jc9XrRZyfNwlt0zhB6MCMjHB1uNWwchtX7vBFjw==
 
 "@metamask/eth-json-rpc-provider@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-2.1.0.tgz#80244c10084c83092c4dd484b9027f83c5c01bfa"
-  integrity sha512-UqKpu5o8llTQRLzH5e/CrX+WVt7ysHqe6nVvlykQsU345X61qw5DpK0t1LbaWo2q4rjUO1puw5SMbHjKCSZ2EQ==
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-2.2.0.tgz#7d7551ff075a42992cd7fd4054868f6a5f9ee541"
+  integrity sha512-pJk533YEEH/GbZMHoV4CEDQhH2/HeG/2M3JhNnhblcAMIYKaLDkl/+01hc0mDAgYs4vxf8FBkniBUlX5o7FLSQ==
   dependencies:
     "@metamask/json-rpc-engine" "^7.1.0"
     "@metamask/safe-event-emitter" "^3.0.0"
@@ -3638,7 +3639,7 @@ prettier-plugin-packagejson@^2.2.11:
   dependencies:
     sort-package-json "1.55.0"
 
-prettier@^2.7.1:
+prettier@^2.7.1, prettier@^2.8.8:
   version "2.8.8"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.8.tgz#e8c5d7e98a4305ffe3de2e1fc4aca1a71c28b1da"
   integrity sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==
