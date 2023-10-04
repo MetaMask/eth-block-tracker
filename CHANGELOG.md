@@ -7,10 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [8.1.0]
-### Uncategorized
-- types: add checkForLatestBlock to BlockTracker interface ([#184](https://github.com/MetaMask/eth-block-tracker/pull/184))
-- Bump @metamask/eth-json-rpc-provider from 2.1.0 to 2.2.0 ([#186](https://github.com/MetaMask/eth-block-tracker/pull/186))
-- Bump @metamask/auto-changelog from 3.2.0 to 3.3.0 ([#185](https://github.com/MetaMask/eth-block-tracker/pull/185))
+### Changed
+- Typescript: Add `checkForLatestBlock` function to `BlockTracker` interface ([#184](https://github.com/MetaMask/eth-block-tracker/pull/184))
 
 ## [8.0.0]
 ### Changed
