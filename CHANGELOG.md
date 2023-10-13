@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [9.0.0]
-### Uncategorized
-- rename package to @metamask/eth-block-tracker ([#183](https://github.com/MetaMask/eth-block-tracker/pull/183))
+### Changed
+- Rename package from `eth-block-tracker` to `@metamask/eth-block-tracker` ([#183](https://github.com/MetaMask/eth-block-tracker/pull/183))
 
 ## [8.1.0]
 ### Changed
