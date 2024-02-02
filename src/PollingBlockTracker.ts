@@ -245,6 +245,8 @@ export class PollingBlockTracker
   }
 
   private _start() {
+    // Intentionally not awaited as this starts the polling via a timeout chain.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._updateAndQueue();
   }
 
@@ -280,6 +282,10 @@ export class PollingBlockTracker
     return res.result;
   }
 
+  /**
+   * The core polling function that runs after each interval.
+   * Updates the latest block and then queues the next update.
+   */
   private async _updateAndQueue() {
     let interval = this._pollingInterval;
 
@@ -308,6 +314,8 @@ export class PollingBlockTracker
     this._clearPollingTimeout();
 
     const timeoutRef = setTimeout(() => {
+      // Intentionally not awaited as this just continues the polling loop.
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._updateAndQueue();
     }, interval);
 
