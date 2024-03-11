@@ -727,9 +727,9 @@
     fast-safe-stringify "^2.0.6"
 
 "@metamask/safe-event-emitter@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-3.0.0.tgz#8c2b9073fe0722d48693143b0dc8448840daa3bd"
-  integrity sha512-j6Z47VOmVyGMlnKXZmL0fyvWfEYtKWCA9yGZkU3FCsGZUT5lHGmvaV9JA5F2Y+010y7+ROtR3WMXIkvl/nVzqQ==
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-3.1.0.tgz#84a7d3233a38b00dff5c3c13b9594c1bf2020b43"
+  integrity sha512-m8d5IbHQDD1l3c3yarTOPlhxr5X/MtEj9UbKCgsIAknUW5o/LjYolQ/DmJFwvuBLY9YoUbVF6Agkv7bt/HBM/Q==
 
 "@metamask/utils@^8.1.0", "@metamask/utils@^8.3.0":
   version "8.3.0"
