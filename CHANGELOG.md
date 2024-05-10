@@ -7,14 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [9.0.1]
-### Uncategorized
-- Enabling MetaMask security code scanner ([#222](https://github.com/MetaMask/eth-block-tracker/pull/222))
-- Add Shared Libraries team in codeowners file ([#202](https://github.com/MetaMask/eth-block-tracker/pull/202))
-- Bump @metamask/eth-json-rpc-provider from 2.3.1 to 2.3.2 ([#217](https://github.com/MetaMask/eth-block-tracker/pull/217))
-- Bump @metamask/json-rpc-engine from 7.2.0 to 7.3.2 ([#209](https://github.com/MetaMask/eth-block-tracker/pull/209))
-- Bump @metamask/eth-json-rpc-provider from 2.2.0 to 2.3.1 ([#198](https://github.com/MetaMask/eth-block-tracker/pull/198))
-- Prevent multiple simultaneous polling loops ([#208](https://github.com/MetaMask/eth-block-tracker/pull/208))
-- Bump @metamask/auto-changelog from 3.4.3 to 3.4.4 ([#201](https://github.com/MetaMask/eth-block-tracker/pull/201))
+### Fixed
+- Concurrency fix: Prevent multiple simultaneous polling loops ([#208](https://github.com/MetaMask/eth-block-tracker/pull/208))
+- Bump `@metamask/eth-json-rpc-provider` from `^2.1.0` to `^2.3.1` ([#198](https://github.com/MetaMask/eth-block-tracker/pull/198)) ([#217](https://github.com/MetaMask/eth-block-tracker/pull/217))
 
 ## [9.0.0]
 ### Changed
