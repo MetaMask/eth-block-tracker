@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.1]
+### Uncategorized
+- Enabling MetaMask security code scanner ([#222](https://github.com/MetaMask/eth-block-tracker/pull/222))
+- Add Shared Libraries team in codeowners file ([#202](https://github.com/MetaMask/eth-block-tracker/pull/202))
+- Bump @metamask/eth-json-rpc-provider from 2.3.1 to 2.3.2 ([#217](https://github.com/MetaMask/eth-block-tracker/pull/217))
+- Bump @metamask/json-rpc-engine from 7.2.0 to 7.3.2 ([#209](https://github.com/MetaMask/eth-block-tracker/pull/209))
+- Bump @metamask/eth-json-rpc-provider from 2.2.0 to 2.3.1 ([#198](https://github.com/MetaMask/eth-block-tracker/pull/198))
+- Prevent multiple simultaneous polling loops ([#208](https://github.com/MetaMask/eth-block-tracker/pull/208))
+- Bump @metamask/auto-changelog from 3.4.3 to 3.4.4 ([#201](https://github.com/MetaMask/eth-block-tracker/pull/201))
+
 ## [9.0.0]
 ### Changed
 - Rename package from `eth-block-tracker` to `@metamask/eth-block-tracker` ([#183](https://github.com/MetaMask/eth-block-tracker/pull/183))
@@ -150,7 +160,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add RpcBlockTracker
 
-[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v9.0.0...HEAD
+[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v9.0.1...HEAD
+[9.0.1]: https://github.com/MetaMask/eth-block-tracker/compare/v9.0.0...v9.0.1
 [9.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v8.1.0...v9.0.0
 [8.1.0]: https://github.com/MetaMask/eth-block-tracker/compare/v8.0.0...v8.1.0
 [8.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v7.2.0...v8.0.0
