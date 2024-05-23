@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [9.0.2]
 ### Fixed
-- Put back missing empty params removed in 9.0.1 ([#198](https://github.com/MetaMask/eth-block-tracker/pull/198))
+- Put back missing empty `params` to `eth_blockNumber` call removed in 9.0.1 ([#198](https://github.com/MetaMask/eth-block-tracker/pull/198))
 
 ## [9.0.1]
 ### Fixed
