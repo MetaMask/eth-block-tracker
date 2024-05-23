@@ -7,9 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [9.0.2]
-### Changed
-- Bump `@metamask/eth-json-rpc-provider` from `^2.3.1` to `^3.0.2` ([#235](https://github.com/MetaMask/eth-block-tracker/pull/235))
-- Bump `@metamask/json-rpc-engine` from `^7.1.1` to `^8.0.2` ([#235](https://github.com/MetaMask/eth-block-tracker/pull/235))
+### Fixed
+- Put back missing empty params removed in 9.0.1 ([#198](https://github.com/MetaMask/eth-block-tracker/pull/198))
 
 ## [9.0.1]
 ### Fixed
