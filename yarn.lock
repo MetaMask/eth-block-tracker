@@ -719,9 +719,9 @@
     "@metamask/utils" "^8.3.0"
 
 "@metamask/rpc-errors@^6.2.1":
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/@metamask/rpc-errors/-/rpc-errors-6.2.1.tgz#f5daf429ededa7cb83069dc621bd5738fe2a1d80"
-  integrity sha512-VTgWkjWLzb0nupkFl1duQi9Mk8TGT9rsdnQg6DeRrYEFxtFOh0IF8nAwxM/4GWqDl6uIB06lqUBgUrAVWl62Bw==
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/@metamask/rpc-errors/-/rpc-errors-6.3.0.tgz#adc63f3c1c50ec812d3631a471fe2beca0c3707d"
+  integrity sha512-B1UIG/0xWkaDs/d6xrxsRf7kmFLdk8YE0HUToaFumjwQM36AjBsqEzVyemPTQv0SIrAPFnSmkLt053JOWcu5iw==
   dependencies:
     "@metamask/utils" "^8.3.0"
     fast-safe-stringify "^2.0.6"
