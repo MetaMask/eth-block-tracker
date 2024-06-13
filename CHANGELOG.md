@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [10.0.0]
-### Uncategorized
-- BREAKING: drop support for Node.js v16; add support for ^20,>=22 ([#245](https://github.com/MetaMask/eth-block-tracker/pull/245))
-- Update CODEOWNERS ([#240](https://github.com/MetaMask/eth-block-tracker/pull/240))
+### Changed
+- BREAKING: Drop support for Node.js v16; add support for Node.js v20, v22 ([#245](https://github.com/MetaMask/eth-block-tracker/pull/245))
+- Update `@metamask/eth-json-rpc-provider` from `^3.0.2` to `^4.0.0` ([#247](https://github.com/MetaMask/eth-block-tracker/pull/247))
 
 ## [9.0.3]
 ### Fixed
