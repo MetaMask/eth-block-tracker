@@ -1,7 +1,11 @@
 import { providerFromEngine } from '@metamask/eth-json-rpc-provider';
-import type { SafeEventEmitterProvider } from '@metamask/eth-json-rpc-provider';
+import type {
+  // Eip1193Request,
+  SafeEventEmitterProvider,
+} from '@metamask/eth-json-rpc-provider';
 import { JsonRpcEngine } from '@metamask/json-rpc-engine';
-import type { JsonRpcRequest, JsonRpcResponse } from '@metamask/utils';
+import type { Json, JsonRpcResponse } from '@metamask/utils';
+// import { request } from 'http';
 import util from 'util';
 
 import type {
@@ -32,21 +36,21 @@ type WithSubscribeBlockTrackerCallback = (args: {
 
 /**
  * An object that allows specifying the behavior of a specific invocation of
- * `sendAsync`. The `methodName` always identifies the stub, but the behavior
- * may be specified multiple ways: `sendAsync` can either return a promise or
+ * `request`. The `methodName` always identifies the stub, but the behavior
+ * may be specified multiple ways: `request` can either return a promise or
  * throw an error, and if it returns a promise, that promise can either be
  * resolved with a response object or reject with an error.
  *
  * @property methodName - The RPC method to which this stub will be matched.
- * @property response - Instructs `sendAsync` to return a promise that resolves
+ * @property response - Instructs `request` to return a promise that resolves
  * with a response object.
  * @property response.result - Specifies a successful response, with this as the
  * `result`.
  * @property response.error - Specifies an error response, with this as the
  * `error`.
- * @property implementation - Allows overriding `sendAsync` entirely. Useful if
+ * @property implementation - Allows overriding `request` entirely. Useful if
  * you want it to throw an error.
- * @property error - Instructs `sendAsync` to return a promise that rejects with
+ * @property error - Instructs `request` to return a promise that rejects with
  * this error.
  */
 type FakeProviderStub =
@@ -67,7 +71,7 @@ type FakeProviderStub =
  * The set of options that a new instance of FakeProvider takes.
  *
  * @property stubs - A set of objects that allow specifying the behavior
- * of specific invocations of `sendAsync` matching a `methodName`.
+ * of specific invocations of `request` matching a `methodName`.
  */
 interface FakeProviderOptions {
   stubs?: FakeProviderStub[];
@@ -79,7 +83,7 @@ interface FakeProviderOptions {
  *
  * @param options - The options.
  * @param options.stubs - A set of objects that allow specifying the behavior
- * of specific invocations of `sendAsync` matching a `methodName`.
+ * of specific invocations of `request` matching a `methodName`.
  * @returns The fake provider.
  */
 function getFakeProvider({
@@ -119,14 +123,11 @@ function getFakeProvider({
 
   const provider = providerFromEngine(new JsonRpcEngine());
   jest
-    .spyOn(provider, 'sendAsync')
+    .spyOn(provider, 'request')
     .mockImplementation(
-      (
-        request: JsonRpcRequest,
-        callback: (err: unknown, response?: JsonRpcResponse<any>) => void,
-      ) => {
+      async (eip1193Request): Promise<JsonRpcResponse<Json>> => {
         const index = stubs.findIndex(
-          (stub) => stub.methodName === request.method,
+          (stub) => stub.methodName === eip1193Request.method,
         );
 
         if (index !== -1) {
@@ -136,35 +137,37 @@ function getFakeProvider({
             stub.implementation();
           } else if ('response' in stub) {
             if ('result' in stub.response) {
-              callback(null, {
+              return {
                 jsonrpc: '2.0',
                 id: 1,
                 result: stub.response.result,
-              });
+              } as JsonRpcResponse<Json>;
             } else if ('error' in stub.response) {
-              callback(null, {
+              return {
                 jsonrpc: '2.0',
                 id: 1,
                 error: {
                   code: -999,
                   message: stub.response.error,
                 },
-              });
+              } as JsonRpcResponse<Json>;
             }
           } else if ('error' in stub) {
-            callback(new Error(stub.error));
+            throw new Error(stub.error);
           }
-          return;
+          return {
+            jsonrpc: '2.0',
+            id: 1,
+            result: null,
+          } as JsonRpcResponse<Json>;
         }
 
-        callback(
-          new Error(
-            `Could not find any stubs matching "${request.method}". Perhaps they've already been called?\n\n` +
-              'The original set of stubs were:\n\n' +
-              `${util.inspect(originalStubs, { depth: null })}\n\n` +
-              'Current set of stubs:\n\n' +
-              `${util.inspect(stubs, { depth: null })}\n\n`,
-          ),
+        throw new Error(
+          `Could not find any stubs matching "${eip1193Request.method}". Perhaps they've already been called?\n\n` +
+            'The original set of stubs were:\n\n' +
+            `${util.inspect(originalStubs, { depth: null })}\n\n` +
+            'Current set of stubs:\n\n' +
+            `${util.inspect(stubs, { depth: null })}\n\n`,
         );
       },
     );

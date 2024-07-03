@@ -184,10 +184,10 @@ describe('SubscribeBlockTracker', () => {
         recordCallsToSetTimeout();
 
         await withSubscribeBlockTracker(async ({ provider, blockTracker }) => {
-          const sendAsyncSpy = jest.spyOn(provider, 'sendAsync');
+          const requestSpy = jest.spyOn(provider, 'request');
           await blockTracker[methodToGetLatestBlock]();
           await blockTracker[methodToGetLatestBlock]();
-          const requestsForLatestBlock = sendAsyncSpy.mock.calls.filter(
+          const requestsForLatestBlock = requestSpy.mock.calls.filter(
             (args) => {
               return args[0].method === 'eth_blockNumber';
             },
@@ -248,7 +248,7 @@ describe('SubscribeBlockTracker', () => {
             blockTracker: blockTrackerOptions,
           },
           async ({ provider, blockTracker }) => {
-            const sendAsyncSpy = jest.spyOn(provider, 'sendAsync');
+            const requestSpy = jest.spyOn(provider, 'request');
             await blockTracker[methodToGetLatestBlock]();
             // For PollingBlockTracker, there are possibly multiple
             // `setTimeout`s in play at this point. For SubscribeBlockTracker
@@ -258,7 +258,7 @@ describe('SubscribeBlockTracker', () => {
               blockTrackerOptions.blockResetDuration,
             );
             await blockTracker[methodToGetLatestBlock]();
-            const requestsForLatestBlock = sendAsyncSpy.mock.calls.filter(
+            const requestsForLatestBlock = requestSpy.mock.calls.filter(
               (args) => {
                 return args[0].method === 'eth_blockNumber';
               },

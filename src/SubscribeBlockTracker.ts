@@ -256,23 +256,14 @@ export class SubscribeBlockTracker
   }
 
   private async _call(method: string, ...params: Json[]): Promise<unknown> {
-    return new Promise((resolve, reject) => {
-      this._provider.sendAsync(
-        {
-          id: createRandomId(),
-          method,
-          params,
-          jsonrpc: '2.0',
-        },
-        (err, res) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve((res as JsonRpcSuccess<Json>).result);
-          }
-        },
-      );
-    });
+    const res = (await this._provider.request({
+      id: createRandomId(),
+      method,
+      params,
+      jsonrpc: '2.0',
+    })) as JsonRpcSuccess<Json>;
+
+    return res.result;
   }
 
   private _handleSubData(

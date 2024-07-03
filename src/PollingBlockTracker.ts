@@ -2,7 +2,6 @@ import type { SafeEventEmitterProvider } from '@metamask/eth-json-rpc-provider';
 import SafeEventEmitter from '@metamask/safe-event-emitter';
 import type { JsonRpcRequest } from '@metamask/utils';
 import getCreateRandomId from 'json-rpc-random-id';
-import pify from 'pify';
 
 import type { BlockTracker } from './BlockTracker';
 import { projectLogger, createModuleLogger } from './logging-utils';
@@ -272,14 +271,14 @@ export class PollingBlockTracker
     }
 
     log('Making request', req);
-    const res = await pify((cb) => this._provider.sendAsync(req, cb))();
+    const res = await this._provider.request(req);
     log('Got response', res);
-    if (res.error) {
+    if ('error' in res) {
       throw new Error(
         `PollingBlockTracker - encountered error fetching block:\n${res.error.message}`,
       );
     }
-    return res.result;
+    return res.result as string;
   }
 
   /**

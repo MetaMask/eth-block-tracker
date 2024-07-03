@@ -197,20 +197,17 @@ describe('PollingBlockTracker', () => {
       await withPollingBlockTracker(
         { blockTracker: { setSkipCacheFlag: true } },
         async ({ provider, blockTracker }) => {
-          jest.spyOn(provider, 'sendAsync');
+          jest.spyOn(provider, 'request');
 
           await blockTracker.getLatestBlock();
 
-          expect(provider.sendAsync).toHaveBeenCalledWith(
-            {
-              jsonrpc: '2.0' as const,
-              id: expect.any(Number),
-              method: 'eth_blockNumber' as const,
-              params: [],
-              skipCache: true,
-            },
-            expect.any(Function),
-          );
+          expect(provider.request).toHaveBeenCalledWith({
+            jsonrpc: '2.0' as const,
+            id: expect.any(Number),
+            method: 'eth_blockNumber' as const,
+            params: [],
+            skipCache: true,
+          });
         },
       );
     });
@@ -219,14 +216,12 @@ describe('PollingBlockTracker', () => {
       recordCallsToSetTimeout();
 
       await withPollingBlockTracker(async ({ provider, blockTracker }) => {
-        const sendAsyncSpy = jest.spyOn(provider, 'sendAsync');
+        const requestSpy = jest.spyOn(provider, 'request');
         await blockTracker.getLatestBlock();
         await blockTracker.getLatestBlock();
-        const requestsForLatestBlock = sendAsyncSpy.mock.calls.filter(
-          (args) => {
-            return args[0].method === 'eth_blockNumber';
-          },
-        );
+        const requestsForLatestBlock = requestSpy.mock.calls.filter((args) => {
+          return args[0].method === 'eth_blockNumber';
+        });
         expect(requestsForLatestBlock).toHaveLength(1);
       });
     });
@@ -259,7 +254,7 @@ describe('PollingBlockTracker', () => {
           blockTracker: blockTrackerOptions,
         },
         async ({ provider, blockTracker }) => {
-          const sendAsyncSpy = jest.spyOn(provider, 'sendAsync');
+          const requestSpy = jest.spyOn(provider, 'request');
           await blockTracker.getLatestBlock();
           // When the block tracker stops, there may be two `setTimeout`s in
           // play: one to go to the next iteration of the block tracker
@@ -269,7 +264,7 @@ describe('PollingBlockTracker', () => {
             blockTrackerOptions.blockResetDuration,
           );
           await blockTracker.getLatestBlock();
-          const requestsForLatestBlock = sendAsyncSpy.mock.calls.filter(
+          const requestsForLatestBlock = requestSpy.mock.calls.filter(
             (args) => {
               return args[0].method === 'eth_blockNumber';
             },
@@ -731,20 +726,17 @@ describe('PollingBlockTracker', () => {
       await withPollingBlockTracker(
         { blockTracker: { setSkipCacheFlag: true } },
         async ({ provider, blockTracker }) => {
-          jest.spyOn(provider, 'sendAsync');
+          jest.spyOn(provider, 'request');
 
           await blockTracker.checkForLatestBlock();
 
-          expect(provider.sendAsync).toHaveBeenCalledWith(
-            {
-              jsonrpc: '2.0' as const,
-              id: expect.any(Number),
-              method: 'eth_blockNumber' as const,
-              params: [],
-              skipCache: true,
-            },
-            expect.any(Function),
-          );
+          expect(provider.request).toHaveBeenCalledWith({
+            jsonrpc: '2.0' as const,
+            id: expect.any(Number),
+            method: 'eth_blockNumber' as const,
+            params: [],
+            skipCache: true,
+          });
         },
       );
     });
@@ -1246,22 +1238,19 @@ describe('PollingBlockTracker', () => {
           await withPollingBlockTracker(
             { blockTracker: { setSkipCacheFlag: true } },
             async ({ provider, blockTracker }) => {
-              jest.spyOn(provider, 'sendAsync');
+              jest.spyOn(provider, 'request');
 
               await new Promise((resolve) => {
                 blockTracker[methodToAddListener]('latest', resolve);
               });
 
-              expect(provider.sendAsync).toHaveBeenCalledWith(
-                {
-                  jsonrpc: '2.0' as const,
-                  id: expect.any(Number),
-                  method: 'eth_blockNumber' as const,
-                  params: [],
-                  skipCache: true,
-                },
-                expect.any(Function),
-              );
+              expect(provider.request).toHaveBeenCalledWith({
+                jsonrpc: '2.0' as const,
+                id: expect.any(Number),
+                method: 'eth_blockNumber' as const,
+                params: [],
+                skipCache: true,
+              });
             },
           );
         });
@@ -2007,22 +1996,19 @@ describe('PollingBlockTracker', () => {
           await withPollingBlockTracker(
             { blockTracker: { setSkipCacheFlag: true } },
             async ({ provider, blockTracker }) => {
-              jest.spyOn(provider, 'sendAsync');
+              jest.spyOn(provider, 'request');
 
               await new Promise((resolve) => {
                 blockTracker[methodToAddListener]('sync', resolve);
               });
 
-              expect(provider.sendAsync).toHaveBeenCalledWith(
-                {
-                  jsonrpc: '2.0' as const,
-                  id: expect.any(Number),
-                  method: 'eth_blockNumber' as const,
-                  params: [],
-                  skipCache: true,
-                },
-                expect.any(Function),
-              );
+              expect(provider.request).toHaveBeenCalledWith({
+                jsonrpc: '2.0' as const,
+                id: expect.any(Number),
+                method: 'eth_blockNumber' as const,
+                params: [],
+                skipCache: true,
+              });
             },
           );
         });
