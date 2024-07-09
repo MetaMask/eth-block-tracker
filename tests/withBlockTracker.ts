@@ -4,8 +4,7 @@ import type {
   SafeEventEmitterProvider,
 } from '@metamask/eth-json-rpc-provider';
 import { JsonRpcEngine } from '@metamask/json-rpc-engine';
-import type { Json, JsonRpcResponse } from '@metamask/utils';
-// import { request } from 'http';
+import type { Json } from '@metamask/utils';
 import util from 'util';
 
 import type {
@@ -56,7 +55,7 @@ type WithSubscribeBlockTrackerCallback = (args: {
 type FakeProviderStub =
   | {
       methodName: string;
-      response: { result: any } | { error: string };
+      response: any;
     }
   | {
       methodName: string;
@@ -97,80 +96,53 @@ function getFakeProvider({
   if (!stubs.some((stub) => stub.methodName === 'eth_blockNumber')) {
     stubs.push({
       methodName: 'eth_blockNumber',
-      response: {
-        result: '0x0',
-      },
+      response: '0x0',
     });
   }
 
   if (!stubs.some((stub) => stub.methodName === 'eth_subscribe')) {
     stubs.push({
       methodName: 'eth_subscribe',
-      response: {
-        result: '0x0',
-      },
+      response: '0x0',
     });
   }
 
   if (!stubs.some((stub) => stub.methodName === 'eth_unsubscribe')) {
     stubs.push({
       methodName: 'eth_unsubscribe',
-      response: {
-        result: true,
-      },
+      response: true,
     });
   }
 
   const provider = providerFromEngine(new JsonRpcEngine());
   jest
     .spyOn(provider, 'request')
-    .mockImplementation(
-      async (eip1193Request): Promise<JsonRpcResponse<Json>> => {
-        const index = stubs.findIndex(
-          (stub) => stub.methodName === eip1193Request.method,
-        );
+    .mockImplementation(async (eip1193Request): Promise<Json> => {
+      const index = stubs.findIndex(
+        (stub) => stub.methodName === eip1193Request.method,
+      );
 
-        if (index !== -1) {
-          const stub = stubs[index];
-          stubs.splice(index, 1);
-          if ('implementation' in stub) {
-            stub.implementation();
-          } else if ('response' in stub) {
-            if ('result' in stub.response) {
-              return {
-                jsonrpc: '2.0',
-                id: 1,
-                result: stub.response.result,
-              } as JsonRpcResponse<Json>;
-            } else if ('error' in stub.response) {
-              return {
-                jsonrpc: '2.0',
-                id: 1,
-                error: {
-                  code: -999,
-                  message: stub.response.error,
-                },
-              } as JsonRpcResponse<Json>;
-            }
-          } else if ('error' in stub) {
-            throw new Error(stub.error);
-          }
-          return {
-            jsonrpc: '2.0',
-            id: 1,
-            result: null,
-          } as JsonRpcResponse<Json>;
+      if (index !== -1) {
+        const stub = stubs[index];
+        stubs.splice(index, 1);
+        if ('implementation' in stub) {
+          stub.implementation();
+        } else if ('response' in stub) {
+          return stub.response;
+        } else if ('error' in stub) {
+          throw new Error(stub.error);
         }
+        return null;
+      }
 
-        throw new Error(
-          `Could not find any stubs matching "${eip1193Request.method}". Perhaps they've already been called?\n\n` +
-            'The original set of stubs were:\n\n' +
-            `${util.inspect(originalStubs, { depth: null })}\n\n` +
-            'Current set of stubs:\n\n' +
-            `${util.inspect(stubs, { depth: null })}\n\n`,
-        );
-      },
-    );
+      throw new Error(
+        `Could not find any stubs matching "${eip1193Request.method}". Perhaps they've already been called?\n\n` +
+          'The original set of stubs were:\n\n' +
+          `${util.inspect(originalStubs, { depth: null })}\n\n` +
+          'Current set of stubs:\n\n' +
+          `${util.inspect(stubs, { depth: null })}\n\n`,
+      );
+    });
   return provider;
 }
 

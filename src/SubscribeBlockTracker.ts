@@ -1,10 +1,6 @@
 import type { SafeEventEmitterProvider } from '@metamask/eth-json-rpc-provider';
 import SafeEventEmitter from '@metamask/safe-event-emitter';
-import type {
-  Json,
-  JsonRpcNotification,
-  JsonRpcSuccess,
-} from '@metamask/utils';
+import type { Json, JsonRpcNotification } from '@metamask/utils';
 import getCreateRandomId from 'json-rpc-random-id';
 
 import type { BlockTracker } from './BlockTracker';
@@ -256,14 +252,12 @@ export class SubscribeBlockTracker
   }
 
   private async _call(method: string, ...params: Json[]): Promise<unknown> {
-    const res = (await this._provider.request({
+    return this._provider.request({
       id: createRandomId(),
       method,
       params,
       jsonrpc: '2.0',
-    })) as JsonRpcSuccess<Json>;
-
-    return res.result;
+    });
   }
 
   private _handleSubData(

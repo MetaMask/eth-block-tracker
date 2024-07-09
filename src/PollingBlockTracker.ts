@@ -271,14 +271,7 @@ export class PollingBlockTracker
     }
 
     log('Making request', req);
-    const res = await this._provider.request(req);
-    log('Got response', res);
-    if ('error' in res) {
-      throw new Error(
-        `PollingBlockTracker - encountered error fetching block:\n${res.error.message}`,
-      );
-    }
-    return res.result as string;
+    return this._provider.request(req);
   }
 
   /**
