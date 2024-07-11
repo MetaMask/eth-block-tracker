@@ -1,6 +1,6 @@
 import type { SafeEventEmitterProvider } from '@metamask/eth-json-rpc-provider';
 import SafeEventEmitter from '@metamask/safe-event-emitter';
-import type { JsonRpcRequest } from '@metamask/utils';
+import { getErrorMessage, type JsonRpcRequest } from '@metamask/utils';
 import getCreateRandomId from 'json-rpc-random-id';
 
 import type { BlockTracker } from './BlockTracker';
@@ -271,9 +271,14 @@ export class PollingBlockTracker
     }
 
     log('Making request', req);
-    const result = await this._provider.request(req);
-    log('Got result', result);
-    return result as unknown as string;
+    try {
+      const result = await this._provider.request<[], string>(req);
+      log('Got result', result);
+      return result;
+    } catch (error) {
+      log('Encountered error fetching block', getErrorMessage(error));
+      throw error;
+    }
   }
 
   /**
