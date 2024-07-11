@@ -70,7 +70,7 @@ describe('SubscribeBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -104,7 +104,7 @@ describe('SubscribeBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -160,7 +160,7 @@ describe('SubscribeBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -203,27 +203,27 @@ describe('SubscribeBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
                 {
                   methodName: 'eth_subscribe',
-                  response: '0x0',
+                  result: '0x0',
                 },
                 {
                   methodName: 'eth_unsubscribe',
-                  response: true,
+                  result: true,
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x1',
+                  result: '0x1',
                 },
                 {
                   methodName: 'eth_subscribe',
-                  response: '0x1',
+                  result: '0x1',
                 },
                 {
                   methodName: 'eth_unsubscribe',
-                  response: true,
+                  result: true,
                 },
               ],
             },
@@ -534,7 +534,7 @@ describe('SubscribeBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -560,7 +560,7 @@ describe('SubscribeBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -607,7 +607,7 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -630,7 +630,7 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -654,11 +654,11 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_subscribe',
-                    response: '0x64',
+                    result: '0x64',
                   },
                 ],
               },
@@ -702,11 +702,11 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_subscribe',
-                    response: '0x64',
+                    result: '0x64',
                   },
                 ],
               },
@@ -840,7 +840,7 @@ describe('SubscribeBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_subscribe',
-                    response: '0x64',
+                    result: '0x64',
                   },
                 ],
               },
@@ -970,11 +970,11 @@ describe('SubscribeBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                       {
                         methodName: 'eth_subscribe',
-                        response: '0x64',
+                        result: '0x64',
                       },
                     ],
                   },
@@ -1020,11 +1020,11 @@ describe('SubscribeBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x1',
+                        result: '0x1',
                       },
                       {
                         methodName: 'eth_subscribe',
-                        response: '0x64',
+                        result: '0x64',
                       },
                     ],
                   },
@@ -1069,11 +1069,11 @@ describe('SubscribeBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                       {
                         methodName: 'eth_subscribe',
-                        response: '0x64',
+                        result: '0x64',
                       },
                     ],
                   },
@@ -1121,11 +1121,11 @@ describe('SubscribeBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                     {
                       methodName: 'eth_subscribe',
-                      response: '0x64',
+                      result: '0x64',
                     },
                   ],
                 },
@@ -1171,11 +1171,11 @@ describe('SubscribeBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x1',
+                      result: '0x1',
                     },
                     {
                       methodName: 'eth_subscribe',
-                      response: '0x64',
+                      result: '0x64',
                     },
                   ],
                 },
@@ -1220,11 +1220,11 @@ describe('SubscribeBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                     {
                       methodName: 'eth_subscribe',
-                      response: '0x64',
+                      result: '0x64',
                     },
                   ],
                 },
@@ -1282,7 +1282,7 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1305,7 +1305,7 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1329,11 +1329,11 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_subscribe',
-                    response: '0x64',
+                    result: '0x64',
                   },
                 ],
               },
@@ -1376,11 +1376,11 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_subscribe',
-                    response: '0x64',
+                    result: '0x64',
                   },
                 ],
               },
@@ -1639,11 +1639,11 @@ describe('SubscribeBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                       {
                         methodName: 'eth_subscribe',
-                        response: '0x64',
+                        result: '0x64',
                       },
                     ],
                   },
@@ -1689,11 +1689,11 @@ describe('SubscribeBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x1',
+                        result: '0x1',
                       },
                       {
                         methodName: 'eth_subscribe',
-                        response: '0x64',
+                        result: '0x64',
                       },
                     ],
                   },
@@ -1737,11 +1737,11 @@ describe('SubscribeBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                       {
                         methodName: 'eth_subscribe',
-                        response: '0x64',
+                        result: '0x64',
                       },
                     ],
                   },
@@ -1788,11 +1788,11 @@ describe('SubscribeBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                     {
                       methodName: 'eth_subscribe',
-                      response: '0x64',
+                      result: '0x64',
                     },
                   ],
                 },
@@ -1838,11 +1838,11 @@ describe('SubscribeBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x1',
+                      result: '0x1',
                     },
                     {
                       methodName: 'eth_subscribe',
-                      response: '0x64',
+                      result: '0x64',
                     },
                   ],
                 },
@@ -1887,11 +1887,11 @@ describe('SubscribeBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                     {
                       methodName: 'eth_subscribe',
-                      response: '0x64',
+                      result: '0x64',
                     },
                   ],
                 },
@@ -1948,7 +1948,7 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2003,7 +2003,7 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2044,7 +2044,7 @@ describe('SubscribeBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_unsubscribe',
-                      response: {
+                      result: {
                         error: 'boom',
                       },
                     },
@@ -2212,7 +2212,7 @@ describe('SubscribeBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2253,7 +2253,7 @@ describe('SubscribeBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_unsubscribe',
-                      response: {
+                      result: {
                         error: 'boom',
                       },
                     },
@@ -2442,7 +2442,7 @@ describe('SubscribeBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -2782,7 +2782,7 @@ describe('SubscribeBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -3117,7 +3117,7 @@ describe('SubscribeBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -3160,7 +3160,7 @@ describe('SubscribeBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -3216,7 +3216,7 @@ describe('SubscribeBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },

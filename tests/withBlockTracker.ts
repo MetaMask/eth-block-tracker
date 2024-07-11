@@ -55,7 +55,7 @@ type WithSubscribeBlockTrackerCallback = (args: {
 type FakeProviderStub =
   | {
       methodName: string;
-      response: any;
+      result: any;
     }
   | {
       methodName: string;
@@ -96,21 +96,21 @@ function getFakeProvider({
   if (!stubs.some((stub) => stub.methodName === 'eth_blockNumber')) {
     stubs.push({
       methodName: 'eth_blockNumber',
-      response: '0x0',
+      result: '0x0',
     });
   }
 
   if (!stubs.some((stub) => stub.methodName === 'eth_subscribe')) {
     stubs.push({
       methodName: 'eth_subscribe',
-      response: '0x0',
+      result: '0x0',
     });
   }
 
   if (!stubs.some((stub) => stub.methodName === 'eth_unsubscribe')) {
     stubs.push({
       methodName: 'eth_unsubscribe',
-      response: true,
+      result: true,
     });
   }
 
@@ -127,8 +127,8 @@ function getFakeProvider({
         stubs.splice(index, 1);
         if ('implementation' in stub) {
           stub.implementation();
-        } else if ('response' in stub) {
-          return stub.response;
+        } else if ('result' in stub) {
+          return stub.result;
         } else if ('error' in stub) {
           throw new Error(stub.error);
         }

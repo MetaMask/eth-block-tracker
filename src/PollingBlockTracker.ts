@@ -271,7 +271,9 @@ export class PollingBlockTracker
     }
 
     log('Making request', req);
-    return this._provider.request(req);
+    const result = await this._provider.request(req);
+    log('Got result', result);
+    return result as unknown as string;
   }
 
   /**

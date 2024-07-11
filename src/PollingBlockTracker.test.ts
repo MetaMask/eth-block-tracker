@@ -66,7 +66,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -115,7 +115,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -173,7 +173,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -233,11 +233,11 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
               {
                 methodName: 'eth_blockNumber',
-                response: '0x1',
+                result: '0x1',
               },
             ],
           },
@@ -280,7 +280,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -317,7 +317,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -352,7 +352,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -487,7 +487,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -513,7 +513,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -547,11 +547,11 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
               {
                 methodName: 'eth_blockNumber',
-                response: '0x1',
+                result: '0x1',
               },
             ],
           },
@@ -584,7 +584,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -605,7 +605,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -653,7 +653,7 @@ describe('PollingBlockTracker', () => {
               },
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -678,7 +678,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -711,11 +711,11 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x1',
+                    result: '0x1',
                   },
                 ],
               },
@@ -739,11 +739,11 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x1',
+                    result: '0x1',
                   },
                 ],
               },
@@ -767,11 +767,11 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x1',
+                    result: '0x1',
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -795,11 +795,11 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x1',
+                    result: '0x1',
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -826,11 +826,11 @@ describe('PollingBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x1',
+                  result: '0x1',
                 },
               ],
             },
@@ -854,11 +854,11 @@ describe('PollingBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x1',
+                  result: '0x1',
                 },
               ],
             },
@@ -882,11 +882,11 @@ describe('PollingBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x1',
+                  result: '0x1',
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -910,11 +910,11 @@ describe('PollingBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x1',
+                  result: '0x1',
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -953,7 +953,7 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -976,7 +976,7 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1005,11 +1005,11 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x1',
+                    result: '0x1',
                   },
                 ],
               },
@@ -1099,7 +1099,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1138,7 +1138,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1175,7 +1175,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1214,7 +1214,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1253,7 +1253,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1290,7 +1290,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1331,11 +1331,11 @@ describe('PollingBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x1',
+                        result: '0x1',
                       },
                     ],
                   },
@@ -1371,11 +1371,11 @@ describe('PollingBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x1',
+                        result: '0x1',
                       },
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                     ],
                   },
@@ -1411,11 +1411,11 @@ describe('PollingBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                     ],
                   },
@@ -1454,11 +1454,11 @@ describe('PollingBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x1',
+                      result: '0x1',
                     },
                   ],
                 },
@@ -1494,11 +1494,11 @@ describe('PollingBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x1',
+                      result: '0x1',
                     },
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                   ],
                 },
@@ -1534,11 +1534,11 @@ describe('PollingBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                   ],
                 },
@@ -1585,7 +1585,7 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1608,7 +1608,7 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1637,11 +1637,11 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x1',
+                    result: '0x1',
                   },
                 ],
               },
@@ -1731,7 +1731,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1770,7 +1770,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1807,7 +1807,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -1951,11 +1951,11 @@ describe('PollingBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x1',
+                        result: '0x1',
                       },
                     ],
                   },
@@ -1991,11 +1991,11 @@ describe('PollingBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x1',
+                        result: '0x1',
                       },
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                     ],
                   },
@@ -2030,11 +2030,11 @@ describe('PollingBlockTracker', () => {
                     stubs: [
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                       {
                         methodName: 'eth_blockNumber',
-                        response: '0x0',
+                        result: '0x0',
                       },
                     ],
                   },
@@ -2072,11 +2072,11 @@ describe('PollingBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x1',
+                      result: '0x1',
                     },
                   ],
                 },
@@ -2112,11 +2112,11 @@ describe('PollingBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x1',
+                      result: '0x1',
                     },
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                   ],
                 },
@@ -2152,11 +2152,11 @@ describe('PollingBlockTracker', () => {
                   stubs: [
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                     {
                       methodName: 'eth_blockNumber',
-                      response: '0x0',
+                      result: '0x0',
                     },
                   ],
                 },
@@ -2202,7 +2202,7 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2257,7 +2257,7 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2303,15 +2303,15 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x1',
+                    result: '0x1',
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x2',
+                    result: '0x2',
                   },
                 ],
               },
@@ -2378,7 +2378,7 @@ describe('PollingBlockTracker', () => {
                 stubs: [
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2467,11 +2467,11 @@ describe('PollingBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x1',
+                  result: '0x1',
                 },
               ],
             },
@@ -2508,7 +2508,7 @@ describe('PollingBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -2548,7 +2548,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2587,7 +2587,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2624,7 +2624,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2664,7 +2664,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -2703,7 +2703,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -2740,7 +2740,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -2795,7 +2795,7 @@ describe('PollingBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -2835,7 +2835,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2874,7 +2874,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2911,7 +2911,7 @@ describe('PollingBlockTracker', () => {
                   },
                   {
                     methodName: 'eth_blockNumber',
-                    response: '0x0',
+                    result: '0x0',
                   },
                 ],
               },
@@ -2951,7 +2951,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -2990,7 +2990,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -3027,7 +3027,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -3077,7 +3077,7 @@ describe('PollingBlockTracker', () => {
               stubs: [
                 {
                   methodName: 'eth_blockNumber',
-                  response: '0x0',
+                  result: '0x0',
                 },
               ],
             },
@@ -3120,7 +3120,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
@@ -3177,7 +3177,7 @@ describe('PollingBlockTracker', () => {
             stubs: [
               {
                 methodName: 'eth_blockNumber',
-                response: '0x0',
+                result: '0x0',
               },
             ],
           },
