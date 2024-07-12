@@ -36,17 +36,11 @@ type WithSubscribeBlockTrackerCallback = (args: {
 /**
  * An object that allows specifying the behavior of a specific invocation of
  * `request`. The `methodName` always identifies the stub, but the behavior
- * may be specified multiple ways: `request` can either return a promise or
- * throw an error, and if it returns a promise, that promise can either be
- * resolved with a response object or reject with an error.
+ * may be specified multiple ways: `request` can either return a result
+ * or reject with an error.
  *
  * @property methodName - The RPC method to which this stub will be matched.
- * @property response - Instructs `request` to return a promise that resolves
- * with a response object.
- * @property response.result - Specifies a successful response, with this as the
- * `result`.
- * @property response.error - Specifies an error response, with this as the
- * `error`.
+ * @property result - Instructs `request` to return a result.
  * @property implementation - Allows overriding `request` entirely. Useful if
  * you want it to throw an error.
  * @property error - Instructs `request` to return a promise that rejects with
