@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [10.1.0]
 ### Changed
-- adapt to eip-1193 provider changes ([#252](https://github.com/MetaMask/eth-block-tracker/pull/252))
-  - Bumped `@metamask/eth-json-rpc-provider` from `^4.0.0` to `^4.1.0`
+- Bump `@metamask/eth-json-rpc-provider` from `^4.0.0` to `^4.1.0` ([#252](https://github.com/MetaMask/eth-block-tracker/pull/252))
+- Adapt to eip-1193 provider changes ([#252](https://github.com/MetaMask/eth-block-tracker/pull/252))
   - Calling `sendAsync` function will be deprecated; so we used `request` function instead
 
 ## [10.0.0]
