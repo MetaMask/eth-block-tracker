@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.1.0]
+### Uncategorized
+- adapt to eip-1193 provider changes ([#252](https://github.com/MetaMask/eth-block-tracker/pull/252))
+
 ## [10.0.0]
 ### Changed
 - BREAKING: Drop support for Node.js v16; add support for Node.js v20, v22 ([#245](https://github.com/MetaMask/eth-block-tracker/pull/245))
@@ -169,7 +173,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add RpcBlockTracker
 
-[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v10.0.0...HEAD
+[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v10.1.0...HEAD
+[10.1.0]: https://github.com/MetaMask/eth-block-tracker/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v9.0.3...v10.0.0
 [9.0.3]: https://github.com/MetaMask/eth-block-tracker/compare/v9.0.2...v9.0.3
 [9.0.2]: https://github.com/MetaMask/eth-block-tracker/compare/v9.0.1...v9.0.2
