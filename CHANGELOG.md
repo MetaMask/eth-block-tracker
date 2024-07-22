@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [11.0.1]
+### Changed
+- Bump `@metamask/eth-json-rpc-provider` from `^4.1.0` to `^4.1.1` ([#261](https://github.com/MetaMask/eth-block-tracker/pull/261))
+- Bump `@metamask/safe-event-emitter` from `^3.0.0` to `^3.1.1` ([#261](https://github.com/MetaMask/eth-block-tracker/pull/261))
+- Bump `@metamask/utils` from `^8.1.0` to `^9.1.0` ([#261](https://github.com/MetaMask/eth-block-tracker/pull/261))
 
 ## [11.0.0]
 ### Changed
