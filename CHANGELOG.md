@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.0.1]
+
 ## [11.0.0]
 ### Changed
 - **BREAKING**: Adapt to EIP-1193 provider changes by using `request` method of provider instead of `sendAsync` ([#252](https://github.com/MetaMask/eth-block-tracker/pull/252))
@@ -181,7 +183,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add RpcBlockTracker
 
-[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v11.0.0...HEAD
+[Unreleased]: https://github.com/MetaMask/eth-block-tracker/compare/v11.0.1...HEAD
+[11.0.1]: https://github.com/MetaMask/eth-block-tracker/compare/v11.0.0...v11.0.1
 [11.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v10.1.0...v11.0.0
 [10.1.0]: https://github.com/MetaMask/eth-block-tracker/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/MetaMask/eth-block-tracker/compare/v9.0.3...v10.0.0
