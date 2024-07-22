@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [11.0.0]
-### Uncategorized
-- Bump the npm_and_yarn group across 1 directory with 2 updates ([#246](https://github.com/MetaMask/eth-block-tracker/pull/246))
+### Changed
+- **BREAKING**: Adapt to EIP-1193 provider changes by using `request` method of provider instead of `sendAsync` ([#252](https://github.com/MetaMask/eth-block-tracker/pull/252))
+  - This change included in `10.1.0` was mistakenly categorised as a non-breaking change.
+  - This requires provider object to have the `request` method. You need to upgrade to minimum `4.1.0` of `@metamask/eth-json-rpc-provider` so that the `request` method is available.
 
-## [10.1.0]
+## [10.1.0] [DEPRECATED]
 ### Changed
 - Adapt to EIP-1193 provider changes ([#252](https://github.com/MetaMask/eth-block-tracker/pull/252))
   - Deprecated `sendAsync` method is replaced with `request` method
