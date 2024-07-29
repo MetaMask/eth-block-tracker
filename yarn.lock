@@ -701,17 +701,17 @@
   integrity sha512-BurYsht8MKdhvW2itUPPF8NkAhYtDdsCGHTSY7EzVvlmGP4jc9XrRZyfNwlt0zhB6MCMjHB1uNWwchtX7vBFjw==
 
 "@metamask/eth-json-rpc-provider@^4.1.1":
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-4.1.1.tgz#93155567f0c9b48534058bf4d7bde455fe3fe99e"
-  integrity sha512-lUqKqKG4A88DW1d5LZG/wzAA8p9N9ClA6Jo51EfEOZ6rn3jH+u4DtoPbBKl8ZXYivuFE/36rxus0KcmZpumjhA==
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/@metamask/eth-json-rpc-provider/-/eth-json-rpc-provider-4.1.2.tgz#f0a3f1985589fe56ef3d9c7b58ec975c66b21633"
+  integrity sha512-gnTPk+vHCzugB120sv5f8CV/gfxCyMkq33jq0JeChLyhkRdFA13j0aHoz5NAjd9CeLweWkKL/EA4vXQwB7t6Ew==
   dependencies:
-    "@metamask/json-rpc-engine" "^9.0.1"
+    "@metamask/json-rpc-engine" "^9.0.2"
     "@metamask/rpc-errors" "^6.3.1"
     "@metamask/safe-event-emitter" "^3.0.0"
-    "@metamask/utils" "^9.0.0"
+    "@metamask/utils" "^9.1.0"
     uuid "^8.3.2"
 
-"@metamask/json-rpc-engine@^9.0.0", "@metamask/json-rpc-engine@^9.0.1":
+"@metamask/json-rpc-engine@^9.0.0", "@metamask/json-rpc-engine@^9.0.2":
   version "9.0.2"
   resolved "https://registry.yarnpkg.com/@metamask/json-rpc-engine/-/json-rpc-engine-9.0.2.tgz#2a060ff14748fec3b686cb6def55529f1dc547c0"
   integrity sha512-wteoGUDhiqCgyO6Gdjnm6n+7raoRS+dRHOIsTc7LK2zpezAynav9BIK7QWPcJZeieMTSG5HuYrQf+epLbcdB/g==
