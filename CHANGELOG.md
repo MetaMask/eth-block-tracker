@@ -7,9 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [11.0.2]
-### Uncategorized
-- ci: fix deprecated actions ([#276](https://github.com/MetaMask/eth-block-tracker/pull/276))
-- deps: @metamask/eth-json-rpc-provider@^4.1.1->^4.1.5 ([#273](https://github.com/MetaMask/eth-block-tracker/pull/273))
+### Fixed
+- Bump `@metamask/eth-json-rpc-provider` from `^4.1.1` to `^4.1.5` ([#273](https://github.com/MetaMask/eth-block-tracker/pull/273))
 
 ## [11.0.1]
 ### Changed
