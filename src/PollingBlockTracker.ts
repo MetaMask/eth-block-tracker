@@ -52,7 +52,7 @@ export class PollingBlockTracker
 
   private readonly _setSkipCacheFlag: boolean;
 
-  readonly #onLatestBlockInternalListeners: ((
+  readonly #internalEventListeners: ((
     value: string | PromiseLike<string>,
   ) => void)[] = [];
 
@@ -110,13 +110,13 @@ export class PollingBlockTracker
     // wait for a new latest block
     const latestBlock: string = await new Promise((resolve) => {
       const listener = (value: string | PromiseLike<string>) => {
-        this.#onLatestBlockInternalListeners.splice(
-          this.#onLatestBlockInternalListeners.indexOf(listener),
+        this.#internalEventListeners.splice(
+          this.#internalEventListeners.indexOf(listener),
           1,
         );
         resolve(value);
       };
-      this.#onLatestBlockInternalListeners.push(listener);
+      this.#internalEventListeners.push(listener);
       this.once('latest', listener);
     });
     // return newly set current block
@@ -195,7 +195,7 @@ export class PollingBlockTracker
         .flat()
         // internal listeners are not included in the count
         .filter((listener) =>
-          this.#onLatestBlockInternalListeners.every(
+          this.#internalEventListeners.every(
             (internalListener) => !Object.is(internalListener, listener),
           ),
         ).length
