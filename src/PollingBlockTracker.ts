@@ -195,9 +195,7 @@ export class PollingBlockTracker
         .flat()
         // internal listeners are not included in the count
         .filter((listener) =>
-          this.#internalEventListeners.every(
-            (internalListener) => !Object.is(internalListener, listener),
-          ),
+          this.#internalEventListeners.includes(listener),
         ).length
     );
   }
