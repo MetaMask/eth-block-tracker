@@ -189,14 +189,17 @@ export class PollingBlockTracker
   }
 
   private _getBlockTrackerEventCount(): number {
-    return blockTrackerEvents
-      .map((eventName) => this.listeners(eventName))
-      .flat()
-      .filter((listener) =>
-        this.#onLatestBlockInternalListeners.every(
-          (internalListener) => !Object.is(internalListener, listener),
-        ),
-      ).length;
+    return (
+      blockTrackerEvents
+        .map((eventName) => this.listeners(eventName))
+        .flat()
+        // internal listeners are not included in the count
+        .filter((listener) =>
+          this.#onLatestBlockInternalListeners.every(
+            (internalListener) => !Object.is(internalListener, listener),
+          ),
+        ).length
+    );
   }
 
   private _shouldUseNewBlock(newBlock: string) {
