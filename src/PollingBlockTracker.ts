@@ -10,8 +10,6 @@ const log = createModuleLogger(projectLogger, 'polling-block-tracker');
 const createRandomId = getCreateRandomId();
 const sec = 1000;
 
-const calculateSum = (accumulator: number, currentValue: number) =>
-  accumulator + currentValue;
 const blockTrackerEvents: (string | symbol)[] = ['sync', 'latest'];
 
 export interface PollingBlockTrackerOptions {
@@ -53,6 +51,10 @@ export class PollingBlockTracker
   private readonly _keepEventLoopActive: boolean;
 
   private readonly _setSkipCacheFlag: boolean;
+
+  readonly #onLatestBlockInternalListeners: ((
+    value: string | PromiseLike<string>,
+  ) => void)[] = [];
 
   constructor(opts: PollingBlockTrackerOptions = {}) {
     // parse + validate args
@@ -106,9 +108,17 @@ export class PollingBlockTracker
       return this._currentBlock;
     }
     // wait for a new latest block
-    const latestBlock: string = await new Promise((resolve) =>
-      this.once('latest', resolve),
-    );
+    const latestBlock: string = await new Promise((resolve) => {
+      const listener = (value: string | PromiseLike<string>) => {
+        this.#onLatestBlockInternalListeners.splice(
+          this.#onLatestBlockInternalListeners.indexOf(listener),
+          1,
+        );
+        resolve(value);
+      };
+      this.#onLatestBlockInternalListeners.push(listener);
+      this.once('latest', listener);
+    });
     // return newly set current block
     return latestBlock;
   }
@@ -180,8 +190,13 @@ export class PollingBlockTracker
 
   private _getBlockTrackerEventCount(): number {
     return blockTrackerEvents
-      .map((eventName) => this.listenerCount(eventName))
-      .reduce(calculateSum);
+      .map((eventName) => this.listeners(eventName))
+      .flat()
+      .filter((listener) =>
+        this.#onLatestBlockInternalListeners.every(
+          (internalListener) => !Object.is(internalListener, listener),
+        ),
+      ).length;
   }
 
   private _shouldUseNewBlock(newBlock: string) {
