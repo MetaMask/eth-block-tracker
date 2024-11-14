@@ -9,8 +9,6 @@ const createRandomId = getCreateRandomId();
 
 const sec = 1000;
 
-const calculateSum = (accumulator: number, currentValue: number) =>
-  accumulator + currentValue;
 const blockTrackerEvents: (string | symbol)[] = ['sync', 'latest'];
 
 export interface SubscribeBlockTrackerOptions {
@@ -42,6 +40,10 @@ export class SubscribeBlockTracker
   private readonly _provider: SafeEventEmitterProvider;
 
   private _subscriptionId: string | null;
+
+  readonly #internalEventListeners: ((
+    value: string | PromiseLike<string>,
+  ) => void)[] = [];
 
   constructor(opts: SubscribeBlockTrackerOptions = {}) {
     // parse + validate args
@@ -91,9 +93,17 @@ export class SubscribeBlockTracker
       return this._currentBlock;
     }
     // wait for a new latest block
-    const latestBlock: string = await new Promise((resolve) =>
-      this.once('latest', resolve),
-    );
+    const latestBlock: string = await new Promise((resolve) => {
+      const listener = (value: string | PromiseLike<string>) => {
+        this.#internalEventListeners.splice(
+          this.#internalEventListeners.indexOf(listener),
+          1,
+        );
+        resolve(value);
+      };
+      this.#internalEventListeners.push(listener);
+      this.once('latest', listener);
+    });
     // return newly set current block
     return latestBlock;
   }
@@ -162,9 +172,17 @@ export class SubscribeBlockTracker
   }
 
   private _getBlockTrackerEventCount(): number {
-    return blockTrackerEvents
-      .map((eventName) => this.listenerCount(eventName))
-      .reduce(calculateSum);
+    return (
+      blockTrackerEvents
+        .map((eventName) => this.listeners(eventName))
+        .flat()
+        // internal listeners are not included in the count
+        .filter((listener) =>
+          this.#internalEventListeners.every(
+            (internalListener) => !Object.is(internalListener, listener),
+          ),
+        ).length
+    );
   }
 
   private _shouldUseNewBlock(newBlock: string) {
