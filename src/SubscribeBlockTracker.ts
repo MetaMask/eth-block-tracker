@@ -112,6 +112,7 @@ export class SubscribeBlockTracker
       let onLatestBlockUnavailable: InternalListener;
       const onLatestBlockAvailable = (value: string | PromiseLike<string>) => {
         this.#removeInternalListener(onLatestBlockAvailable);
+        this.#removeInternalListener(onLatestBlockUnavailable);
         this.removeListener('error', onLatestBlockUnavailable);
         resolve(value);
       };
