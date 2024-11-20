@@ -23,6 +23,8 @@ interface SubscriptionNotificationParams {
   result: { number: string };
 }
 
+type InternalListener = (value: string | PromiseLike<string>) => void;
+
 export class SubscribeBlockTracker
   extends SafeEventEmitter
   implements BlockTracker
@@ -76,7 +78,19 @@ export class SubscribeBlockTracker
   async destroy() {
     this._cancelBlockResetTimeout();
     await this._maybeEnd();
-    super.removeAllListeners();
+    this.eventNames().forEach((eventName) =>
+      this.listeners(eventName).forEach((listener) => {
+        if (
+          this.#internalEventListeners.every(
+            (internalListener) => !Object.is(internalListener, listener),
+          )
+        ) {
+          // @ts-expect-error this listener comes from SafeEventEmitter itself, though
+          // its type differs between `.listeners()` and `.removeListener()`
+          this.removeListener(eventName, listener);
+        }
+      }),
+    );
   }
 
   isRunning(): boolean {
@@ -93,16 +107,31 @@ export class SubscribeBlockTracker
       return this._currentBlock;
     }
     // wait for a new latest block
-    const latestBlock: string = await new Promise((resolve) => {
-      const listener = (value: string | PromiseLike<string>) => {
-        this.#internalEventListeners.splice(
-          this.#internalEventListeners.indexOf(listener),
-          1,
-        );
+    const latestBlock: string = await new Promise((resolve, reject) => {
+      // eslint-disable-next-line prefer-const
+      let onLatestBlockUnavailable: InternalListener;
+      const onLatestBlockAvailable = (value: string | PromiseLike<string>) => {
+        this.#removeInternalListener(onLatestBlockAvailable);
+        this.removeListener('error', onLatestBlockUnavailable);
         resolve(value);
       };
-      this.#internalEventListeners.push(listener);
-      this.once('latest', listener);
+      onLatestBlockUnavailable = () => {
+        // if the block tracker is no longer running, reject
+        // and remove the listeners
+        if (!this._isRunning) {
+          this.#removeInternalListener(onLatestBlockAvailable);
+          this.#removeInternalListener(onLatestBlockUnavailable);
+          this.removeListener('latest', onLatestBlockAvailable);
+          this.removeListener('error', onLatestBlockUnavailable);
+          reject(
+            new Error('Block tracker ended before latest block was available'),
+          );
+        }
+      };
+      this.#addInternalListener(onLatestBlockAvailable);
+      this.#addInternalListener(onLatestBlockUnavailable);
+      this.once('latest', onLatestBlockAvailable);
+      this.on('error', onLatestBlockUnavailable);
     });
     // return newly set current block
     return latestBlock;
@@ -288,6 +317,17 @@ export class SubscribeBlockTracker
     ) {
       this._newPotentialLatest(response.params.result.number);
     }
+  }
+
+  #addInternalListener(listener: InternalListener) {
+    this.#internalEventListeners.push(listener);
+  }
+
+  #removeInternalListener(listener: InternalListener) {
+    this.#internalEventListeners.splice(
+      this.#internalEventListeners.indexOf(listener),
+      1,
+    );
   }
 }
 

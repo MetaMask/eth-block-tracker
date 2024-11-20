@@ -26,6 +26,8 @@ interface ExtendedJsonRpcRequest extends JsonRpcRequest<[]> {
   skipCache?: boolean;
 }
 
+type InternalListener = (value: string | PromiseLike<string>) => void;
+
 export class PollingBlockTracker
   extends SafeEventEmitter
   implements BlockTracker
@@ -52,9 +54,7 @@ export class PollingBlockTracker
 
   private readonly _setSkipCacheFlag: boolean;
 
-  readonly #internalEventListeners: ((
-    value: string | PromiseLike<string>,
-  ) => void)[] = [];
+  readonly #internalEventListeners: InternalListener[] = [];
 
   constructor(opts: PollingBlockTrackerOptions = {}) {
     // parse + validate args
@@ -91,7 +91,19 @@ export class PollingBlockTracker
   async destroy() {
     this._cancelBlockResetTimeout();
     this._maybeEnd();
-    super.removeAllListeners();
+    this.eventNames().forEach((eventName) =>
+      this.listeners(eventName).forEach((listener) => {
+        if (
+          this.#internalEventListeners.every(
+            (internalListener) => !Object.is(internalListener, listener),
+          )
+        ) {
+          // @ts-expect-error this listener comes from SafeEventEmitter itself, though
+          // its type differs between `.listeners()` and `.removeListener()`
+          this.removeListener(eventName, listener);
+        }
+      }),
+    );
   }
 
   isRunning(): boolean {
@@ -108,16 +120,31 @@ export class PollingBlockTracker
       return this._currentBlock;
     }
     // wait for a new latest block
-    const latestBlock: string = await new Promise((resolve) => {
-      const listener = (value: string | PromiseLike<string>) => {
-        this.#internalEventListeners.splice(
-          this.#internalEventListeners.indexOf(listener),
-          1,
-        );
+    const latestBlock: string = await new Promise((resolve, reject) => {
+      // eslint-disable-next-line prefer-const
+      let onLatestBlockUnavailable: InternalListener;
+      const onLatestBlockAvailable = (value: string | PromiseLike<string>) => {
+        this.#removeInternalListener(onLatestBlockAvailable);
+        this.removeListener('error', onLatestBlockUnavailable);
         resolve(value);
       };
-      this.#internalEventListeners.push(listener);
-      this.once('latest', listener);
+      onLatestBlockUnavailable = () => {
+        // if the block tracker is no longer running, reject
+        // and remove the listeners
+        if (!this._isRunning) {
+          this.#removeInternalListener(onLatestBlockAvailable);
+          this.#removeInternalListener(onLatestBlockUnavailable);
+          this.removeListener('latest', onLatestBlockAvailable);
+          this.removeListener('error', onLatestBlockUnavailable);
+          reject(
+            new Error('Block tracker ended before latest block was available'),
+          );
+        }
+      };
+      this.#addInternalListener(onLatestBlockAvailable);
+      this.#addInternalListener(onLatestBlockUnavailable);
+      this.once('latest', onLatestBlockAvailable);
+      this.on('error', onLatestBlockUnavailable);
     });
     // return newly set current block
     return latestBlock;
@@ -317,6 +344,15 @@ export class PollingBlockTracker
 
       try {
         this.emit('error', newErr);
+        if (
+          this.listeners('error').filter((listener) =>
+            this.#internalEventListeners.every(
+              (internalListener) => !Object.is(listener, internalListener),
+            ),
+          ).length === 0
+        ) {
+          console.error(newErr);
+        }
       } catch (emitErr) {
         console.error(newErr);
       }
@@ -350,6 +386,17 @@ export class PollingBlockTracker
       clearTimeout(this._pollingTimeout);
       this._pollingTimeout = undefined;
     }
+  }
+
+  #addInternalListener(listener: InternalListener) {
+    this.#internalEventListeners.push(listener);
+  }
+
+  #removeInternalListener(listener: InternalListener) {
+    this.#internalEventListeners.splice(
+      this.#internalEventListeners.indexOf(listener),
+      1,
+    );
   }
 }
 

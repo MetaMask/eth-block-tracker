@@ -185,6 +185,33 @@ describe('PollingBlockTracker', () => {
       );
     });
 
+    it('should not retry failed requests after the block tracker is stopped', async () => {
+      recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+
+      await withPollingBlockTracker(
+        {
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                error: 'boom',
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          const latestBlockPromise = blockTracker.getLatestBlock();
+
+          expect(blockTracker.isRunning()).toBe(true);
+          await blockTracker.destroy();
+          await expect(latestBlockPromise).rejects.toThrow(
+            'Block tracker ended before latest block was available',
+          );
+          expect(blockTracker.isRunning()).toBe(false);
+        },
+      );
+    });
+
     it('request the latest block number with `skipCache: true` if the block tracker was initialized with `setSkipCacheFlag: true`', async () => {
       recordCallsToSetTimeout();
 
