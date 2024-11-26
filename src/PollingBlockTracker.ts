@@ -130,7 +130,7 @@ export class PollingBlockTracker
     const onLatestBlock = (value: string) => {
       this.#removeInternalListener(onLatestBlock);
       resolve(value);
-      delete this.#pendingLatestBlock;
+      this.#pendingLatestBlock = undefined;
     };
     this.#addInternalListener(onLatestBlock);
     this.once('latest', onLatestBlock);
