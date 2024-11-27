@@ -2,6 +2,7 @@ import type { SafeEventEmitterProvider } from '@metamask/eth-json-rpc-provider';
 import SafeEventEmitter from '@metamask/safe-event-emitter';
 import {
   createDeferredPromise,
+  type DeferredPromise,
   getErrorMessage,
   type JsonRpcRequest,
 } from '@metamask/utils';
@@ -60,9 +61,7 @@ export class PollingBlockTracker
 
   readonly #internalEventListeners: InternalListener[] = [];
 
-  #pendingLatestBlock:
-    | { promise: Promise<string>; reject: (error: unknown) => void }
-    | undefined;
+  #pendingLatestBlock?: DeferredPromise<string>;
 
   constructor(opts: PollingBlockTrackerOptions = {}) {
     // parse + validate args
@@ -99,10 +98,8 @@ export class PollingBlockTracker
   async destroy() {
     this._cancelBlockResetTimeout();
     this._maybeEnd();
-    this.removeAllListeners();
-    if (this.#pendingLatestBlock) {
-      this.#pendingLatestBlock.reject(new Error('Block tracker destroeyd'));
-    }
+    super.removeAllListeners();
+    this.#rejectPendingLatestBlock(new Error('Block tracker destroyed'));
   }
 
   isRunning(): boolean {
@@ -124,13 +121,12 @@ export class PollingBlockTracker
     const { promise, resolve, reject } = createDeferredPromise<string>({
       suppressUnhandledRejection: true,
     });
-    this.#pendingLatestBlock = { promise, reject };
+    this.#pendingLatestBlock = { promise, resolve, reject };
 
     // wait for a new latest block
     const onLatestBlock = (value: string) => {
       this.#removeInternalListener(onLatestBlock);
-      resolve(value);
-      this.#pendingLatestBlock = undefined;
+      this.#resolvePendingLatestBlock(value);
     };
     this.#addInternalListener(onLatestBlock);
     this.once('latest', onLatestBlock);
@@ -375,6 +371,16 @@ export class PollingBlockTracker
       this.#internalEventListeners.indexOf(listener),
       1,
     );
+  }
+
+  #resolvePendingLatestBlock(value: string) {
+    this.#pendingLatestBlock?.resolve(value);
+    this.#pendingLatestBlock = undefined;
+  }
+
+  #rejectPendingLatestBlock(error: unknown) {
+    this.#pendingLatestBlock?.reject(error);
+    this.#pendingLatestBlock = undefined;
   }
 }
 
