@@ -171,7 +171,7 @@ describe('SubscribeBlockTracker', () => {
             expect(blockTracker.isRunning()).toBe(true);
             await blockTracker.destroy();
             await expect(latestBlockPromise).rejects.toThrow(
-              'Block tracker ended before latest block was available',
+              'Block tracker destroyed',
             );
             expect(blockTracker.isRunning()).toBe(false);
           },

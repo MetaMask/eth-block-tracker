@@ -1,6 +1,11 @@
 import type { SafeEventEmitterProvider } from '@metamask/eth-json-rpc-provider';
 import SafeEventEmitter from '@metamask/safe-event-emitter';
-import type { Json, JsonRpcNotification } from '@metamask/utils';
+import {
+  createDeferredPromise,
+  type DeferredPromise,
+  type Json,
+  type JsonRpcNotification,
+} from '@metamask/utils';
 import getCreateRandomId from 'json-rpc-random-id';
 
 import type { BlockTracker } from './BlockTracker';
@@ -23,7 +28,7 @@ interface SubscriptionNotificationParams {
   result: { number: string };
 }
 
-type InternalListener = (value: string | PromiseLike<string>) => void;
+type InternalListener = (value: string) => void;
 
 export class SubscribeBlockTracker
   extends SafeEventEmitter
@@ -43,9 +48,9 @@ export class SubscribeBlockTracker
 
   private _subscriptionId: string | null;
 
-  readonly #internalEventListeners: ((
-    value: string | PromiseLike<string>,
-  ) => void)[] = [];
+  readonly #internalEventListeners: InternalListener[] = [];
+
+  #pendingLatestBlock?: DeferredPromise<string>;
 
   constructor(opts: SubscribeBlockTrackerOptions = {}) {
     // parse + validate args
@@ -78,19 +83,8 @@ export class SubscribeBlockTracker
   async destroy() {
     this._cancelBlockResetTimeout();
     await this._maybeEnd();
-    this.eventNames().forEach((eventName) =>
-      this.listeners(eventName).forEach((listener) => {
-        if (
-          this.#internalEventListeners.every(
-            (internalListener) => !Object.is(internalListener, listener),
-          )
-        ) {
-          // @ts-expect-error this listener comes from SafeEventEmitter itself, though
-          // its type differs between `.listeners()` and `.removeListener()`
-          this.removeListener(eventName, listener);
-        }
-      }),
-    );
+    super.removeAllListeners();
+    this.#rejectPendingLatestBlock(new Error('Block tracker destroyed'));
   }
 
   isRunning(): boolean {
@@ -105,37 +99,23 @@ export class SubscribeBlockTracker
     // return if available
     if (this._currentBlock) {
       return this._currentBlock;
+    } else if (this.#pendingLatestBlock) {
+      return await this.#pendingLatestBlock.promise;
     }
-    // wait for a new latest block
-    const latestBlock: string = await new Promise((resolve, reject) => {
-      // eslint-disable-next-line prefer-const
-      let onLatestBlockUnavailable: InternalListener;
-      const onLatestBlockAvailable = (value: string | PromiseLike<string>) => {
-        this.#removeInternalListener(onLatestBlockAvailable);
-        this.#removeInternalListener(onLatestBlockUnavailable);
-        this.removeListener('error', onLatestBlockUnavailable);
-        resolve(value);
-      };
-      onLatestBlockUnavailable = () => {
-        // if the block tracker is no longer running, reject
-        // and remove the listeners
-        if (!this._isRunning) {
-          this.#removeInternalListener(onLatestBlockAvailable);
-          this.#removeInternalListener(onLatestBlockUnavailable);
-          this.removeListener('latest', onLatestBlockAvailable);
-          this.removeListener('error', onLatestBlockUnavailable);
-          reject(
-            new Error('Block tracker ended before latest block was available'),
-          );
-        }
-      };
-      this.#addInternalListener(onLatestBlockAvailable);
-      this.#addInternalListener(onLatestBlockUnavailable);
-      this.once('latest', onLatestBlockAvailable);
-      this.on('error', onLatestBlockUnavailable);
+
+    const { resolve, reject, promise } = createDeferredPromise<string>({
+      suppressUnhandledRejection: true,
     });
-    // return newly set current block
-    return latestBlock;
+    this.#pendingLatestBlock = { resolve, reject, promise };
+
+    // wait for a new latest block
+    const onLatestBlock = (value: string) => {
+      this.#removeInternalListener(onLatestBlock);
+      this.#resolvePendingLatestBlock(value);
+    };
+    this.#addInternalListener(onLatestBlock);
+    this.once('latest', onLatestBlock);
+    return await promise;
   }
 
   // dont allow module consumer to remove our internal event listeners
@@ -329,6 +309,16 @@ export class SubscribeBlockTracker
       this.#internalEventListeners.indexOf(listener),
       1,
     );
+  }
+
+  #resolvePendingLatestBlock(value: string) {
+    this.#pendingLatestBlock?.resolve(value);
+    this.#pendingLatestBlock = undefined;
+  }
+
+  #rejectPendingLatestBlock(error: unknown) {
+    this.#pendingLatestBlock?.reject(error);
+    this.#pendingLatestBlock = undefined;
   }
 }
 
