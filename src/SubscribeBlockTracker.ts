@@ -264,6 +264,7 @@ export class SubscribeBlockTracker
         this._newPotentialLatest(blockNumber);
       } catch (e) {
         this.emit('error', e);
+        this.#rejectPendingLatestBlock(e);
       }
     }
   }
@@ -275,6 +276,7 @@ export class SubscribeBlockTracker
         this._subscriptionId = null;
       } catch (e) {
         this.emit('error', e);
+        this.#rejectPendingLatestBlock(e);
       }
     }
   }
