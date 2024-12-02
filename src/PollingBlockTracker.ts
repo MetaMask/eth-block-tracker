@@ -126,7 +126,8 @@ export class PollingBlockTracker
     // wait for a new latest block
     const onLatestBlock = (value: string) => {
       this.#removeInternalListener(onLatestBlock);
-      this.#resolvePendingLatestBlock(value);
+      resolve(value);
+      this.#pendingLatestBlock = undefined;
     };
     this.#addInternalListener(onLatestBlock);
     this.once('latest', onLatestBlock);
@@ -371,11 +372,6 @@ export class PollingBlockTracker
       this.#internalEventListeners.indexOf(listener),
       1,
     );
-  }
-
-  #resolvePendingLatestBlock(value: string) {
-    this.#pendingLatestBlock?.resolve(value);
-    this.#pendingLatestBlock = undefined;
   }
 
   #rejectPendingLatestBlock(error: unknown) {
