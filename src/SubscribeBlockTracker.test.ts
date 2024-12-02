@@ -142,6 +142,21 @@ describe('SubscribeBlockTracker', () => {
         });
       });
 
+      it('should return the same promise if called multiple times', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(async ({ blockTracker }) => {
+          const promiseToGetLatestBlock1 =
+            blockTracker[methodToGetLatestBlock]();
+          const promiseToGetLatestBlock2 =
+            blockTracker[methodToGetLatestBlock]();
+
+          expect(promiseToGetLatestBlock1).toStrictEqual(
+            promiseToGetLatestBlock2,
+          );
+        });
+      });
+
       it('should stop the block tracker automatically after its promise is fulfilled', async () => {
         recordCallsToSetTimeout();
 
