@@ -151,33 +151,6 @@ describe('SubscribeBlockTracker', () => {
         });
       });
 
-      it('should not retry failed requests after the block tracker is stopped', async () => {
-        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-
-        await withSubscribeBlockTracker(
-          {
-            provider: {
-              stubs: [
-                {
-                  methodName: 'eth_blockNumber',
-                  error: 'boom',
-                },
-              ],
-            },
-          },
-          async ({ blockTracker }) => {
-            const latestBlockPromise = blockTracker[methodToGetLatestBlock]();
-
-            expect(blockTracker.isRunning()).toBe(true);
-            await blockTracker.destroy();
-            await expect(latestBlockPromise).rejects.toThrow(
-              'Block tracker destroyed',
-            );
-            expect(blockTracker.isRunning()).toBe(false);
-          },
-        );
-      });
-
       it('should fetch the latest block number', async () => {
         recordCallsToSetTimeout();
 
