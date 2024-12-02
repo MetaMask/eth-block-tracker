@@ -50,7 +50,7 @@ export class SubscribeBlockTracker
 
   readonly #internalEventListeners: InternalListener[] = [];
 
-  #pendingLatestBlock?: DeferredPromise<string>;
+  #pendingLatestBlock?: Omit<DeferredPromise<string>, 'resolve'>;
 
   constructor(opts: SubscribeBlockTrackerOptions = {}) {
     // parse + validate args
@@ -106,12 +106,13 @@ export class SubscribeBlockTracker
     const { resolve, reject, promise } = createDeferredPromise<string>({
       suppressUnhandledRejection: true,
     });
-    this.#pendingLatestBlock = { resolve, reject, promise };
+    this.#pendingLatestBlock = { reject, promise };
 
     // wait for a new latest block
     const onLatestBlock = (value: string) => {
       this.#removeInternalListener(onLatestBlock);
-      this.#resolvePendingLatestBlock(value);
+      resolve(value);
+      this.#pendingLatestBlock = undefined;
     };
     this.#addInternalListener(onLatestBlock);
     this.once('latest', onLatestBlock);
@@ -311,11 +312,6 @@ export class SubscribeBlockTracker
       this.#internalEventListeners.indexOf(listener),
       1,
     );
-  }
-
-  #resolvePendingLatestBlock(value: string) {
-    this.#pendingLatestBlock?.resolve(value);
-    this.#pendingLatestBlock = undefined;
   }
 
   #rejectPendingLatestBlock(error: unknown) {

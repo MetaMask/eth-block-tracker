@@ -61,7 +61,7 @@ export class PollingBlockTracker
 
   readonly #internalEventListeners: InternalListener[] = [];
 
-  #pendingLatestBlock?: DeferredPromise<string>;
+  #pendingLatestBlock?: Omit<DeferredPromise<string>, 'resolve'>;
 
   constructor(opts: PollingBlockTrackerOptions = {}) {
     // parse + validate args
@@ -121,7 +121,7 @@ export class PollingBlockTracker
     const { promise, resolve, reject } = createDeferredPromise<string>({
       suppressUnhandledRejection: true,
     });
-    this.#pendingLatestBlock = { promise, resolve, reject };
+    this.#pendingLatestBlock = { reject, promise };
 
     // wait for a new latest block
     const onLatestBlock = (value: string) => {

@@ -166,6 +166,19 @@ describe('SubscribeBlockTracker', () => {
         });
       });
 
+      it('should reject the returned promise if the block tracker is destroyed in the meantime', async () => {
+        await withSubscribeBlockTracker(async ({ blockTracker }) => {
+          const promiseToGetLatestBlock =
+            blockTracker[methodToGetLatestBlock]();
+          await blockTracker.destroy();
+
+          await expect(promiseToGetLatestBlock).rejects.toThrow(
+            'Block tracker destroyed',
+          );
+          expect(blockTracker.isRunning()).toBe(false);
+        });
+      });
+
       it('should fetch the latest block number', async () => {
         recordCallsToSetTimeout();
 
