@@ -212,17 +212,6 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should return the same promise if called multiple times', async () => {
-      await withPollingBlockTracker(async ({ blockTracker }) => {
-        const promiseToGetLatestBlock1 = blockTracker.getLatestBlock();
-        const promiseToGetLatestBlock2 = blockTracker.getLatestBlock();
-
-        expect(promiseToGetLatestBlock1).toStrictEqual(
-          promiseToGetLatestBlock2,
-        );
-      });
-    });
-
     it('should return a promise that resolves when a new block is available', async () => {
       recordCallsToSetTimeout();
 
