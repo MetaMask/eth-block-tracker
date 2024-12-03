@@ -213,7 +213,7 @@ describe('PollingBlockTracker', () => {
     });
 
     it('should not retry failed requests after the block tracker is stopped', async () => {
-      recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+      recordCallsToSetTimeout({ numAutomaticCalls: 2 });
 
       await withPollingBlockTracker(
         {
