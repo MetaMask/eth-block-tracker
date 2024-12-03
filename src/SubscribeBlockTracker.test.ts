@@ -151,6 +151,31 @@ describe('SubscribeBlockTracker', () => {
         });
       });
 
+      it('should resolve all returned promises when a new block is available', async () => {
+        recordCallsToSetTimeout();
+
+        await withSubscribeBlockTracker(
+          {
+            provider: {
+              stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  result: '0x1',
+                },
+              ],
+            },
+          },
+          async ({ blockTracker }) => {
+            const promises = [
+              blockTracker.getLatestBlock(),
+              blockTracker.getLatestBlock(),
+            ];
+
+            expect(await Promise.all(promises)).toStrictEqual(['0x1', '0x1']);
+          },
+        );
+      });
+
       it('should reject the returned promise if the block tracker is destroyed in the meantime', async () => {
         await withSubscribeBlockTracker(async ({ blockTracker }) => {
           const promiseToGetLatestBlock =
