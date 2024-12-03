@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Avoid risk of infinite retry loops when fetching new blocks ([#284](https://github.com/MetaMask/eth-block-tracker/pull/284))
+  - When the provider returns an error and `PollingBlockTracker` or `SubscribeBlockTracker` is destroyed, the promise returned by the `getLatestBlock` method will be rejected.
 
 ## [11.0.2]
 ### Fixed
