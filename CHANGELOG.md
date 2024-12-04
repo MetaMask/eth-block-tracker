@@ -7,9 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [11.0.3]
-### Uncategorized
-- yarn.lock: Bump @metamask/eth-json-rpc-provider from 4.1.5 to 4.1.6 ([#281](https://github.com/MetaMask/eth-block-tracker/pull/281))
-
 ### Fixed
 - Avoid risk of infinite retry loops when fetching new blocks ([#284](https://github.com/MetaMask/eth-block-tracker/pull/284))
   - When the provider returns an error and `PollingBlockTracker` or `SubscribeBlockTracker` is destroyed, the promise returned by the `getLatestBlock` method will be rejected.
