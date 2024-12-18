@@ -7,9 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [11.0.4]
-### Uncategorized
+### Changed
 - Bump `@metamask/utils` from `^9.1.0` to `^11.0.1` ([#297](https://github.com/MetaMask/eth-block-tracker/pull/297))
-- Upgrade to Yarn v4 ([#289](https://github.com/MetaMask/eth-block-tracker/pull/289))
 
 ## [11.0.3]
 ### Fixed
