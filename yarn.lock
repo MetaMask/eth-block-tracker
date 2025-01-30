@@ -1045,8 +1045,8 @@ __metadata:
   linkType: hard
 
 "@metamask/utils@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "@metamask/utils@npm:10.0.0"
+  version: 10.0.1
+  resolution: "@metamask/utils@npm:10.0.1"
   dependencies:
     "@ethereumjs/tx": "npm:^4.2.0"
     "@metamask/superstruct": "npm:^3.1.0"
@@ -1057,13 +1057,13 @@ __metadata:
     pony-cause: "npm:^2.1.10"
     semver: "npm:^7.5.4"
     uuid: "npm:^9.0.1"
-  checksum: 10/9c2e6421f685d8a45145b6026a6f9fd0701eb5a2e8490fc6d18e64c103d5a62097f301cbc797790da52ceb5853bd9f65845c934b00299e69e5e6736c52b32f0f
+  checksum: 10/c8e3d7578d05a1da4abb6c6712ec78ef6990801269f6529f4bb237b7d6e228d10a40738ccab81ad554f2fd51670267d086dc5be1a31c6d1f7040d4c0469d9d13
   languageName: node
   linkType: hard
 
 "@metamask/utils@npm:^11.0.1":
-  version: 11.0.1
-  resolution: "@metamask/utils@npm:11.0.1"
+  version: 11.1.0
+  resolution: "@metamask/utils@npm:11.1.0"
   dependencies:
     "@ethereumjs/tx": "npm:^4.2.0"
     "@metamask/superstruct": "npm:^3.1.0"
@@ -1074,7 +1074,7 @@ __metadata:
     pony-cause: "npm:^2.1.10"
     semver: "npm:^7.5.4"
     uuid: "npm:^9.0.1"
-  checksum: 10/3949d16c8021bfb5f70e3b1c99f097ffaf43158116734197b039b32be6aabecb12178deb62c0b182e45295b0865618636324020059821c5b053029d8bdc90d70
+  checksum: 10/756f13987881fe26adaa0a54354bc5af20cedee4dd228a736d481697dc634adb9e6e54d8f1dcc1d487b2376ab4ba8c576ecbb24beab2fb63aff721d0d5c0f5fe
   languageName: node
   linkType: hard
 
