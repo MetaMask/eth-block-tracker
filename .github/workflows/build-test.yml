@@ -8,7 +8,7 @@ on:
 jobs:
   build-lint-test:
     name: Build, Lint, and Test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
