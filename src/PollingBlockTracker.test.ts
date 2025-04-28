@@ -408,13 +408,15 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               const errorListener = jest.fn();
+              expect(blockTracker.isRunning()).toBe(true);
               blockTracker[methodToAddListener]('error', errorListener);
-
-              const promiseForLatestBlock = blockTracker.getLatestBlock();
-
-              const latestBlock = await promiseForLatestBlock;
+              await expect(blockTracker.getLatestBlock()).rejects.toThrow(
+                'boom',
+              );
               expect(errorListener).toHaveBeenCalledWith(thrownError);
+              const latestBlock = await blockTracker.getLatestBlock();
               expect(latestBlock).toBe('0x0');
             },
           );
@@ -440,13 +442,15 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               const errorListener = jest.fn();
+              expect(blockTracker.isRunning()).toBe(true);
               blockTracker[methodToAddListener]('error', errorListener);
-
-              const promiseForLatestBlock = blockTracker.getLatestBlock();
-
-              const latestBlock = await promiseForLatestBlock;
+              await expect(blockTracker.getLatestBlock()).rejects.toThrow(
+                'boom',
+              );
               expect(errorListener).toHaveBeenCalledWith(thrownError);
+              const latestBlock = await blockTracker.getLatestBlock();
               expect(latestBlock).toBe('0x0');
             },
           );
@@ -473,7 +477,9 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
 
-              blockTracker.getLatestBlock();
+              await expect(blockTracker.getLatestBlock()).rejects.toThrow(
+                'boom',
+              );
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
               });
@@ -504,7 +510,9 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               jest.spyOn(console, 'error').mockImplementation(EMPTY_FUNCTION);
 
-              blockTracker.getLatestBlock();
+              await expect(blockTracker.getLatestBlock()).rejects.toThrow(
+                'boom',
+              );
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
               });
@@ -615,40 +623,6 @@ describe('PollingBlockTracker', () => {
             });
 
             describe('if an error occurs while fetching the latest block number on the next poll iteration', () => {
-              it('throws an error', async () => {
-                const thrownError = new Error('boom');
-                const setTimeoutRecorder = recordCallsToSetTimeout();
-                const blockTrackerOptions = {
-                  pollingInterval: 100,
-                  blockResetDuration: 200,
-                };
-
-                await withPollingBlockTracker(
-                  {
-                    provider: {
-                      stubs: [
-                        {
-                          methodName: 'eth_blockNumber',
-                          error: thrownError,
-                        },
-                      ],
-                    },
-                    blockTracker: blockTrackerOptions,
-                  },
-                  async ({ blockTracker }) => {
-                    blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
-                    expect(blockTracker.isRunning()).toBe(true);
-                    expect(await blockTracker.getLatestBlock()).toBe('0x0');
-                    await setTimeoutRecorder.nextMatchingDuration(
-                      blockTrackerOptions.pollingInterval,
-                    );
-                    await expect(blockTracker.getLatestBlock()).rejects.toThrow(
-                      'Error updating latest block: boom',
-                    );
-                  },
-                );
-              });
-
               it('emits "error" if anything is listening to "error"', async () => {
                 const thrownError = new Error('boom');
                 recordCallsToSetTimeout();
