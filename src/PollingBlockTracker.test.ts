@@ -822,7 +822,7 @@ describe('PollingBlockTracker', () => {
         });
       });
 
-      it('should reject pending latest block request if block tracker is stopped before fetch completes on second getLatestBlock call', async () => {
+      it('should reject pending latest block request if block tracker is destroyed before fetch completes on second getLatestBlock call', async () => {
         const setTimeoutRecorder = recordCallsToSetTimeout();
         const blockTrackerOptions = {
           pollingInterval: 100,
@@ -873,8 +873,8 @@ describe('PollingBlockTracker', () => {
             // Step 3: Immediately after, call getLatestBlock
             const secondBlockPromise = blockTracker.getLatestBlock();
 
-            // Step 4: Immediately after, stop the block tracker
-            blockTracker.removeAllListeners();
+            // Step 4: Immediately after, destroy the block tracker
+            await blockTracker.destroy();
 
             // Verify block tracker state
             expect(blockTracker.isRunning()).toBe(false);
