@@ -9,11 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [12.0.1]
 
-### Uncategorized
-
-- tests: Cover rejection of pending `getLatestBlock` requests when blocker tracker is `destroyed` ([#322](https://github.com/MetaMask/eth-block-tracker/pull/322))
-- docs: format CHANGELOG.md with prettier ([#321](https://github.com/MetaMask/eth-block-tracker/pull/321))
-
 ### Fixed
 
 - Fixed hanging `getLatestBlock()` promises when block tracker is stopped before request completion ([#320](https://github.com/MetaMask/eth-block-tracker/pull/320))
