@@ -297,7 +297,8 @@ export class PollingBlockTracker
   }
 
   async checkForLatestBlock() {
-    return this.getLatestBlock({ useCache: false, waitForPending: false });
+    await this._updateLatestBlock();
+    return await this.getLatestBlock();
   }
 
   private _start() {
