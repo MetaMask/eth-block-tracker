@@ -113,7 +113,7 @@ export class PollingBlockTracker
 
   async getLatestBlock({
     useCache = true,
-  }: { useCache?: boolean; waitForPending?: boolean } = {}): Promise<string> {
+  }: { useCache?: boolean } = {}): Promise<string> {
     // return if available
     if (this._currentBlock && useCache) {
       return this._currentBlock;
