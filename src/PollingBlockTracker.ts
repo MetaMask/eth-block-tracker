@@ -301,8 +301,12 @@ export class PollingBlockTracker
   }
 
   /**
- * @deprecated getLatestBlock() should be used instead.
- */
+   * Checks for the latest block, updates the internal state,  and returns the
+   * value immediately rather than waiting for the next polling interval.
+   *
+   * @deprecated Use {@link getLatestBlock} instead.
+   * @returns {Promise<string>} A promise that resolves to the latest block number.
+   */
   async checkForLatestBlock() {
     await this._updateLatestBlock();
     return await this.getLatestBlock();
