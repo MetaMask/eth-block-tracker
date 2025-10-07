@@ -132,7 +132,7 @@ export class PollingBlockTracker
 
     try {
       // If tracker isn't running, just fetch directly
-      if (this._isRunning) {
+      if (!this._isRunning) {
         const latestBlock = await this._updateLatestBlock();
         resolve(latestBlock);
         return latestBlock;
