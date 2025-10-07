@@ -35,7 +35,8 @@ type InternalListener = (value: string) => void;
 
 export class PollingBlockTracker
   extends SafeEventEmitter
-  implements BlockTracker {
+  implements BlockTracker
+{
   private _isRunning: boolean;
 
   private readonly _blockResetDuration: number;
@@ -110,7 +111,10 @@ export class PollingBlockTracker
     return this._currentBlock;
   }
 
-  async getLatestBlock({ useCache = true, waitForPending = true }: { useCache?: boolean, waitForPending?: boolean } = {}): Promise<string> {
+  async getLatestBlock({
+    useCache = true,
+    waitForPending = true,
+  }: { useCache?: boolean; waitForPending?: boolean } = {}): Promise<string> {
     // return if available
     if (this._currentBlock && useCache) {
       return this._currentBlock;
@@ -309,7 +313,8 @@ export class PollingBlockTracker
     // fetch + set latest block
     const latestBlock = await this._fetchLatestBlock();
     this._newPotentialLatest(latestBlock);
-    // _newPotentialLatest ensures that this._currentBlock is not null
+    // _newPotentialLatest() ensures that this._currentBlock is not null
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this._currentBlock!;
   }
 
