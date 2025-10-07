@@ -300,6 +300,9 @@ export class PollingBlockTracker
     this._currentBlock = null;
   }
 
+  /**
+ * @deprecated getLatestBlock() should be used instead.
+ */
   async checkForLatestBlock() {
     await this._updateLatestBlock();
     return await this.getLatestBlock();
