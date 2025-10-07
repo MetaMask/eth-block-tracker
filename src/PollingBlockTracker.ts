@@ -35,8 +35,7 @@ type InternalListener = (value: string) => void;
 
 export class PollingBlockTracker
   extends SafeEventEmitter
-  implements BlockTracker
-{
+  implements BlockTracker {
   private _isRunning: boolean;
 
   private readonly _blockResetDuration: number;
@@ -111,26 +110,27 @@ export class PollingBlockTracker
     return this._currentBlock;
   }
 
-  async getLatestBlock(): Promise<string> {
+  async getLatestBlock({ useCache = true, waitForPending = true }: { useCache?: boolean, waitForPending?: boolean } = {}): Promise<string> {
     // return if available
-    if (this._currentBlock) {
+    if (this._currentBlock && useCache) {
       return this._currentBlock;
     }
 
-    if (this.#pendingLatestBlock) {
+    if (this.#pendingLatestBlock && waitForPending) {
       return await this.#pendingLatestBlock.promise;
     }
 
     const { promise, resolve, reject } = createDeferredPromise<string>({
       suppressUnhandledRejection: true,
     });
-    this.#pendingLatestBlock = { reject, promise };
+    const pendingLatestBlockPromise = { reject, promise };
+    this.#pendingLatestBlock = pendingLatestBlockPromise;
 
+    const wasRunning = this._isRunning;
     try {
       // If tracker isn't running, just fetch directly
-      if (!this._isRunning) {
-        const latestBlock = await this._fetchLatestBlock();
-        this._newPotentialLatest(latestBlock);
+      if (!wasRunning) {
+        const latestBlock = await this._updateLatestBlock();
         resolve(latestBlock);
         return latestBlock;
       }
@@ -150,7 +150,11 @@ export class PollingBlockTracker
       reject(error);
       throw error;
     } finally {
-      this.#pendingLatestBlock = undefined;
+      setTimeout(() => {
+        if (this.#pendingLatestBlock === pendingLatestBlockPromise) {
+          this.#pendingLatestBlock = undefined;
+        }
+      }, this._pollingInterval);
     }
   }
 
@@ -288,8 +292,7 @@ export class PollingBlockTracker
   }
 
   async checkForLatestBlock() {
-    await this._updateLatestBlock();
-    return await this.getLatestBlock();
+    return this.getLatestBlock({ useCache: false, waitForPending: false });
   }
 
   private _start() {
@@ -302,10 +305,12 @@ export class PollingBlockTracker
     this._clearPollingTimeout();
   }
 
-  private async _updateLatestBlock(): Promise<void> {
+  private async _updateLatestBlock(): Promise<string> {
     // fetch + set latest block
     const latestBlock = await this._fetchLatestBlock();
     this._newPotentialLatest(latestBlock);
+    // _newPotentialLatest ensures that this._currentBlock is not null
+    return this._currentBlock!;
   }
 
   private async _fetchLatestBlock(): Promise<string> {
