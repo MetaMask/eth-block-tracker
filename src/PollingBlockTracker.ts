@@ -113,22 +113,20 @@ export class PollingBlockTracker
 
   async getLatestBlock({
     useCache = true,
-    waitForPending = true,
   }: { useCache?: boolean; waitForPending?: boolean } = {}): Promise<string> {
     // return if available
     if (this._currentBlock && useCache) {
       return this._currentBlock;
     }
 
-    if (this.#pendingLatestBlock && waitForPending) {
+    if (this.#pendingLatestBlock) {
       return await this.#pendingLatestBlock.promise;
     }
 
     const { promise, resolve, reject } = createDeferredPromise<string>({
       suppressUnhandledRejection: true,
     });
-    const pendingLatestBlockPromise = { reject, promise };
-    this.#pendingLatestBlock = pendingLatestBlockPromise;
+    this.#pendingLatestBlock = { reject, promise };
 
     try {
       // If tracker isn't running, just fetch directly
@@ -158,9 +156,7 @@ export class PollingBlockTracker
       // achieve this by delaying the unsetting of the #pendingLatestBlock promise.
       setTimeout(
         () => {
-          if (this.#pendingLatestBlock === pendingLatestBlockPromise) {
-            this.#pendingLatestBlock = undefined;
-          }
+          this.#pendingLatestBlock = undefined;
         },
         this._isRunning ? 0 : this._pollingInterval,
       );
