@@ -130,10 +130,9 @@ export class PollingBlockTracker
     const pendingLatestBlockPromise = { reject, promise };
     this.#pendingLatestBlock = pendingLatestBlockPromise;
 
-    const wasRunning = this._isRunning;
     try {
       // If tracker isn't running, just fetch directly
-      if (!wasRunning) {
+      if (!this._isRunning) {
         const latestBlock = await this._updateLatestBlock();
         resolve(latestBlock);
         return latestBlock;
