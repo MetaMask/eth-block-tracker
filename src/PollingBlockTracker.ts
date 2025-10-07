@@ -156,11 +156,14 @@ export class PollingBlockTracker
       // We want to rate limit calls to this method  if we made a direct fetch
       // for the block number because the BlockTracker was not running. We
       // achieve this by delaying the unsetting of the #pendingLatestBlock promise.
-      setTimeout(() => {
-        if (this.#pendingLatestBlock === pendingLatestBlockPromise) {
-          this.#pendingLatestBlock = undefined;
-        }
-      }, this._isRunning ? 0 : this._pollingInterval);
+      setTimeout(
+        () => {
+          if (this.#pendingLatestBlock === pendingLatestBlockPromise) {
+            this.#pendingLatestBlock = undefined;
+          }
+        },
+        this._isRunning ? 0 : this._pollingInterval,
+      );
     }
   }
 
