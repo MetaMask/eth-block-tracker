@@ -128,38 +128,42 @@ export class PollingBlockTracker
     });
     this.#pendingLatestBlock = { reject, promise };
 
-    try {
+    if (this._isRunning) {
+      try {
+        // If tracker is running, wait for next block with timeout
+        const onLatestBlock = (value: string) => {
+          this.#removeInternalListener(onLatestBlock);
+          this.removeListener('latest', onLatestBlock);
+          resolve(value);
+        };
+
+        this.#addInternalListener(onLatestBlock);
+        this.once('latest', onLatestBlock);
+
+        return await promise;
+      } catch (error) {
+        reject(error);
+        throw error;
+      } finally {
+        this.#pendingLatestBlock = undefined;
+      }
+    } else {
       // If tracker isn't running, just fetch directly
-      if (!this._isRunning) {
+      try {
         const latestBlock = await this._updateLatestBlock();
         resolve(latestBlock);
         return latestBlock;
-      }
-
-      // If tracker is running, wait for next block with timeout
-      const onLatestBlock = (value: string) => {
-        this.#removeInternalListener(onLatestBlock);
-        this.removeListener('latest', onLatestBlock);
-        resolve(value);
-      };
-
-      this.#addInternalListener(onLatestBlock);
-      this.once('latest', onLatestBlock);
-
-      return await promise;
-    } catch (error) {
-      reject(error);
-      throw error;
-    } finally {
-      // We want to rate limit calls to this method if we made a direct fetch
-      // for the block number because the BlockTracker was not running. We
-      // achieve this by delaying the unsetting of the #pendingLatestBlock promise.
-      setTimeout(
-        () => {
+      } catch (error) {
+        reject(error);
+        throw error;
+      } finally {
+        // We want to rate limit calls to this method if we made a direct fetch
+        // for the block number because the BlockTracker was not running. We
+        // achieve this by delaying the unsetting of the #pendingLatestBlock promise.
+        setTimeout(() => {
           this.#pendingLatestBlock = undefined;
-        },
-        this._isRunning ? 0 : this._pollingInterval,
-      );
+        }, this._pollingInterval);
+      }
     }
   }
 
