@@ -153,7 +153,7 @@ export class PollingBlockTracker
       reject(error);
       throw error;
     } finally {
-      // We want to rate limit calls to this method  if we made a direct fetch
+      // We want to rate limit calls to this method if we made a direct fetch
       // for the block number because the BlockTracker was not running. We
       // achieve this by delaying the unsetting of the #pendingLatestBlock promise.
       setTimeout(
