@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix a bug in `PollingBlockTracker.getLatestBlock()` that made it possible for a stale block to be returned when the `PollingBlockTracker` isn't running.
+- Fix a bug in `PollingBlockTracker.getLatestBlock()` that made it possible for a stale block to be returned when the `PollingBlockTracker` isn't running. ([#340](https://github.com/MetaMask/eth-block-tracker/pull/340))
 
 ## [12.1.0]
 
