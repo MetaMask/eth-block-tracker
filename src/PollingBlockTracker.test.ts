@@ -1007,10 +1007,12 @@ describe('PollingBlockTracker', () => {
             },
             async ({ blockTracker }) => {
               await blockTracker.getLatestBlock();
-              const block = await blockTracker.getLatestBlock({ useCache: false });
+              const block = await blockTracker.getLatestBlock({
+                useCache: false,
+              });
               expect(block).toBe('0x1');
               expect(blockTracker.isRunning()).toBe(false);
-            }
+            },
           );
         });
 
@@ -1036,10 +1038,12 @@ describe('PollingBlockTracker', () => {
             },
             async ({ blockTracker }) => {
               await blockTracker.getLatestBlock();
-              const block = await blockTracker.getLatestBlock({ useCache: false });
+              const block = await blockTracker.getLatestBlock({
+                useCache: false,
+              });
               expect(block).toBe('0x2');
               expect(blockTracker.isRunning()).toBe(false);
-            }
+            },
           );
         });
       });
@@ -1073,9 +1077,8 @@ describe('PollingBlockTracker', () => {
                     result: '0x3',
                   },
                 ],
-              }
+              },
             },
-
 
             async ({ blockTracker }) => {
               blockTracker.on('latest', EMPTY_FUNCTION);
@@ -1083,12 +1086,16 @@ describe('PollingBlockTracker', () => {
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
               });
-              const blockPromise1 = blockTracker.getLatestBlock({ useCache: false });
+              const blockPromise1 = blockTracker.getLatestBlock({
+                useCache: false,
+              });
               await timeoutCallbacks[0]();
               const block1 = await blockPromise1;
               expect(block1).toBe('0x2');
 
-              const blockPromise2 = blockTracker.getLatestBlock({ useCache: false });
+              const blockPromise2 = blockTracker.getLatestBlock({
+                useCache: false,
+              });
               await timeoutCallbacks[1]();
               const block2 = await blockPromise2;
               expect(block2).toBe('0x3');
@@ -1133,8 +1140,12 @@ describe('PollingBlockTracker', () => {
                 blockTracker.on('_waitingForNextIteration', resolve);
               });
 
-              const blockPromise1 = blockTracker.getLatestBlock({ useCache: false });
-              const blockPromise2 = blockTracker.getLatestBlock({ useCache: false });
+              const blockPromise1 = blockTracker.getLatestBlock({
+                useCache: false,
+              });
+              const blockPromise2 = blockTracker.getLatestBlock({
+                useCache: false,
+              });
 
               await timeoutCallbacks[0]();
 
