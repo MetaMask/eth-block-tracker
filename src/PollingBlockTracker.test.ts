@@ -1075,20 +1075,28 @@ describe('PollingBlockTracker', () => {
             async ({ blockTracker }) => {
               blockTracker.on('latest', EMPTY_FUNCTION);
               await new Promise((resolve) => {
-                blockTracker.on('_waitingForNextIteration', resolve);
+                blockTracker.once('_waitingForNextIteration', resolve);
               });
 
               const blockPromise1 = blockTracker.getLatestBlock({
                 useCache: false,
               });
+              const pollingLoopPromise1 = new Promise((resolve) => {
+                blockTracker.once('_waitingForNextIteration', resolve);
+              });
               await setTimeoutRecorder.next();
+              await pollingLoopPromise1;
               const block1 = await blockPromise1;
               expect(block1).toBe('0x2');
 
+              const pollingLoopPromise2 = new Promise((resolve) => {
+                blockTracker.once('_waitingForNextIteration', resolve);
+              });
               const blockPromise2 = blockTracker.getLatestBlock({
                 useCache: false,
               });
               await setTimeoutRecorder.next();
+              await pollingLoopPromise2;
               const block2 = await blockPromise2;
               expect(block2).toBe('0x3');
             },
@@ -1116,7 +1124,7 @@ describe('PollingBlockTracker', () => {
             async ({ blockTracker }) => {
               blockTracker.on('latest', EMPTY_FUNCTION);
               await new Promise((resolve) => {
-                blockTracker.on('_waitingForNextIteration', resolve);
+                blockTracker.once('_waitingForNextIteration', resolve);
               });
 
               const blockPromise1 = blockTracker.getLatestBlock({
@@ -1126,7 +1134,11 @@ describe('PollingBlockTracker', () => {
                 useCache: false,
               });
 
+              const pollingLoopPromise = new Promise((resolve) => {
+                blockTracker.once('_waitingForNextIteration', resolve);
+              });
               await setTimeoutRecorder.next();
+              await pollingLoopPromise;
 
               const block1 = await blockPromise1;
               const block2 = await blockPromise2;
