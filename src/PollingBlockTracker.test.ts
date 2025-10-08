@@ -1052,7 +1052,7 @@ describe('PollingBlockTracker', () => {
         it('should wait for the next block event even if a block is already cached', async () => {
           const timeoutCallbacks: (() => Promise<void>)[] = [];
           recordCallsToSetTimeout({
-            numAutomaticCalls: 3,
+            numAutomaticCalls: 2,
             interceptCallback: (callback) => {
               return async () => {
                 timeoutCallbacks.push(callback);
@@ -1106,7 +1106,7 @@ describe('PollingBlockTracker', () => {
         it('should handle concurrent calls', async () => {
           const timeoutCallbacks: (() => Promise<void>)[] = [];
           recordCallsToSetTimeout({
-            numAutomaticCalls: 3,
+            numAutomaticCalls: 1,
             interceptCallback: (callback) => {
               return async () => {
                 timeoutCallbacks.push(callback);
@@ -1125,10 +1125,6 @@ describe('PollingBlockTracker', () => {
                   {
                     methodName: 'eth_blockNumber',
                     result: '0x2',
-                  },
-                  {
-                    methodName: 'eth_blockNumber',
-                    result: '0x3',
                   },
                 ],
               },
