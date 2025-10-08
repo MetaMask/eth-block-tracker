@@ -984,6 +984,169 @@ describe('PollingBlockTracker', () => {
         );
       });
     });
+
+    describe('with useCache: false', () => {
+      describe('when the block tracker is not running', () => {
+        it('should not fetch a new block even if a block is already cached and less than the polling interval time has passed since the last call', async () => {
+          recordCallsToSetTimeout();
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x1',
+                  },
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x2',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              await blockTracker.getLatestBlock();
+              const block = await blockTracker.getLatestBlock({ useCache: false });
+              expect(block).toBe('0x1');
+              expect(blockTracker.isRunning()).toBe(false);
+            }
+          );
+        });
+
+        it('should fetch a new block even if a block is already cached and more than the polling interval time has passed since the last call', async () => {
+          recordCallsToSetTimeout({
+            numAutomaticCalls: 1,
+          });
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x1',
+                  },
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x2',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              await blockTracker.getLatestBlock();
+              const block = await blockTracker.getLatestBlock({ useCache: false });
+              expect(block).toBe('0x2');
+              expect(blockTracker.isRunning()).toBe(false);
+            }
+          );
+        });
+      });
+
+      describe('when the block tracker is already started', () => {
+        it('should wait for the next block event even if a block is already cached', async () => {
+          const timeoutCallbacks: (() => Promise<void>)[] = [];
+          recordCallsToSetTimeout({
+            numAutomaticCalls: 3,
+            interceptCallback: (callback) => {
+              return async () => {
+                timeoutCallbacks.push(callback);
+              };
+            },
+          });
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x1',
+                  },
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x2',
+                  },
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x3',
+                  },
+                ],
+              }
+            },
+
+
+            async ({ blockTracker }) => {
+              blockTracker.on('latest', EMPTY_FUNCTION);
+
+              await new Promise((resolve) => {
+                blockTracker.on('_waitingForNextIteration', resolve);
+              });
+              const blockPromise1 = blockTracker.getLatestBlock({ useCache: false });
+              await timeoutCallbacks[0]();
+              const block1 = await blockPromise1;
+              expect(block1).toBe('0x2');
+
+              const blockPromise2 = blockTracker.getLatestBlock({ useCache: false });
+              await timeoutCallbacks[1]();
+              const block2 = await blockPromise2;
+              expect(block2).toBe('0x3');
+            },
+          );
+        });
+
+        it('should handle concurrent calls', async () => {
+          const timeoutCallbacks: (() => Promise<void>)[] = [];
+          recordCallsToSetTimeout({
+            numAutomaticCalls: 3,
+            interceptCallback: (callback) => {
+              return async () => {
+                timeoutCallbacks.push(callback);
+              };
+            },
+          });
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x1',
+                  },
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x2',
+                  },
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x3',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              blockTracker.on('latest', EMPTY_FUNCTION);
+
+              await new Promise((resolve) => {
+                blockTracker.on('_waitingForNextIteration', resolve);
+              });
+
+              const blockPromise1 = blockTracker.getLatestBlock({ useCache: false });
+              const blockPromise2 = blockTracker.getLatestBlock({ useCache: false });
+
+              await timeoutCallbacks[0]();
+
+              const block1 = await blockPromise1;
+              const block2 = await blockPromise2;
+              expect(block1).toBe('0x2');
+              expect(block2).toBe('0x2');
+            },
+          );
+        });
+      });
+    });
   });
 
   describe('checkForLatestBlock', () => {
