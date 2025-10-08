@@ -1050,15 +1050,7 @@ describe('PollingBlockTracker', () => {
 
       describe('when the block tracker is already started', () => {
         it('should wait for the next block event even if a block is already cached', async () => {
-          const timeoutCallbacks: (() => Promise<void>)[] = [];
-          recordCallsToSetTimeout({
-            numAutomaticCalls: 2,
-            interceptCallback: (callback) => {
-              return async () => {
-                timeoutCallbacks.push(callback);
-              };
-            },
-          });
+          const setTimeoutRecorder = recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
             {
@@ -1082,21 +1074,21 @@ describe('PollingBlockTracker', () => {
 
             async ({ blockTracker }) => {
               blockTracker.on('latest', EMPTY_FUNCTION);
-
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
               });
+
               const blockPromise1 = blockTracker.getLatestBlock({
                 useCache: false,
               });
-              await timeoutCallbacks[0]();
+              await setTimeoutRecorder.next();
               const block1 = await blockPromise1;
               expect(block1).toBe('0x2');
 
               const blockPromise2 = blockTracker.getLatestBlock({
                 useCache: false,
               });
-              await timeoutCallbacks[1]();
+              await setTimeoutRecorder.next();
               const block2 = await blockPromise2;
               expect(block2).toBe('0x3');
             },
@@ -1104,15 +1096,7 @@ describe('PollingBlockTracker', () => {
         });
 
         it('should handle concurrent calls', async () => {
-          const timeoutCallbacks: (() => Promise<void>)[] = [];
-          recordCallsToSetTimeout({
-            numAutomaticCalls: 1,
-            interceptCallback: (callback) => {
-              return async () => {
-                timeoutCallbacks.push(callback);
-              };
-            },
-          });
+          const setTimeoutRecorder = recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
             {
@@ -1131,7 +1115,6 @@ describe('PollingBlockTracker', () => {
             },
             async ({ blockTracker }) => {
               blockTracker.on('latest', EMPTY_FUNCTION);
-
               await new Promise((resolve) => {
                 blockTracker.on('_waitingForNextIteration', resolve);
               });
@@ -1143,7 +1126,7 @@ describe('PollingBlockTracker', () => {
                 useCache: false,
               });
 
-              await timeoutCallbacks[0]();
+              await setTimeoutRecorder.next();
 
               const block1 = await blockPromise1;
               const block2 = await blockPromise2;
