@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `PollingBlockTracker.getLatestBlock()` now accepts an optional param option `useCache` which ignores the cached block number value in state and instead updates and returns a new block number retrieved within the last `pollingInterval` period when false. Defaults: true ([#340](https://github.com/MetaMask/eth-block-tracker/pull/340))
+
+### Fixed
+
+- Fix a bug in `PollingBlockTracker.getLatestBlock()` that made it possible for a stale block to be returned when the `PollingBlockTracker` isn't running.
+
 ## [12.1.0]
 
 ### Changed
