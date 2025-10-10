@@ -112,8 +112,8 @@ export class PollingBlockTracker
 
   async getLatestBlock(): Promise<string> {
     // Return if available, unless the value is stale.
-    // If #pendingPollInterval is unset, it means the value is stale (i.e. "older" than the
-    // polling interval).
+    // If #pendingPollInterval is set it means that the polling interval has not elapsed since the
+    // last update, so the block number is not stale yet.
     if (this._currentBlock && this.#pendingPollInterval) {
       return this._currentBlock;
     }
