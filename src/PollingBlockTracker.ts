@@ -47,8 +47,6 @@ export class PollingBlockTracker
 
   private _blockResetTimeout?: ReturnType<typeof setTimeout>;
 
-  private _pollingTimeout?: ReturnType<typeof setTimeout>;
-
   private readonly _provider: SafeEventEmitterProvider;
 
   private readonly _pollingInterval: number;
@@ -64,6 +62,8 @@ export class PollingBlockTracker
   #pendingLatestBlock?: Omit<DeferredPromise<string>, 'resolve'>;
 
   #pendingFetch?: Omit<DeferredPromise<string>, 'resolve'>;
+
+  #pendingPollInterval?: DeferredPromise;
 
   constructor(opts: PollingBlockTrackerOptions = {}) {
     // parse + validate args
@@ -111,59 +111,18 @@ export class PollingBlockTracker
     return this._currentBlock;
   }
 
-  async getLatestBlock({
-    useCache = true,
-  }: { useCache?: boolean } = {}): Promise<string> {
+  async getLatestBlock(): Promise<string> {
     // return if available
-    if (this._currentBlock && useCache) {
+    if (this._currentBlock && this.#pendingPollInterval) {
       return this._currentBlock;
     }
 
-    if (this.#pendingLatestBlock) {
-      return await this.#pendingLatestBlock.promise;
-    }
-
-    const { promise, resolve, reject } = createDeferredPromise<string>({
-      suppressUnhandledRejection: true,
-    });
-    this.#pendingLatestBlock = { reject, promise };
-
-    if (this._isRunning) {
-      try {
-        // If tracker is running, wait for next block with timeout
-        const onLatestBlock = (value: string) => {
-          this.#removeInternalListener(onLatestBlock);
-          this.removeListener('latest', onLatestBlock);
-          resolve(value);
-        };
-
-        this.#addInternalListener(onLatestBlock);
-        this.once('latest', onLatestBlock);
-
-        return await promise;
-      } catch (error) {
-        reject(error);
-        throw error;
-      } finally {
-        this.#pendingLatestBlock = undefined;
-      }
-    } else {
-      // If tracker isn't running, just fetch directly
-      try {
-        const latestBlock = await this._updateLatestBlock();
-        resolve(latestBlock);
-        return latestBlock;
-      } catch (error) {
-        reject(error);
-        throw error;
-      } finally {
-        // We want to rate limit calls to this method if we made a direct fetch
-        // for the block number because the BlockTracker was not running. We
-        // achieve this by delaying the unsetting of the #pendingLatestBlock promise.
-        setTimeout(() => {
-          this.#pendingLatestBlock = undefined;
-        }, this._pollingInterval);
-      }
+    try {
+      return await this._updateLatestBlock();
+    } finally {
+      // Start a polling interval just to rate limit these calls while
+      // the block tracker isn't running.
+      this._createPollingInterval();
     }
   }
 
@@ -319,7 +278,7 @@ export class PollingBlockTracker
   }
 
   private _end() {
-    this._clearPollingTimeout();
+    this._resolvePendingPollingInterval();
   }
 
   private async _updateLatestBlock(): Promise<string> {
@@ -376,6 +335,14 @@ export class PollingBlockTracker
   private async _updateAndQueue() {
     let interval = this._pollingInterval;
 
+    if (this.#pendingPollInterval) {
+      await this.#pendingPollInterval.promise;
+
+      if (!this._isRunning) {
+        return;
+      }
+    }
+
     try {
       await this._updateLatestBlock();
     } catch (error: unknown) {
@@ -392,27 +359,39 @@ export class PollingBlockTracker
       return;
     }
 
-    this._clearPollingTimeout();
+    const pendingPollingInterval = this._createPollingInterval(interval);
 
-    const timeoutRef = setTimeout(() => {
-      // Intentionally not awaited as this just continues the polling loop.
+    // Intentionally not awaited as this just continues the polling loop.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    pendingPollingInterval.promise.then(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._updateAndQueue();
-    }, interval);
-
-    if (timeoutRef.unref && !this._keepEventLoopActive) {
-      timeoutRef.unref();
-    }
-
-    this._pollingTimeout = timeoutRef;
+    });
 
     this.emit('_waitingForNextIteration');
   }
 
-  _clearPollingTimeout() {
-    if (this._pollingTimeout) {
-      clearTimeout(this._pollingTimeout);
-      this._pollingTimeout = undefined;
+  _createPollingInterval(
+    interval: number = this._pollingInterval,
+  ): DeferredPromise {
+    this.#pendingPollInterval = createDeferredPromise({
+      suppressUnhandledRejection: true,
+    });
+
+    const timeoutRef = setTimeout(() => {
+      this._resolvePendingPollingInterval();
+      if (timeoutRef.unref && !this._keepEventLoopActive) {
+        timeoutRef.unref();
+      }
+    }, interval);
+
+    return this.#pendingPollInterval;
+  }
+
+  _resolvePendingPollingInterval() {
+    if (this.#pendingPollInterval) {
+      this.#pendingPollInterval.resolve();
+      this.#pendingPollInterval = undefined;
     }
   }
 
