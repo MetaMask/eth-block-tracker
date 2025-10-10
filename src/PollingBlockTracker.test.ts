@@ -350,41 +350,6 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should not retry failed requests after the block tracker is stopped', async () => {
-        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
-
-        await withPollingBlockTracker(
-          {
-            provider: {
-              stubs: [
-                {
-                  methodName: 'eth_blockNumber',
-                  error: new Error('boom'),
-                },
-              ],
-            },
-          },
-          async ({ blockTracker, provider }) => {
-            blockTracker.on('latest', EMPTY_FUNCTION);
-            const requestSpy = jest.spyOn(provider, 'request');
-
-            const latestBlockPromise = blockTracker.getLatestBlock();
-            await blockTracker.destroy();
-
-            await expect(latestBlockPromise).rejects.toThrow(
-              'Block tracker destroyed',
-            );
-            expect(requestSpy).toHaveBeenCalledTimes(1);
-            expect(requestSpy).toHaveBeenCalledWith({
-              jsonrpc: '2.0',
-              id: expect.any(Number),
-              method: 'eth_blockNumber',
-              params: [],
-            });
-          },
-        );
-      });
-
       it('should log an error if, while making a request for the latest block number, the provider throws and there is nothing listening to "error"', async () => {
         const thrownError = new Error('boom');
         recordCallsToSetTimeout({ numAutomaticCalls: 1 });

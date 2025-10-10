@@ -20,7 +20,6 @@ const blockTrackerEvents: (string | symbol)[] = ['sync', 'latest'];
 export interface PollingBlockTrackerOptions {
   provider?: SafeEventEmitterProvider;
   pollingInterval?: number;
-  retryTimeout?: number;
   keepEventLoopActive?: boolean;
   setSkipCacheFlag?: boolean;
   blockResetDuration?: number;
@@ -52,8 +51,6 @@ export class PollingBlockTracker
   private readonly _provider: SafeEventEmitterProvider;
 
   private readonly _pollingInterval: number;
-
-  private readonly _retryTimeout: number;
 
   private readonly _keepEventLoopActive: boolean;
 
@@ -91,7 +88,6 @@ export class PollingBlockTracker
     // config
     this._provider = opts.provider;
     this._pollingInterval = opts.pollingInterval || 20 * sec;
-    this._retryTimeout = opts.retryTimeout || this._pollingInterval / 10;
     this._keepEventLoopActive =
       opts.keepEventLoopActive === undefined ? true : opts.keepEventLoopActive;
     this._setSkipCacheFlag = opts.setSkipCacheFlag || false;
@@ -374,8 +370,6 @@ export class PollingBlockTracker
    * Updates the latest block and then queues the next update.
    */
   private async _updateAndQueue() {
-    let interval = this._pollingInterval;
-
     try {
       await this._updateLatestBlock();
     } catch (error: unknown) {
@@ -384,8 +378,6 @@ export class PollingBlockTracker
       } catch {
         console.error(`Error updating latest block: ${getErrorMessage(error)}`);
       }
-
-      interval = this._retryTimeout;
     }
 
     if (!this._isRunning) {
@@ -398,7 +390,7 @@ export class PollingBlockTracker
       // Intentionally not awaited as this just continues the polling loop.
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._updateAndQueue();
-    }, interval);
+    }, this._pollingInterval);
 
     if (timeoutRef.unref && !this._keepEventLoopActive) {
       timeoutRef.unref();
