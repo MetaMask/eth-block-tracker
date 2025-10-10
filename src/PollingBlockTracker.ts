@@ -380,10 +380,13 @@ export class PollingBlockTracker
 
     const timeoutRef = setTimeout(() => {
       this._resolvePendingPollingInterval();
-      if (timeoutRef.unref && !this._keepEventLoopActive) {
-        timeoutRef.unref();
-      }
     }, interval);
+
+    // This is just for eth-block-tracker unit tests, to prevent the setTimeout from keeping the
+    // process going.
+    if (timeoutRef.unref && !this._keepEventLoopActive) {
+      timeoutRef.unref();
+    }
 
     return this.#pendingPollInterval;
   }
