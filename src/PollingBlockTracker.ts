@@ -352,6 +352,11 @@ export class PollingBlockTracker
       }
     }
 
+    // Bail if `_updateAndQueue` is already running. This can happen in edge cases such as rapid
+    // start/stop of the poller.
+    // We have other checks to ensure we don't fetch concurrently, and to ensure we only have one
+    // polling interval. But we still need this check to prevent multiple concurrent _functions_
+    // which would waste CPU and memory despite having no functional impact.
     if (this.#updateAndQueueIsRunning) {
       return;
     }
