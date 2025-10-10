@@ -188,7 +188,6 @@ export class PollingBlockTracker
 
     this._isRunning = false;
     this._setupBlockResetTimeout();
-    this._end();
     this.#rejectPendingLatestBlock(new Error('Block tracker destroyed'));
     this.emit('_ended');
   }
@@ -268,10 +267,6 @@ export class PollingBlockTracker
     // Intentionally not awaited as this starts the polling via a timeout chain.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._updateAndQueue();
-  }
-
-  private _end() {
-    this._resolvePendingPollingInterval();
   }
 
   private async _updateLatestBlock(): Promise<string> {
@@ -381,7 +376,10 @@ export class PollingBlockTracker
     });
 
     const timeoutRef = setTimeout(() => {
-      this._resolvePendingPollingInterval();
+      if (this.#pendingPollInterval) {
+        this.#pendingPollInterval.resolve();
+        this.#pendingPollInterval = undefined;
+      }
     }, interval);
 
     // This is just for eth-block-tracker unit tests, to prevent the setTimeout from keeping the
@@ -391,13 +389,6 @@ export class PollingBlockTracker
     }
 
     return this.#pendingPollInterval;
-  }
-
-  _resolvePendingPollingInterval() {
-    if (this.#pendingPollInterval) {
-      this.#pendingPollInterval.resolve();
-      this.#pendingPollInterval = undefined;
-    }
   }
 
   #rejectPendingLatestBlock(error: unknown) {
