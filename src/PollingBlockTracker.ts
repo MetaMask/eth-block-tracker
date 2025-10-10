@@ -117,11 +117,22 @@ export class PollingBlockTracker
     return this._currentBlock;
   }
 
-  async getLatestBlock(): Promise<string> {
-    // Return if available, unless the value is stale.
+  /**
+   * Get the latest block, fetching a new one if necessary.
+   *
+   * @param options - Options.
+   * @param options.useCache - Whether to always use the cache. If false, the cache is only used if
+   * we've checked for latest block recently.
+   * @returns The block number.
+   */
+  async getLatestBlock({
+    useCache = true,
+  }: { useCache?: boolean } = {}): Promise<string> {
     // If #pendingPollInterval is set it means that the polling interval has not elapsed since the
     // last update, so the block number is not stale yet.
-    if (this._currentBlock && this.#pendingPollInterval) {
+    const blockIsFresh = Boolean(this.#pendingPollInterval);
+
+    if (this._currentBlock && (useCache || blockIsFresh)) {
       return this._currentBlock;
     }
 
