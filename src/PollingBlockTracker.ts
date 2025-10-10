@@ -333,6 +333,7 @@ export class PollingBlockTracker
     if (this.#pendingPollInterval) {
       await this.#pendingPollInterval.promise;
 
+      // Check again to ensure that the poller is running after the wait
       if (!this._isRunning) {
         return;
       }
