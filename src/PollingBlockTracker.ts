@@ -59,6 +59,13 @@ export class PollingBlockTracker
 
   #pendingFetch?: Omit<DeferredPromise<string>, 'resolve'>;
 
+  /**
+   * This tracks whether `_updateAndQueue` is currently fetching a new block.
+   * This is used to prevent multiple "loops" from running concurrently, which could create a
+   * memory leak.
+   */
+  #updateAndQueueIsRunning = false;
+
   // This represents the "cooling off" period after we check the latest block.
   // If this is set, it means that less time than the polling interval has elapsed since we last
   // checked.
@@ -331,6 +338,11 @@ export class PollingBlockTracker
       }
     }
 
+    if (this.#updateAndQueueIsRunning) {
+      return;
+    }
+    this.#updateAndQueueIsRunning = true;
+
     try {
       await this._updateLatestBlock();
     } catch (error: unknown) {
@@ -341,6 +353,8 @@ export class PollingBlockTracker
       }
 
       interval = this._retryTimeout;
+    } finally {
+      this.#updateAndQueueIsRunning = false;
     }
 
     if (!this._isRunning) {
