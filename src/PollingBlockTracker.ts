@@ -59,6 +59,9 @@ export class PollingBlockTracker
 
   #pendingFetch?: Omit<DeferredPromise<string>, 'resolve'>;
 
+  // This represents the "cooling off" period after we check the latest block.
+  // If this is set, it means that less time than the polling interval has elapsed since we last
+  // checked.
   #pendingPollInterval?: DeferredPromise;
 
   constructor(opts: PollingBlockTrackerOptions = {}) {
@@ -361,9 +364,18 @@ export class PollingBlockTracker
     this.emit('_waitingForNextIteration');
   }
 
+  /**
+   * Create a polling interval, if one doesn't exist already.
+   *
+   * @param interval - The period of time to wait. Defaults to the polling interval.
+   * @returns The polling interval deferred Promise.
+   */
   _createPollingInterval(
     interval: number = this._pollingInterval,
   ): DeferredPromise {
+    if (this.#pendingPollInterval) {
+      return this.#pendingPollInterval;
+    }
     this.#pendingPollInterval = createDeferredPromise({
       suppressUnhandledRejection: true,
     });
