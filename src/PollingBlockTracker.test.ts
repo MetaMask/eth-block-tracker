@@ -1,3 +1,4 @@
+import { Json } from '@metamask/utils';
 import { PollingBlockTracker } from '.';
 import buildDeferred from '../tests/buildDeferred';
 import EMPTY_FUNCTION from '../tests/emptyFunction';
@@ -985,9 +986,9 @@ describe('PollingBlockTracker', () => {
       });
     });
 
-    describe('with useCache: false', () => {
+    describe('with useCache: false and an existing block number is cached', () => {
       describe('when the block tracker is not running', () => {
-        it('should not fetch a new block even if a block is already cached and less than the polling interval time has passed since the last call', async () => {
+        it('should use the cached block if it is fresh (less than the polling interval time has passed since the last call)', async () => {
           recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1016,7 +1017,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should fetch a new block even if a block is already cached and more than the polling interval time has passed since the last call', async () => {
+        it('should fetch a new block if the cached block is stale (more than the polling interval time has passed since the last call)', async () => {
           recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -1048,8 +1049,8 @@ describe('PollingBlockTracker', () => {
         });
       });
 
-      describe('when the block tracker is already started', () => {
-        it('should wait for the next block event even if a block is already cached', async () => {
+      describe('when the block tracker is running', () => {
+        it('should use the cached block if it is fresh (less than the polling interval time has passed since the last poll iteration)', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1071,39 +1072,40 @@ describe('PollingBlockTracker', () => {
                 ],
               },
             },
+            async ({ provider, blockTracker }) => {
+              // Mocking these methods here to avoid race conditions
+              // after the polling loop has started.
+              const updateLatestBlockSpy = jest.spyOn(blockTracker as unknown as { _updateLatestBlock: jest.Mock }, '_updateLatestBlock');
 
-            async ({ blockTracker }) => {
               blockTracker.on('latest', EMPTY_FUNCTION);
+
               await new Promise((resolve) => {
                 blockTracker.once('_waitingForNextIteration', resolve);
               });
 
-              const blockPromise1 = blockTracker.getLatestBlock({
-                useCache: false,
-              });
-              const pollingLoopPromise1 = new Promise((resolve) => {
-                blockTracker.once('_waitingForNextIteration', resolve);
-              });
-              await setTimeoutRecorder.next();
-              await pollingLoopPromise1;
-              const block1 = await blockPromise1;
-              expect(block1).toBe('0x2');
+              const block1 = await blockTracker.getLatestBlock();
+              expect(block1).toBe('0x1');
 
-              const pollingLoopPromise2 = new Promise((resolve) => {
-                blockTracker.once('_waitingForNextIteration', resolve);
-              });
-              const blockPromise2 = blockTracker.getLatestBlock({
+              updateLatestBlockSpy.mockClear();
+              console.log('next iteration')
+              await setTimeoutRecorder.next();
+
+              //  _updateLatestBlock should have been called by the polling loop
+              expect(updateLatestBlockSpy).toHaveBeenCalledTimes(1);
+
+              console.log('getting latest block2')
+              const block2 = await blockTracker.getLatestBlock({
                 useCache: false,
               });
-              await setTimeoutRecorder.next();
-              await pollingLoopPromise2;
-              const block2 = await blockPromise2;
-              expect(block2).toBe('0x3');
+              expect(block2).toBe('0x2');
+              //  _updateLatestBlock should not have been called the second time by the getLatestBlock call
+              // since the cached block should have been considered fresh.
+              expect(updateLatestBlockSpy).toHaveBeenCalledTimes(1);
             },
           );
         });
 
-        it('should handle concurrent calls', async () => {
+        it('should fetch a new block if the cached block is stale (more than the polling interval time has passed since the last poll iteration)', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1114,36 +1116,64 @@ describe('PollingBlockTracker', () => {
                     methodName: 'eth_blockNumber',
                     result: '0x1',
                   },
-                  {
-                    methodName: 'eth_blockNumber',
-                    result: '0x2',
-                  },
+                  // This is handled by the mock request implementation
+                  // {
+                  //   methodName: 'eth_blockNumber',
+                  //   result: '0x2',
+                  // },
                 ],
               },
             },
-            async ({ blockTracker }) => {
+
+            async ({ provider, blockTracker }) => {
+              // Mocking these methods here to avoid race conditions
+              // after the polling loop has started.
+              const providerRequestMock = jest.spyOn(provider, 'request')
+              const updateLatestBlockSpy = jest.spyOn(blockTracker as unknown as { _updateLatestBlock: jest.Mock }, '_updateLatestBlock');
+
               blockTracker.on('latest', EMPTY_FUNCTION);
+
               await new Promise((resolve) => {
                 blockTracker.once('_waitingForNextIteration', resolve);
               });
 
-              const blockPromise1 = blockTracker.getLatestBlock({
-                useCache: false,
+              const block1 = await blockTracker.getLatestBlock();
+              expect(block1).toBe('0x1');
+
+              const deferredRequestPromise = buildDeferred<Json>();
+
+              // Delay the first call to the provider from the polling loop
+              // to ensure the cached block is considered stale in the getLatestBlock call.
+              providerRequestMock.mockImplementationOnce(() => {
+                return deferredRequestPromise.promise
               });
+              providerRequestMock.mockClear();
+              updateLatestBlockSpy.mockClear();
+
+              await setTimeoutRecorder.next();
+
+              //  _updateLatestBlock should have been called by the polling loop causing
+              // _fetchLatestBlock to fire and acquire the pending promise guard.
+              expect(updateLatestBlockSpy).toHaveBeenCalledTimes(1);
+              expect(providerRequestMock).toHaveBeenCalledTimes(1);
+              expect(providerRequestMock).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                id: expect.any(Number),
+                method: 'eth_blockNumber',
+                params: [],
+              });
+
               const blockPromise2 = blockTracker.getLatestBlock({
                 useCache: false,
               });
-
-              const pollingLoopPromise = new Promise((resolve) => {
-                blockTracker.once('_waitingForNextIteration', resolve);
-              });
-              await setTimeoutRecorder.next();
-              await pollingLoopPromise;
-
-              const block1 = await blockPromise1;
+              deferredRequestPromise.resolve('0x2');
               const block2 = await blockPromise2;
-              expect(block1).toBe('0x2');
               expect(block2).toBe('0x2');
+              //  _updateLatestBlock should have been called the second time by the getLatestBlock call
+              // but the provider request should not have been made a second time because _fetchLatestBlock
+              // has a pending promise guard preventing concurrent calls.
+              expect(updateLatestBlockSpy).toHaveBeenCalledTimes(2);
+              expect(providerRequestMock).toHaveBeenCalledTimes(1);
             },
           );
         });
@@ -2797,6 +2827,8 @@ describe('PollingBlockTracker', () => {
                 blockTracker[methodToRemoveListener]('latest', listener);
 
                 expect(blockTracker.isRunning()).toBe(false);
+
+                await setTimeoutRecorder.next()
               }
 
               expect(
