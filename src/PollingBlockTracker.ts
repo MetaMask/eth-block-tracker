@@ -31,8 +31,6 @@ interface ExtendedJsonRpcRequest extends JsonRpcRequest<[]> {
   skipCache?: boolean;
 }
 
-type InternalListener = (value: string) => void;
-
 export class PollingBlockTracker
   extends SafeEventEmitter
   implements BlockTracker
@@ -56,8 +54,6 @@ export class PollingBlockTracker
   private readonly _keepEventLoopActive: boolean;
 
   private readonly _setSkipCacheFlag: boolean;
-
-  readonly #internalEventListeners: InternalListener[] = [];
 
   #pendingLatestBlock?: Omit<DeferredPromise<string>, 'resolve'>;
 
@@ -193,17 +189,9 @@ export class PollingBlockTracker
   }
 
   private _getBlockTrackerEventCount(): number {
-    return (
-      blockTrackerEvents
-        .map((eventName) => this.listeners(eventName))
-        .flat()
-        // internal listeners are not included in the count
-        .filter((listener) =>
-          this.#internalEventListeners.every(
-            (internalListener) => !Object.is(internalListener, listener),
-          ),
-        ).length
-    );
+    return blockTrackerEvents
+      .map((eventName) => this.listeners(eventName))
+      .flat().length;
   }
 
   private _shouldUseNewBlock(newBlock: string) {
@@ -396,17 +384,6 @@ export class PollingBlockTracker
       this.#pendingPollInterval.resolve();
       this.#pendingPollInterval = undefined;
     }
-  }
-
-  #addInternalListener(listener: InternalListener) {
-    this.#internalEventListeners.push(listener);
-  }
-
-  #removeInternalListener(listener: InternalListener) {
-    this.#internalEventListeners.splice(
-      this.#internalEventListeners.indexOf(listener),
-      1,
-    );
   }
 
   #rejectPendingLatestBlock(error: unknown) {
