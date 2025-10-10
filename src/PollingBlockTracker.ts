@@ -66,9 +66,11 @@ export class PollingBlockTracker
    */
   #updateAndQueueIsRunning = false;
 
-  // This represents the "cooling off" period after we check the latest block.
-  // If this is set, it means that less time than the polling interval has elapsed since we last
-  // checked.
+  /**
+   * This represents the "cooling off" period after we check the latest block.
+   * If this is set, it means that less time than the polling interval has elapsed since we last
+   * checked.
+   */
   #pendingPollInterval?: DeferredPromise;
 
   constructor(opts: PollingBlockTrackerOptions = {}) {
