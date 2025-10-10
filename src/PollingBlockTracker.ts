@@ -55,8 +55,6 @@ export class PollingBlockTracker
 
   private readonly _setSkipCacheFlag: boolean;
 
-  #pendingLatestBlock?: Omit<DeferredPromise<string>, 'resolve'>;
-
   #pendingFetch?: Omit<DeferredPromise<string>, 'resolve'>;
 
   /**
@@ -208,7 +206,6 @@ export class PollingBlockTracker
 
     this._isRunning = false;
     this._setupBlockResetTimeout();
-    this.#rejectPendingLatestBlock(new Error('Block tracker destroyed'));
     this.emit('_ended');
   }
 
@@ -329,7 +326,6 @@ export class PollingBlockTracker
     } catch (error) {
       log('Encountered error fetching block', getErrorMessage(error));
       reject(error);
-      this.#rejectPendingLatestBlock(error);
       throw error;
     } finally {
       this.#pendingFetch = undefined;
@@ -412,11 +408,6 @@ export class PollingBlockTracker
     if (timeoutRef.unref && !this._keepEventLoopActive) {
       timeoutRef.unref();
     }
-  }
-
-  #rejectPendingLatestBlock(error: unknown) {
-    this.#pendingLatestBlock?.reject(error);
-    this.#pendingLatestBlock = undefined;
   }
 }
 
