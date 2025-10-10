@@ -108,7 +108,9 @@ export class PollingBlockTracker
   }
 
   async getLatestBlock(): Promise<string> {
-    // return if available
+    // Return if available, unless the value is stale.
+    // If #pendingPollInterval is unset, it means the value is stale (i.e. "older" than the
+    // polling interval).
     if (this._currentBlock && this.#pendingPollInterval) {
       return this._currentBlock;
     }
@@ -116,7 +118,7 @@ export class PollingBlockTracker
     try {
       return await this._updateLatestBlock();
     } finally {
-      // Start a polling interval just to rate limit these calls while
+      // Start a polling interval just to rate limit these calls, in case
       // the block tracker isn't running.
       this._createPollingInterval();
     }
