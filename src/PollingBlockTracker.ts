@@ -347,15 +347,10 @@ export class PollingBlockTracker
       return;
     }
 
-    const pendingPollingInterval = this._createPollingInterval(interval);
-
+    this._createPollingInterval(interval);
     // Intentionally not awaited as this just continues the polling loop.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    pendingPollingInterval.promise.then(() => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this._updateAndQueue();
-    });
-
+    this._updateAndQueue();
     this.emit('_waitingForNextIteration');
   }
 
@@ -363,13 +358,10 @@ export class PollingBlockTracker
    * Create a polling interval, if one doesn't exist already.
    *
    * @param interval - The period of time to wait. Defaults to the polling interval.
-   * @returns The polling interval deferred Promise.
    */
-  _createPollingInterval(
-    interval: number = this._pollingInterval,
-  ): DeferredPromise {
+  _createPollingInterval(interval: number = this._pollingInterval) {
     if (this.#pendingPollInterval) {
-      return this.#pendingPollInterval;
+      return;
     }
     this.#pendingPollInterval = createDeferredPromise({
       suppressUnhandledRejection: true,
@@ -387,8 +379,6 @@ export class PollingBlockTracker
     if (timeoutRef.unref && !this._keepEventLoopActive) {
       timeoutRef.unref();
     }
-
-    return this.#pendingPollInterval;
   }
 
   #rejectPendingLatestBlock(error: unknown) {
