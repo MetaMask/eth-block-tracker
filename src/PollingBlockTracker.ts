@@ -398,8 +398,9 @@ export class PollingBlockTracker
 
     const timeoutRef = setTimeout(() => {
       if (this.#pendingPollInterval) {
-        this.#pendingPollInterval.resolve();
+        const pendingPollInterval = this.#pendingPollInterval;
         this.#pendingPollInterval = undefined;
+        pendingPollInterval.resolve();
       }
     }, interval);
 
