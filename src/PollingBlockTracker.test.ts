@@ -1664,6 +1664,33 @@ describe('PollingBlockTracker', () => {
           );
         });
 
+        it('should not allow concurrent polling loops if rapidly stopped and started', async () => {
+          const setTimeoutRecorder = recordCallsToSetTimeout();
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x0',
+                  },
+                ],
+              },
+            },
+            async ({ provider, blockTracker }) => {
+              const waitingForNextIterationListener = jest.fn();
+              blockTracker.on('_waitingForNextIteration', waitingForNextIterationListener);
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+              blockTracker.removeListener('latest', EMPTY_FUNCTION);
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+              await jest.runOnlyPendingTimersAsync();
+              expect(setTimeoutRecorder.calls.length).toBe(1); // only one timeout should be pending
+              expect(waitingForNextIterationListener).toHaveBeenCalledTimes(1);
+            },
+          );
+        });
+
         it('should not prevent Node from exiting when the poll loop is stopped while waiting for the next iteration', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
           const blockTrackerOptions = {
