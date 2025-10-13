@@ -52,6 +52,10 @@ class SetTimeoutRecorder {
    * called.
    */
   async next(): Promise<void> {
+    // Resolve pending Promises first. Pending Promises always get resolved before a `setTimeout`
+    // callback in practice, so this better reflects a real scenario.
+    await jest.runOnlyPendingTimersAsync();
+
     await new Promise<void>((resolve) => {
       if (this.calls.length > 0) {
         const call = this.calls.shift() as SetTimeoutCall;
@@ -80,6 +84,10 @@ class SetTimeoutRecorder {
    * given duration is called.
    */
   async nextMatchingDuration(duration: number): Promise<void> {
+    // Resolve pending Promises first. Pending Promises always get resolved before a `setTimeout`
+    // callback in practice, so this better reflects a real scenario.
+    await jest.runOnlyPendingTimersAsync();
+
     await new Promise<void>((resolve) => {
       const index = this.calls.findIndex((call) => call.duration === duration);
 
