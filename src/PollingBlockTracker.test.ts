@@ -1072,11 +1072,7 @@ describe('PollingBlockTracker', () => {
                 ],
               },
             },
-            async ({ provider, blockTracker }) => {
-              // Mocking these methods here to avoid race conditions
-              // after the polling loop has started.
-              const updateLatestBlockSpy = jest.spyOn(blockTracker as unknown as { _updateLatestBlock: jest.Mock }, '_updateLatestBlock');
-
+            async ({ blockTracker }) => {
               blockTracker.on('latest', EMPTY_FUNCTION);
 
               await new Promise((resolve) => {
@@ -1086,14 +1082,12 @@ describe('PollingBlockTracker', () => {
               const block1 = await blockTracker.getLatestBlock();
               expect(block1).toBe('0x1');
 
-              updateLatestBlockSpy.mockClear();
-              console.log('next iteration')
+              const updateLatestBlockSpy = jest.spyOn(blockTracker as unknown as { _updateLatestBlock: jest.Mock }, '_updateLatestBlock');
               await setTimeoutRecorder.next();
 
               //  _updateLatestBlock should have been called by the polling loop
               expect(updateLatestBlockSpy).toHaveBeenCalledTimes(1);
 
-              console.log('getting latest block2')
               const block2 = await blockTracker.getLatestBlock({
                 useCache: false,
               });
