@@ -1025,54 +1025,34 @@ describe('PollingBlockTracker', () => {
           await withPollingBlockTracker(
             {
               provider: {
-                stubs: [
-                  {
-                    methodName: 'eth_blockNumber',
-                    result: '0x1',
-                  },
-                  // This is handled by the mock request implementation
-                  // {
-                  //   methodName: 'eth_blockNumber',
-                  //   result: '0x2',
-                  // },
-                ],
+                stubs: [],
               },
             },
 
             async ({ provider, blockTracker }) => {
-              // Mocking these methods here to avoid race conditions
-              // after the polling loop has started.
-              const providerRequestMock = jest.spyOn(provider, 'request');
-              const updateLatestBlockSpy = jest.spyOn(
-                blockTracker as unknown as { _updateLatestBlock: jest.Mock },
-                '_updateLatestBlock',
-              );
+              const deferredRequestPromise = buildDeferred<Json>();
+              const providerRequestMock = jest
+                .spyOn(provider, 'request')
+                .mockImplementationOnce(async () => Promise.resolve('0x1'))
+                .mockImplementationOnce(async () => {
+                  return deferredRequestPromise.promise;
+                });
 
               blockTracker.on('latest', EMPTY_FUNCTION);
-
-              await new Promise((resolve) => {
-                blockTracker.once('_waitingForNextIteration', resolve);
-              });
 
               const block1 = await blockTracker.getLatestBlock();
               expect(block1).toBe('0x1');
 
-              const deferredRequestPromise = buildDeferred<Json>();
-
-              // Delay the first call to the provider from the polling loop
-              // to ensure the cached block is considered stale in the getLatestBlock call.
-              providerRequestMock.mockImplementationOnce(async () => {
-                return deferredRequestPromise.promise;
-              });
-              providerRequestMock.mockClear();
-              updateLatestBlockSpy.mockClear();
+              // There should be one call to the provider from the first polling loop already
+              expect(providerRequestMock).toHaveBeenCalledTimes(1);
 
               await setTimeoutRecorder.next();
 
               //  _updateLatestBlock should have been called by the polling loop causing
-              // _fetchLatestBlock to fire and acquire the pending promise guard.
-              expect(updateLatestBlockSpy).toHaveBeenCalledTimes(1);
-              expect(providerRequestMock).toHaveBeenCalledTimes(1);
+              // _fetchLatestBlock to fire and acquire the pending promise guard preventing
+              // additional concurrent calls to fetch the latest block until the pending
+              // deferred provider request is resolved.
+              expect(providerRequestMock).toHaveBeenCalledTimes(2);
               expect(providerRequestMock).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 id: expect.any(Number),
@@ -1086,11 +1066,11 @@ describe('PollingBlockTracker', () => {
               deferredRequestPromise.resolve('0x2');
               const block2 = await blockPromise2;
               expect(block2).toBe('0x2');
-              //  _updateLatestBlock should have been called the second time by the getLatestBlock call
-              // but the provider request should not have been made a second time because _fetchLatestBlock
-              // has a pending promise guard preventing concurrent calls.
-              expect(updateLatestBlockSpy).toHaveBeenCalledTimes(2);
-              expect(providerRequestMock).toHaveBeenCalledTimes(1);
+              //  _updateLatestBlock should have been called the another time by the getLatestBlock call
+              // but the provider request should not have been made because _fetchLatestBlock
+              // has an existing pending deferred promise guard preventing concurrent calls to fetch the
+              // latest block.
+              expect(providerRequestMock).toHaveBeenCalledTimes(2);
             },
           );
         });
