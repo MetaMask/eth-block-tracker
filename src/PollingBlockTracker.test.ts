@@ -1591,6 +1591,9 @@ describe('PollingBlockTracker', () => {
 
         it('should not continuing polling if rapidly started and stopped', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
+          const blockTrackerOptions = {
+            blockResetDuration: 123,
+          };
 
           await withPollingBlockTracker(
             {
@@ -1602,12 +1605,21 @@ describe('PollingBlockTracker', () => {
                   },
                 ],
               },
+              blockTracker: blockTrackerOptions,
             },
             async ({ blockTracker }) => {
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               blockTracker.removeListener('latest', EMPTY_FUNCTION);
-              await setTimeoutRecorder.next();
-              expect(setTimeoutRecorder.calls).toHaveLength(0);
+              await jest.runOnlyPendingTimersAsync();
+              const resetBlockNumberTimeouts = setTimeoutRecorder.calls.filter(
+                (call) => {
+                  return (
+                    call.duration === blockTrackerOptions.blockResetDuration
+                  );
+                },
+              );
+              expect(resetBlockNumberTimeouts).toHaveLength(1);
+              expect(setTimeoutRecorder.calls).toHaveLength(1);
             },
           );
         });
