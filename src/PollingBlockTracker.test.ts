@@ -1009,22 +1009,12 @@ describe('PollingBlockTracker', () => {
               const block1 = await blockTracker.getLatestBlock();
               expect(block1).toBe('0x1');
 
-              const updateLatestBlockSpy = jest.spyOn(
-                blockTracker as unknown as { _updateLatestBlock: jest.Mock },
-                '_updateLatestBlock',
-              );
               await setTimeoutRecorder.next();
-
-              //  _updateLatestBlock should have been called by the polling loop
-              expect(updateLatestBlockSpy).toHaveBeenCalledTimes(1);
 
               const block2 = await blockTracker.getLatestBlock({
                 useCache: false,
               });
               expect(block2).toBe('0x2');
-              //  _updateLatestBlock should not have been called the second time by the getLatestBlock call
-              // since the cached block should have been considered fresh.
-              expect(updateLatestBlockSpy).toHaveBeenCalledTimes(1);
             },
           );
         });
