@@ -52,7 +52,7 @@ class SetTimeoutRecorder {
    * called.
    */
   async next(): Promise<void> {
-    return new Promise<void>((resolve) => {
+    await new Promise<void>((resolve) => {
       if (this.calls.length > 0) {
         const call = this.calls.shift() as SetTimeoutCall;
         call.callback();
@@ -65,6 +65,9 @@ class SetTimeoutRecorder {
         });
       }
     });
+    // Resolve pending Promises before returning to better emulate a real scenario.
+    // This ensures tests can't accidentally insert synchronous code after a `setTimeout`.
+    await jest.runOnlyPendingTimersAsync();
   }
 
   /**
@@ -77,7 +80,7 @@ class SetTimeoutRecorder {
    * given duration is called.
    */
   async nextMatchingDuration(duration: number): Promise<void> {
-    return new Promise<void>((resolve) => {
+    await new Promise<void>((resolve) => {
       const index = this.calls.findIndex((call) => call.duration === duration);
 
       if (index === -1) {
@@ -97,6 +100,9 @@ class SetTimeoutRecorder {
         resolve();
       }
     });
+    // Resolve pending Promises before returning to better emulate a real scenario.
+    // This ensures tests can't accidentally insert synchronous code after a `setTimeout`.
+    await jest.runOnlyPendingTimersAsync();
   }
 
   findCallsMatchingDuration(duration: number): SetTimeoutCall[] {
