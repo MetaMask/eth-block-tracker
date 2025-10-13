@@ -9,7 +9,9 @@ import {
 import getCreateRandomId from 'json-rpc-random-id';
 
 import type { BlockTracker } from './BlockTracker';
+import { projectLogger, createModuleLogger } from './logging-utils';
 
+const log = createModuleLogger(projectLogger, 'polling-block-tracker');
 const createRandomId = getCreateRandomId();
 const sec = 1000;
 
@@ -129,7 +131,6 @@ export class PollingBlockTracker
     // If #pendingPollInterval is set it means that the polling interval has not elapsed since the
     // last update, so the block number is not stale yet.
     const blockIsFresh = Boolean(this.#pendingPollInterval);
-    console.log('pending poll interval', blockIsFresh);
 
     if (this._currentBlock && (useCache || blockIsFresh)) {
       return this._currentBlock;
@@ -317,13 +318,13 @@ export class PollingBlockTracker
         req.skipCache = true;
       }
 
-      console.log('Making request', req);
+      log('Making request', req);
       const result = await this._provider.request<[], string>(req);
-      console.log('Got result', result);
+      log('Got result', result);
       resolve(result);
       return result;
     } catch (error) {
-      console.log('Encountered error fetching block', getErrorMessage(error));
+      log('Encountered error fetching block', getErrorMessage(error));
       reject(error);
       throw error;
     } finally {
@@ -395,7 +396,6 @@ export class PollingBlockTracker
       suppressUnhandledRejection: true,
     });
 
-    console.log('creating polling interval', interval);
     const timeoutRef = setTimeout(() => {
       if (this.#pendingPollInterval) {
         const pendingPollInterval = this.#pendingPollInterval;
