@@ -1589,7 +1589,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should not allow concurrent polling loops if rapidly stopped and started', async () => {
+        it('should not continuing polling if rapidly started and stopped', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1604,17 +1604,34 @@ describe('PollingBlockTracker', () => {
               },
             },
             async ({ blockTracker }) => {
-              const waitingForNextIterationListener = jest.fn();
-              blockTracker.on(
-                '_waitingForNextIteration',
-                waitingForNextIterationListener,
-              );
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+              blockTracker.removeListener('latest', EMPTY_FUNCTION);
+              await setTimeoutRecorder.next()
+              expect(setTimeoutRecorder.calls).toHaveLength(0);
+            },
+          );
+        });
+
+        it('should not allow concurrent polling loops if rapidly started, stopped, and started again', async () => {
+          const setTimeoutRecorder = recordCallsToSetTimeout();
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x0',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               blockTracker.removeListener('latest', EMPTY_FUNCTION);
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               await jest.runOnlyPendingTimersAsync();
-              expect(setTimeoutRecorder.calls).toHaveLength(1); // only one timeout should be pending
-              expect(waitingForNextIterationListener).toHaveBeenCalledTimes(1);
+              expect(setTimeoutRecorder.calls).toHaveLength(1);
             },
           );
         });
