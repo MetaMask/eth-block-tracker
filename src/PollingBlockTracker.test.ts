@@ -2776,22 +2776,20 @@ describe('PollingBlockTracker', () => {
 
                 expect(blockTracker.isRunning()).toBe(true);
 
-                await new Promise((resolve) => {
-                  blockTracker.on('_waitingForNextIteration', resolve);
-                });
-
                 blockTracker[methodToRemoveListener]('latest', listener);
 
                 expect(blockTracker.isRunning()).toBe(false);
-
-                await setTimeoutRecorder.next();
               }
 
-              expect(
-                setTimeoutRecorder.findCallsMatchingDuration(
-                  blockTrackerOptions.pollingInterval,
-                ),
-              ).toHaveLength(0);
+              const blockResetTimeouts = setTimeoutRecorder.calls.filter(
+                (call) => {
+                  return (
+                    call.duration === blockTrackerOptions.blockResetDuration
+                  );
+                },
+              );
+              expect(blockResetTimeouts).toHaveLength(1);
+              expect(setTimeoutRecorder.calls).toHaveLength(1);
             },
           );
         });
