@@ -9,6 +9,7 @@ import {
 import getCreateRandomId from 'json-rpc-random-id';
 
 import type { BlockTracker } from './BlockTracker';
+
 const createRandomId = getCreateRandomId();
 const sec = 1000;
 

@@ -1,4 +1,5 @@
-import { Json } from '@metamask/utils';
+import type { Json } from '@metamask/utils';
+
 import { PollingBlockTracker } from '.';
 import buildDeferred from '../tests/buildDeferred';
 import EMPTY_FUNCTION from '../tests/emptyFunction';
@@ -349,15 +350,15 @@ describe('PollingBlockTracker', () => {
 
             const latestBlockPromise = blockTracker.getLatestBlock();
 
-            await expect(latestBlockPromise).rejects.toThrow(
-              'boom',
-            );
+            await expect(latestBlockPromise).rejects.toThrow('boom');
           },
         );
       });
 
       it('should not retry failed requests after the block tracker is stopped', async () => {
-        const setTimeoutRecorder = recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+        const setTimeoutRecorder = recordCallsToSetTimeout({
+          numAutomaticCalls: 1,
+        });
 
         await withPollingBlockTracker(
           {
@@ -389,7 +390,7 @@ describe('PollingBlockTracker', () => {
             });
 
             await setTimeoutRecorder.next();
-            expect(setTimeoutRecorder.calls.length).toBe(0); // no more pending setTimeouts left
+            expect(setTimeoutRecorder.calls).toHaveLength(0); // no more pending setTimeouts left
             expect(requestSpy).toHaveBeenCalledTimes(1);
           },
         );
@@ -891,9 +892,7 @@ describe('PollingBlockTracker', () => {
             expect(blockTracker.getCurrentBlock()).toBeNull();
 
             // The call to getLatestBlock would then fetch the block since no block is cached
-            await expect(await secondBlockPromise).toBe(
-              '0x1'
-            );
+            expect(await secondBlockPromise).toBe('0x1');
 
             // Verify that the block reset timeout is set up
             expect(
@@ -1010,7 +1009,10 @@ describe('PollingBlockTracker', () => {
               const block1 = await blockTracker.getLatestBlock();
               expect(block1).toBe('0x1');
 
-              const updateLatestBlockSpy = jest.spyOn(blockTracker as unknown as { _updateLatestBlock: jest.Mock }, '_updateLatestBlock');
+              const updateLatestBlockSpy = jest.spyOn(
+                blockTracker as unknown as { _updateLatestBlock: jest.Mock },
+                '_updateLatestBlock',
+              );
               await setTimeoutRecorder.next();
 
               //  _updateLatestBlock should have been called by the polling loop
@@ -1050,8 +1052,11 @@ describe('PollingBlockTracker', () => {
             async ({ provider, blockTracker }) => {
               // Mocking these methods here to avoid race conditions
               // after the polling loop has started.
-              const providerRequestMock = jest.spyOn(provider, 'request')
-              const updateLatestBlockSpy = jest.spyOn(blockTracker as unknown as { _updateLatestBlock: jest.Mock }, '_updateLatestBlock');
+              const providerRequestMock = jest.spyOn(provider, 'request');
+              const updateLatestBlockSpy = jest.spyOn(
+                blockTracker as unknown as { _updateLatestBlock: jest.Mock },
+                '_updateLatestBlock',
+              );
 
               blockTracker.on('latest', EMPTY_FUNCTION);
 
@@ -1066,8 +1071,8 @@ describe('PollingBlockTracker', () => {
 
               // Delay the first call to the provider from the polling loop
               // to ensure the cached block is considered stale in the getLatestBlock call.
-              providerRequestMock.mockImplementationOnce(() => {
-                return deferredRequestPromise.promise
+              providerRequestMock.mockImplementationOnce(async () => {
+                return deferredRequestPromise.promise;
               });
               providerRequestMock.mockClear();
               updateLatestBlockSpy.mockClear();
@@ -1598,14 +1603,17 @@ describe('PollingBlockTracker', () => {
                 ],
               },
             },
-            async ({ provider, blockTracker }) => {
+            async ({ blockTracker }) => {
               const waitingForNextIterationListener = jest.fn();
-              blockTracker.on('_waitingForNextIteration', waitingForNextIterationListener);
+              blockTracker.on(
+                '_waitingForNextIteration',
+                waitingForNextIterationListener,
+              );
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               blockTracker.removeListener('latest', EMPTY_FUNCTION);
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               await jest.runOnlyPendingTimersAsync();
-              expect(setTimeoutRecorder.calls.length).toBe(1); // only one timeout should be pending
+              expect(setTimeoutRecorder.calls).toHaveLength(1); // only one timeout should be pending
               expect(waitingForNextIterationListener).toHaveBeenCalledTimes(1);
             },
           );
@@ -2777,7 +2785,7 @@ describe('PollingBlockTracker', () => {
 
                 expect(blockTracker.isRunning()).toBe(false);
 
-                await setTimeoutRecorder.next()
+                await setTimeoutRecorder.next();
               }
 
               expect(
