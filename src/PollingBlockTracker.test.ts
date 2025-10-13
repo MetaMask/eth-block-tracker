@@ -15,6 +15,14 @@ const METHODS_TO_REMOVE_LISTENER = ['off', 'removeListener'] as const;
 const originalSetTimeout = setTimeout;
 
 describe('PollingBlockTracker', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   describe('constructor', () => {
     it('should throw if given no options', () => {
       expect(() => new PollingBlockTracker()).toThrow(
