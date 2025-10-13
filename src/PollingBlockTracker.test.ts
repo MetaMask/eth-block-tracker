@@ -1606,7 +1606,7 @@ describe('PollingBlockTracker', () => {
             async ({ blockTracker }) => {
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               blockTracker.removeListener('latest', EMPTY_FUNCTION);
-              await setTimeoutRecorder.next()
+              await setTimeoutRecorder.next();
               expect(setTimeoutRecorder.calls).toHaveLength(0);
             },
           );
