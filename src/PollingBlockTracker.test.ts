@@ -1611,14 +1611,14 @@ describe('PollingBlockTracker', () => {
               blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
               blockTracker.removeListener('latest', EMPTY_FUNCTION);
               await jest.runOnlyPendingTimersAsync();
-              const resetBlockNumberTimeouts = setTimeoutRecorder.calls.filter(
+              const blockResetTimeouts = setTimeoutRecorder.calls.filter(
                 (call) => {
                   return (
                     call.duration === blockTrackerOptions.blockResetDuration
                   );
                 },
               );
-              expect(resetBlockNumberTimeouts).toHaveLength(1);
+              expect(blockResetTimeouts).toHaveLength(1);
               expect(setTimeoutRecorder.calls).toHaveLength(1);
             },
           );
