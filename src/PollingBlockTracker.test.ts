@@ -188,6 +188,41 @@ describe('PollingBlockTracker', () => {
                 expect(block).toBe('0x0');
               });
             });
+
+            it('should start a timer to clear the current block number later', async () => {
+              const setTimeoutRecorder = recordCallsToSetTimeout();
+              const blockResetDuration = 1000;
+
+              await withPollingBlockTracker(
+                {
+                  blockTracker: {
+                    blockResetDuration,
+                  },
+                  provider: {
+                    stubs: [
+                      {
+                        methodName: 'eth_blockNumber',
+                        result: '0x0',
+                      },
+                    ],
+                  },
+                },
+                async ({ blockTracker }) => {
+                  await blockTracker.getLatestBlock();
+
+                  await new Promise((resolve) =>
+                    originalSetTimeout(resolve, blockResetDuration),
+                  );
+                  const blockResetTimeouts = setTimeoutRecorder.calls.filter(
+                    (call) => {
+                      return call.duration === blockResetDuration;
+                    },
+                  );
+                  expect(blockResetTimeouts).toHaveLength(1);
+                  expect(blockTracker.getCurrentBlock()).toBe('0x0');
+                },
+              );
+            })
           });
 
           describe('if an error occurs while fetching the latest block number', () => {
