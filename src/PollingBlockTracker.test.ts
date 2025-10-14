@@ -1,3 +1,5 @@
+import type { Json } from '@metamask/utils';
+
 import { PollingBlockTracker } from '.';
 import buildDeferred from '../tests/buildDeferred';
 import EMPTY_FUNCTION from '../tests/emptyFunction';
@@ -14,6 +16,14 @@ const METHODS_TO_REMOVE_LISTENER = ['off', 'removeListener'] as const;
 const originalSetTimeout = setTimeout;
 
 describe('PollingBlockTracker', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   describe('constructor', () => {
     it('should throw if given no options', () => {
       expect(() => new PollingBlockTracker()).toThrow(
@@ -321,7 +331,7 @@ describe('PollingBlockTracker', () => {
     });
 
     describe('when the block tracker is already started', () => {
-      it('should return a promise that rejects if the request for the block number fails and the block tracker is then stopped', async () => {
+      it('should return a promise that rejects if there is no existing block number cached and the request fails', async () => {
         recordCallsToSetTimeout({ numAutomaticCalls: 1 });
 
         await withPollingBlockTracker(
@@ -340,23 +350,24 @@ describe('PollingBlockTracker', () => {
 
             const latestBlockPromise = blockTracker.getLatestBlock();
 
-            expect(blockTracker.isRunning()).toBe(true);
-            await blockTracker.destroy();
-            await expect(latestBlockPromise).rejects.toThrow(
-              'Block tracker destroyed',
-            );
-            expect(blockTracker.isRunning()).toBe(false);
+            await expect(latestBlockPromise).rejects.toThrow('boom');
           },
         );
       });
 
       it('should not retry failed requests after the block tracker is stopped', async () => {
-        recordCallsToSetTimeout({ numAutomaticCalls: 1 });
+        const setTimeoutRecorder = recordCallsToSetTimeout({
+          numAutomaticCalls: 1,
+        });
 
         await withPollingBlockTracker(
           {
             provider: {
               stubs: [
+                {
+                  methodName: 'eth_blockNumber',
+                  error: new Error('boom'),
+                },
                 {
                   methodName: 'eth_blockNumber',
                   error: new Error('boom'),
@@ -368,12 +379,8 @@ describe('PollingBlockTracker', () => {
             blockTracker.on('latest', EMPTY_FUNCTION);
             const requestSpy = jest.spyOn(provider, 'request');
 
-            const latestBlockPromise = blockTracker.getLatestBlock();
             await blockTracker.destroy();
 
-            await expect(latestBlockPromise).rejects.toThrow(
-              'Block tracker destroyed',
-            );
             expect(requestSpy).toHaveBeenCalledTimes(1);
             expect(requestSpy).toHaveBeenCalledWith({
               jsonrpc: '2.0',
@@ -381,6 +388,10 @@ describe('PollingBlockTracker', () => {
               method: 'eth_blockNumber',
               params: [],
             });
+
+            await setTimeoutRecorder.next();
+            expect(setTimeoutRecorder.calls).toHaveLength(0); // no more pending setTimeouts left
+            expect(requestSpy).toHaveBeenCalledTimes(1);
           },
         );
       });
@@ -822,7 +833,7 @@ describe('PollingBlockTracker', () => {
         });
       });
 
-      it('should reject pending latest block request if block tracker is stopped before fetch completes on second getLatestBlock call', async () => {
+      it('should return the block number if block tracker is destroyed before fetch completes on second getLatestBlock call', async () => {
         const setTimeoutRecorder = recordCallsToSetTimeout();
         const blockTrackerOptions = {
           pollingInterval: 100,
@@ -839,88 +850,7 @@ describe('PollingBlockTracker', () => {
                 },
                 {
                   methodName: 'eth_blockNumber',
-                  result: '0x0',
-                },
-              ],
-            },
-            blockTracker: blockTrackerOptions,
-          },
-          async ({ blockTracker }) => {
-            // Step 1: Start the block tracker
-            blockTracker.on('latest', EMPTY_FUNCTION);
-
-            // Step 2: Wait for the first block update to resolve
-            await new Promise((resolve) => {
-              blockTracker.on('sync', resolve);
-            });
-            expect(blockTracker.getCurrentBlock()).toBe('0x0');
-            expect(blockTracker.isRunning()).toBe(true);
-
-            // Clear the current block to force a new request for the next getLatestBlock
-            // When the block tracker stops, there may be two `setTimeout`s in
-            // play: one to go to the next iteration of the block tracker
-            // loop, another to expire the current block number cache. We don't
-            // know which one has been added first, so we have to find it.
-            blockTracker.removeAllListeners();
-            await setTimeoutRecorder.nextMatchingDuration(
-              blockTrackerOptions.blockResetDuration,
-            );
-            expect(blockTracker.getCurrentBlock()).toBeNull();
-
-            // Restart the tracker for the second call
-            blockTracker.on('latest', EMPTY_FUNCTION);
-
-            // Step 3: Immediately after, call getLatestBlock
-            const secondBlockPromise = blockTracker.getLatestBlock();
-
-            // Step 4: Immediately after, stop the block tracker
-            blockTracker.removeAllListeners();
-
-            // Verify block tracker state
-            expect(blockTracker.isRunning()).toBe(false);
-            expect(blockTracker.getCurrentBlock()).toBeNull();
-
-            // The call to getLatestBlock would then never resolve (should be rejected)
-            await expect(secondBlockPromise).rejects.toThrow(
-              'Block tracker destroyed',
-            );
-
-            // Verify that the block reset timeout is set up
-            expect(
-              setTimeoutRecorder.calls.some((call) => {
-                return call.duration === blockTrackerOptions.blockResetDuration;
-              }),
-            ).toBe(true);
-
-            // Wait for the block reset timeout to complete
-            await setTimeoutRecorder.nextMatchingDuration(
-              blockTrackerOptions.blockResetDuration,
-            );
-
-            // Verify that the current block is still null after the timeout
-            expect(blockTracker.getCurrentBlock()).toBeNull();
-          },
-        );
-      });
-
-      it('should reject pending latest block request if block tracker is destroyed before fetch completes on second getLatestBlock call', async () => {
-        const setTimeoutRecorder = recordCallsToSetTimeout();
-        const blockTrackerOptions = {
-          pollingInterval: 100,
-          blockResetDuration: 200,
-        };
-
-        await withPollingBlockTracker(
-          {
-            provider: {
-              stubs: [
-                {
-                  methodName: 'eth_blockNumber',
-                  result: '0x0',
-                },
-                {
-                  methodName: 'eth_blockNumber',
-                  result: '0x0',
+                  result: '0x1',
                 },
               ],
             },
@@ -961,10 +891,8 @@ describe('PollingBlockTracker', () => {
             expect(blockTracker.isRunning()).toBe(false);
             expect(blockTracker.getCurrentBlock()).toBeNull();
 
-            // The call to getLatestBlock would then never resolve (should be rejected)
-            await expect(secondBlockPromise).rejects.toThrow(
-              'Block tracker destroyed',
-            );
+            // The call to getLatestBlock would then fetch the block since no block is cached
+            expect(await secondBlockPromise).toBe('0x1');
 
             // Verify that the block reset timeout is set up
             expect(
@@ -985,9 +913,9 @@ describe('PollingBlockTracker', () => {
       });
     });
 
-    describe('with useCache: false', () => {
+    describe('with useCache: false and an existing block number is cached', () => {
       describe('when the block tracker is not running', () => {
-        it('should not fetch a new block even if a block is already cached and less than the polling interval time has passed since the last call', async () => {
+        it('should use the cached block if it is fresh (less than the polling interval time has passed since the last call)', async () => {
           recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1016,7 +944,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should fetch a new block even if a block is already cached and more than the polling interval time has passed since the last call', async () => {
+        it('should fetch a new block if the cached block is stale (more than the polling interval time has passed since the last call)', async () => {
           recordCallsToSetTimeout({
             numAutomaticCalls: 1,
           });
@@ -1048,8 +976,8 @@ describe('PollingBlockTracker', () => {
         });
       });
 
-      describe('when the block tracker is already started', () => {
-        it('should wait for the next block event even if a block is already cached', async () => {
+      describe('when the block tracker is running', () => {
+        it('should use the cached block if it is fresh (less than the polling interval time has passed since the last poll iteration)', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1071,79 +999,78 @@ describe('PollingBlockTracker', () => {
                 ],
               },
             },
-
             async ({ blockTracker }) => {
               blockTracker.on('latest', EMPTY_FUNCTION);
+
               await new Promise((resolve) => {
                 blockTracker.once('_waitingForNextIteration', resolve);
               });
 
-              const blockPromise1 = blockTracker.getLatestBlock({
-                useCache: false,
-              });
-              const pollingLoopPromise1 = new Promise((resolve) => {
-                blockTracker.once('_waitingForNextIteration', resolve);
-              });
-              await setTimeoutRecorder.next();
-              await pollingLoopPromise1;
-              const block1 = await blockPromise1;
-              expect(block1).toBe('0x2');
+              const block1 = await blockTracker.getLatestBlock();
+              expect(block1).toBe('0x1');
 
-              const pollingLoopPromise2 = new Promise((resolve) => {
-                blockTracker.once('_waitingForNextIteration', resolve);
-              });
-              const blockPromise2 = blockTracker.getLatestBlock({
+              await setTimeoutRecorder.next();
+
+              const block2 = await blockTracker.getLatestBlock({
                 useCache: false,
               });
-              await setTimeoutRecorder.next();
-              await pollingLoopPromise2;
-              const block2 = await blockPromise2;
-              expect(block2).toBe('0x3');
+              expect(block2).toBe('0x2');
             },
           );
         });
 
-        it('should handle concurrent calls', async () => {
+        it('should fetch a new block if the cached block is stale (more than the polling interval time has passed since the last poll iteration)', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
             {
               provider: {
-                stubs: [
-                  {
-                    methodName: 'eth_blockNumber',
-                    result: '0x1',
-                  },
-                  {
-                    methodName: 'eth_blockNumber',
-                    result: '0x2',
-                  },
-                ],
+                stubs: [],
               },
             },
-            async ({ blockTracker }) => {
+
+            async ({ provider, blockTracker }) => {
+              const deferredRequestPromise = buildDeferred<Json>();
+              const providerRequestMock = jest
+                .spyOn(provider, 'request')
+                .mockImplementationOnce(async () => Promise.resolve('0x1'))
+                .mockImplementationOnce(async () => {
+                  return deferredRequestPromise.promise;
+                });
+
               blockTracker.on('latest', EMPTY_FUNCTION);
-              await new Promise((resolve) => {
-                blockTracker.once('_waitingForNextIteration', resolve);
+
+              const block1 = await blockTracker.getLatestBlock();
+              expect(block1).toBe('0x1');
+
+              // There should be one call to the provider from the first polling loop already
+              expect(providerRequestMock).toHaveBeenCalledTimes(1);
+
+              await setTimeoutRecorder.next();
+
+              //  _updateLatestBlock should have been called by the polling loop causing
+              // _fetchLatestBlock to fire and acquire the pending promise guard preventing
+              // additional concurrent calls to fetch the latest block until the pending
+              // deferred provider request is resolved.
+              expect(providerRequestMock).toHaveBeenCalledTimes(2);
+              expect(providerRequestMock).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                id: expect.any(Number),
+                method: 'eth_blockNumber',
+                params: [],
               });
 
-              const blockPromise1 = blockTracker.getLatestBlock({
-                useCache: false,
-              });
               const blockPromise2 = blockTracker.getLatestBlock({
                 useCache: false,
               });
-
-              const pollingLoopPromise = new Promise((resolve) => {
-                blockTracker.once('_waitingForNextIteration', resolve);
-              });
-              await setTimeoutRecorder.next();
-              await pollingLoopPromise;
-
-              const block1 = await blockPromise1;
+              deferredRequestPromise.resolve('0x2');
               const block2 = await blockPromise2;
-              expect(block1).toBe('0x2');
               expect(block2).toBe('0x2');
+              //  _updateLatestBlock should have been called the another time by the getLatestBlock call
+              // but the provider request should not have been made because _fetchLatestBlock
+              // has an existing pending deferred promise guard preventing concurrent calls to fetch the
+              // latest block.
+              expect(providerRequestMock).toHaveBeenCalledTimes(2);
             },
           );
         });
@@ -1628,6 +1555,101 @@ describe('PollingBlockTracker', () => {
               });
               const currentBlockNumber = blockTracker.getCurrentBlock();
               expect(currentBlockNumber).toBe('0x0');
+            },
+          );
+        });
+
+        it('should not continuing polling if started and then stopped while waiting for the next iteration', async () => {
+          const setTimeoutRecorder = recordCallsToSetTimeout();
+          const blockTrackerOptions = {
+            blockResetDuration: 123,
+          };
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x0',
+                  },
+                ],
+              },
+              blockTracker: blockTrackerOptions,
+            },
+            async ({ blockTracker }) => {
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+              await jest.runOnlyPendingTimersAsync();
+              blockTracker.removeListener('latest', EMPTY_FUNCTION);
+              await setTimeoutRecorder.next();
+              const blockResetTimeouts = setTimeoutRecorder.calls.filter(
+                (call) => {
+                  return (
+                    call.duration === blockTrackerOptions.blockResetDuration
+                  );
+                },
+              );
+              expect(blockResetTimeouts).toHaveLength(1);
+              expect(setTimeoutRecorder.calls).toHaveLength(1);
+            },
+          );
+        });
+
+        it('should not continuing polling if rapidly started and stopped', async () => {
+          const setTimeoutRecorder = recordCallsToSetTimeout();
+          const blockTrackerOptions = {
+            blockResetDuration: 123,
+          };
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x0',
+                  },
+                ],
+              },
+              blockTracker: blockTrackerOptions,
+            },
+            async ({ blockTracker }) => {
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+              blockTracker.removeListener('latest', EMPTY_FUNCTION);
+              await jest.runOnlyPendingTimersAsync();
+              const blockResetTimeouts = setTimeoutRecorder.calls.filter(
+                (call) => {
+                  return (
+                    call.duration === blockTrackerOptions.blockResetDuration
+                  );
+                },
+              );
+              expect(blockResetTimeouts).toHaveLength(1);
+              expect(setTimeoutRecorder.calls).toHaveLength(1);
+            },
+          );
+        });
+
+        it('should not allow concurrent polling loops if rapidly started, stopped, and started again', async () => {
+          const setTimeoutRecorder = recordCallsToSetTimeout();
+
+          await withPollingBlockTracker(
+            {
+              provider: {
+                stubs: [
+                  {
+                    methodName: 'eth_blockNumber',
+                    result: '0x0',
+                  },
+                ],
+              },
+            },
+            async ({ blockTracker }) => {
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+              blockTracker.removeListener('latest', EMPTY_FUNCTION);
+              blockTracker[methodToAddListener]('latest', EMPTY_FUNCTION);
+              await jest.runOnlyPendingTimersAsync();
+              expect(setTimeoutRecorder.calls).toHaveLength(1);
             },
           );
         });
@@ -2790,20 +2812,20 @@ describe('PollingBlockTracker', () => {
 
                 expect(blockTracker.isRunning()).toBe(true);
 
-                await new Promise((resolve) => {
-                  blockTracker.on('_waitingForNextIteration', resolve);
-                });
-
                 blockTracker[methodToRemoveListener]('latest', listener);
 
                 expect(blockTracker.isRunning()).toBe(false);
               }
 
-              expect(
-                setTimeoutRecorder.findCallsMatchingDuration(
-                  blockTrackerOptions.pollingInterval,
-                ),
-              ).toHaveLength(0);
+              const blockResetTimeouts = setTimeoutRecorder.calls.filter(
+                (call) => {
+                  return (
+                    call.duration === blockTrackerOptions.blockResetDuration
+                  );
+                },
+              );
+              expect(blockResetTimeouts).toHaveLength(1);
+              expect(setTimeoutRecorder.calls).toHaveLength(1);
             },
           );
         });
