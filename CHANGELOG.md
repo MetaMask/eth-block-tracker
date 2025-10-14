@@ -9,11 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [12.2.1]
 
-### Uncategorized
-
-- chore: Update codewner to reflect team change ([#347](https://github.com/MetaMask/eth-block-tracker/pull/347))
-- test: Prevent tests from inserting code synchronously after `setTimeout` ([#346](https://github.com/MetaMask/eth-block-tracker/pull/346))
-
 ### Fixed
 
 - `PollingBlockTracker.checkForLatestBlock()` and `getLatestBlock()` now clear the cached block after `blockReset` duration when called and the `PollingBlockTracker` is not polling. ([#348](https://github.com/MetaMask/eth-block-tracker/pull/348))
