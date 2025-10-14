@@ -210,9 +210,6 @@ describe('PollingBlockTracker', () => {
                 async ({ blockTracker }) => {
                   await blockTracker.getLatestBlock();
 
-                  await new Promise((resolve) =>
-                    originalSetTimeout(resolve, blockResetDuration),
-                  );
                   const blockResetTimeouts = setTimeoutRecorder.calls.filter(
                     (call) => {
                       return call.duration === blockResetDuration;
