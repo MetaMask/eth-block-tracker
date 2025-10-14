@@ -222,7 +222,7 @@ describe('PollingBlockTracker', () => {
                   expect(blockTracker.getCurrentBlock()).toBe('0x0');
                 },
               );
-            })
+            });
           });
 
           describe('if an error occurs while fetching the latest block number', () => {
@@ -507,7 +507,7 @@ describe('PollingBlockTracker', () => {
         );
       });
 
-      it('should clear the current block number some time after being called', async () => {
+      it('should not start a timer to clear the current block number later', async () => {
         const setTimeoutRecorder = recordCallsToSetTimeout();
         const blockTrackerOptions = {
           pollingInterval: 100,
@@ -531,16 +531,13 @@ describe('PollingBlockTracker', () => {
             await blockTracker.getLatestBlock();
             const currentBlockNumber = blockTracker.getCurrentBlock();
             expect(currentBlockNumber).toBe('0x0');
-            await blockTracker.destroy();
 
-            // When the block tracker stops, there may be two `setTimeout`s in
-            // play: one to go to the next iteration of the block tracker
-            // loop, another to expire the current block number cache. We don't
-            // know which one has been added first, so we have to find it.
-            await setTimeoutRecorder.nextMatchingDuration(
-              blockTrackerOptions.blockResetDuration,
+            const blockResetTimeouts = setTimeoutRecorder.calls.filter(
+              (call) => {
+                return call.duration === blockTrackerOptions.blockResetDuration;
+              },
             );
-            expect(blockTracker.getCurrentBlock()).toBeNull();
+            expect(blockResetTimeouts).toHaveLength(0);
           },
         );
       });
