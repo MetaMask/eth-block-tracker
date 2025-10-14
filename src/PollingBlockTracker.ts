@@ -43,8 +43,6 @@ export class PollingBlockTracker
 
   private _currentBlock: string | null;
 
-  private _blockResetTimeout?: ReturnType<typeof setTimeout>;
-
   private readonly _provider: SafeEventEmitterProvider;
 
   private readonly _pollingInterval: number;
@@ -89,7 +87,6 @@ export class PollingBlockTracker
     // bind functions for internal use
     this._onNewListener = this._onNewListener.bind(this);
     this._onRemoveListener = this._onRemoveListener.bind(this);
-    this._resetCurrentBlock = this._resetCurrentBlock.bind(this);
 
     // listen for handler changes
     this._setupInternalEvents();
@@ -104,7 +101,6 @@ export class PollingBlockTracker
   }
 
   async destroy() {
-    this._cancelBlockResetTimeout();
     super.removeAllListeners();
     this._maybeEnd();
   }
@@ -113,6 +109,12 @@ export class PollingBlockTracker
     return this._isRunning;
   }
 
+  /**
+   * Returns the current block number, or `null` if the current block number has not been updated
+   * recently.
+   *
+   * @returns The current block, or `null` if we haven't checked recently.
+   */
   getCurrentBlock(): string | null {
     return this._currentBlock;
   }
@@ -141,7 +143,7 @@ export class PollingBlockTracker
     } finally {
       // Start a polling interval just to rate limit these calls, in case
       // the block tracker isn't running.
-      this._createPollingInterval();
+      this._createPollingInterval(this._blockResetDuration);
     }
   }
 
@@ -193,8 +195,6 @@ export class PollingBlockTracker
     }
 
     this._isRunning = true;
-    // cancel setting latest block to stale
-    this._cancelBlockResetTimeout();
     this._start();
     this.emit('_started');
   }
@@ -205,7 +205,6 @@ export class PollingBlockTracker
     }
 
     this._isRunning = false;
-    this._setupBlockResetTimeout();
     this.emit('_ended');
   }
 
@@ -241,31 +240,6 @@ export class PollingBlockTracker
     this._currentBlock = newBlock;
     this.emit('latest', newBlock);
     this.emit('sync', { oldBlock, newBlock });
-  }
-
-  private _setupBlockResetTimeout(): void {
-    // clear any existing timeout
-    this._cancelBlockResetTimeout();
-    // clear latest block when stale
-    this._blockResetTimeout = setTimeout(
-      this._resetCurrentBlock,
-      this._blockResetDuration,
-    );
-
-    // nodejs - dont hold process open
-    if (this._blockResetTimeout.unref) {
-      this._blockResetTimeout.unref();
-    }
-  }
-
-  private _cancelBlockResetTimeout(): void {
-    if (this._blockResetTimeout) {
-      clearTimeout(this._blockResetTimeout);
-    }
-  }
-
-  private _resetCurrentBlock(): void {
-    this._currentBlock = null;
   }
 
   /**
@@ -401,6 +375,11 @@ export class PollingBlockTracker
         const pendingPollInterval = this.#pendingPollInterval;
         this.#pendingPollInterval = undefined;
         pendingPollInterval.resolve();
+      }
+      // If the interval expires and the polling is stopped, it indicates that the block is stale
+      // and should be cleared.
+      if (!this._isRunning) {
+        this._currentBlock = null;
       }
     }, interval);
 
