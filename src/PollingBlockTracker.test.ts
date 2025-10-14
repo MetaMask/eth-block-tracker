@@ -985,9 +985,9 @@ describe('PollingBlockTracker', () => {
       });
     });
 
-    describe('with useCache: false', () => {
+    describe('with useCache: false and a block number is already cached', () => {
       describe('when the block tracker is not running', () => {
-        it('should not fetch a new block even if a block is already cached and less than the polling interval time has passed since the last call', async () => {
+        it('should not fetch a new block even if less than the polling interval time has passed since the last call', async () => {
           recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
@@ -1016,7 +1016,7 @@ describe('PollingBlockTracker', () => {
           );
         });
 
-        it('should fetch a new block even if a block is already cached and more than the polling interval time has passed since the last call', async () => {
+        it('should fetch a new block even if more than the polling interval time has passed since the last call', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
           const blockTrackerOptions = {
             pollingInterval: 100,
@@ -1055,7 +1055,7 @@ describe('PollingBlockTracker', () => {
       });
 
       describe('when the block tracker is already started', () => {
-        it('should wait for the next block event even if a block is already cached', async () => {
+        it('should wait for the next block event', async () => {
           const setTimeoutRecorder = recordCallsToSetTimeout();
 
           await withPollingBlockTracker(
