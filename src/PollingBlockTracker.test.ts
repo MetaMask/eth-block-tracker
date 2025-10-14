@@ -1344,7 +1344,7 @@ describe('PollingBlockTracker', () => {
       );
     });
 
-    it('should start a timer to clear the current block number later', async () => {
+    it('should start a timer to clear the current block number later if the block tracker is not running', async () => {
       const setTimeoutRecorder = recordCallsToSetTimeout();
       const blockResetDuration = 1000;
 
@@ -1365,15 +1365,41 @@ describe('PollingBlockTracker', () => {
         async ({ blockTracker }) => {
           await blockTracker.checkForLatestBlock();
 
-          await new Promise((resolve) =>
-            originalSetTimeout(resolve, blockResetDuration),
-          );
-          const blockResetTimeouts = setTimeoutRecorder.calls.filter(
-            (call) => {
-              return call.duration === blockResetDuration;
-            },
-          );
+          const blockResetTimeouts = setTimeoutRecorder.calls.filter((call) => {
+            return call.duration === blockResetDuration;
+          });
           expect(blockResetTimeouts).toHaveLength(1);
+          expect(blockTracker.getCurrentBlock()).toBe('0x0');
+        },
+      );
+    });
+
+    it('should not start a timer to clear the current block number later if the block tracker is running', async () => {
+      const setTimeoutRecorder = recordCallsToSetTimeout();
+      const blockResetDuration = 1000;
+
+      await withPollingBlockTracker(
+        {
+          blockTracker: {
+            blockResetDuration,
+          },
+          provider: {
+            stubs: [
+              {
+                methodName: 'eth_blockNumber',
+                result: '0x0',
+              },
+            ],
+          },
+        },
+        async ({ blockTracker }) => {
+          blockTracker.on('latest', EMPTY_FUNCTION);
+          await blockTracker.checkForLatestBlock();
+
+          const blockResetTimeouts = setTimeoutRecorder.calls.filter((call) => {
+            return call.duration === blockResetDuration;
+          });
+          expect(blockResetTimeouts).toHaveLength(0);
           expect(blockTracker.getCurrentBlock()).toBe('0x0');
         },
       );
