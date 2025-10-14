@@ -208,15 +208,12 @@ describe('PollingBlockTracker', () => {
                   },
                 },
                 async ({ blockTracker }) => {
-                  await blockTracker.getLatestBlock();
-
-                  const blockResetTimeouts = setTimeoutRecorder.calls.filter(
-                    (call) => {
-                      return call.duration === blockResetDuration;
-                    },
+                  const block = await blockTracker.getLatestBlock();
+                  expect(block).toBe('0x0');
+                  await setTimeoutRecorder.nextMatchingDuration(
+                    blockResetDuration,
                   );
-                  expect(blockResetTimeouts).toHaveLength(1);
-                  expect(blockTracker.getCurrentBlock()).toBe('0x0');
+                  expect(blockTracker.getCurrentBlock()).toBeNull();
                 },
               );
             });
@@ -1361,12 +1358,9 @@ describe('PollingBlockTracker', () => {
         },
         async ({ blockTracker }) => {
           await blockTracker.checkForLatestBlock();
-
-          const blockResetTimeouts = setTimeoutRecorder.calls.filter((call) => {
-            return call.duration === blockResetDuration;
-          });
-          expect(blockResetTimeouts).toHaveLength(1);
           expect(blockTracker.getCurrentBlock()).toBe('0x0');
+          await setTimeoutRecorder.nextMatchingDuration(blockResetDuration);
+          expect(blockTracker.getCurrentBlock()).toBeNull();
         },
       );
     });
