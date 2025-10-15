@@ -11,14 +11,30 @@
     "url": "https://github.com/MetaMask/eth-block-tracker.git"
   },
   "license": "MIT",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "ts-bridge --project tsconfig.build.json --clean",
     "build:clean": "rimraf dist && yarn build",
+    "build:docs": "typedoc",
     "lint": "yarn lint:eslint && yarn lint:constraints && yarn lint:misc --check && yarn lint:dependencies --check && yarn lint:changelog",
     "lint:changelog": "auto-changelog validate --prettier",
     "lint:constraints": "yarn constraints",
@@ -28,7 +44,7 @@
     "lint:fix": "yarn lint:eslint --fix && yarn lint:constraints --fix && yarn lint:misc --write && yarn lint:dependencies:fix && yarn lint:changelog",
     "lint:misc": "prettier '**/*.json' '**/*.md' '**/*.yml' '!.yarnrc.yml' --ignore-path .gitignore --no-error-on-unmatched-pattern",
     "prepack": "./scripts/prepack.sh",
-    "test": "jest",
+    "test": "jest && attw --pack",
     "test:watch": "jest --watch"
   },
   "dependencies": {
@@ -38,6 +54,7 @@
     "json-rpc-random-id": "^1.0.1"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.15.3",
     "@jest/types": "^27.5.1",
     "@lavamoat/allow-scripts": "^3.0.4",
     "@metamask/auto-changelog": "^3.4.4",
@@ -46,6 +63,7 @@
     "@metamask/eslint-config-nodejs": "^14.0.0",
     "@metamask/eslint-config-typescript": "^14.0.0",
     "@metamask/json-rpc-engine": "^10.0.0",
+    "@ts-bridge/cli": "^0.6.3",
     "@types/jest": "^27.4.1",
     "@types/json-rpc-random-id": "^1.0.1",
     "@types/node": "^18.18",
