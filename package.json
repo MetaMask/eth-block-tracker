@@ -10,7 +10,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/"
+    "dist"
   ],
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
@@ -78,5 +78,9 @@
       "@lavamoat/preinstall-always-fail": false,
       "eslint-plugin-import-x>unrs-resolver": false
     }
+  },
+  "homepage": "https://github.com/MetaMask/eth-block-tracker#readme",
+  "bugs": {
+    "url": "https://github.com/MetaMask/eth-block-tracker/issues"
   }
 }
