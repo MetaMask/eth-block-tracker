@@ -2,6 +2,10 @@
   "name": "@metamask/eth-block-tracker",
   "version": "12.2.1",
   "description": "A block tracker for the Ethereum blockchain. Keeps track of the latest block",
+  "homepage": "https://github.com/MetaMask/eth-block-tracker#readme",
+  "bugs": {
+    "url": "https://github.com/MetaMask/eth-block-tracker/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/MetaMask/eth-block-tracker.git"
@@ -78,9 +82,5 @@
       "@lavamoat/preinstall-always-fail": false,
       "eslint-plugin-import-x>unrs-resolver": false
     }
-  },
-  "homepage": "https://github.com/MetaMask/eth-block-tracker#readme",
-  "bugs": {
-    "url": "https://github.com/MetaMask/eth-block-tracker/issues"
   }
 }
