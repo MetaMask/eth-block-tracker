@@ -9,10 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [13.0.0]
 
-### Uncategorized
-
-- docs: Add migration notice ([#352](https://github.com/MetaMask/eth-block-tracker/pull/352))
-
 ### Changed
 
 - **BREAKING:** Distribute separate CommonJS and ESM files ([#351](https://github.com/MetaMask/eth-block-tracker/pull/351))
