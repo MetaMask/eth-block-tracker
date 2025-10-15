@@ -38,6 +38,7 @@
     "json-rpc-random-id": "^1.0.1"
   },
   "devDependencies": {
+    "@jest/types": "^27.5.1",
     "@lavamoat/allow-scripts": "^3.0.4",
     "@metamask/auto-changelog": "^3.4.4",
     "@metamask/eslint-config": "^14.0.0",

@@ -969,6 +969,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metamask/eth-block-tracker@workspace:."
   dependencies:
+    "@jest/types": "npm:^27.5.1"
     "@lavamoat/allow-scripts": "npm:^3.0.4"
     "@metamask/auto-changelog": "npm:^3.4.4"
     "@metamask/eslint-config": "npm:^14.0.0"
