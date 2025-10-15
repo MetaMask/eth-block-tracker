@@ -1,8 +1,8 @@
 import { PollingBlockTracker } from '.';
-import buildDeferred from '../tests/buildDeferred';
-import EMPTY_FUNCTION from '../tests/emptyFunction';
-import recordCallsToSetTimeout from '../tests/recordCallsToSetTimeout';
-import { withPollingBlockTracker } from '../tests/withBlockTracker';
+import buildDeferred from '../test/buildDeferred';
+import EMPTY_FUNCTION from '../test/emptyFunction';
+import recordCallsToSetTimeout from '../test/recordCallsToSetTimeout';
+import { withPollingBlockTracker } from '../test/withBlockTracker';
 
 interface Sync {
   oldBlock: string;
@@ -1742,10 +1742,11 @@ describe('PollingBlockTracker', () => {
                 interceptCallback: (callback, stopPassingThroughCalls) => {
                   return async () => {
                     try {
-                      await callback();
+                      return await callback();
                     } catch (error: unknown) {
                       resolve(error);
                       stopPassingThroughCalls();
+                      return undefined;
                     }
                   };
                 },
@@ -2284,10 +2285,11 @@ describe('PollingBlockTracker', () => {
                 interceptCallback: (callback, stopPassingThroughCalls) => {
                   return async () => {
                     try {
-                      await callback();
+                      return await callback();
                     } catch (error: unknown) {
                       resolve(error);
                       stopPassingThroughCalls();
+                      return undefined;
                     }
                   };
                 },
