@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- `PollingBlockTracker.getLatestBlock()` no longer accepts the `useCache` optional parameter ([#350](https://github.com/MetaMask/eth-block-tracker/pull/350))
+  - Note that `getLatestBlock()` still ensures that the returned block is always fresh. See ([#348](https://github.com/MetaMask/eth-block-tracker/pull/348))
+
 ## [12.2.1]
 
 ### Fixed
