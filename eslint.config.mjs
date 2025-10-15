@@ -28,20 +28,14 @@ const config = createConfig([
     files: ['**/*.ts'],
     extends: typescript,
     rules: {
-      '@typescript-eslint/consistent-type-definitions': 'off',
-      '@typescript-eslint/naming-convention': 'off',
+      // TODO: These should perhaps be enabled
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/unbound-method': 'warn',
-      'id-denylist': 'off',
-      'id-length': 'off',
-      // TODO: Enable
-      '@typescript-eslint/explicit-function-return-type': 'warn',
-      // TODO: Move this to our shared config
-      'no-invalid-this': 'off',
       'no-restricted-syntax': 'off',
-      '@typescript-eslint/no-invalid-this': ['error'],
-      '@typescript-eslint/restrict-template-expressions': 'off',
+      // TODO: Thise should definitely be enabled
+      '@typescript-eslint/naming-convention': 'warn',
+      '@typescript-eslint/unbound-method': 'warn',
+      '@typescript-eslint/consistent-type-definitions': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
     },
   },
 
@@ -58,12 +52,7 @@ const config = createConfig([
     files: ['./test/**/*', '**/*.test.ts', '**/*.test.js'],
     extends: [jest, nodejs],
     rules: {
-      '@typescript-eslint/naming-convention': 'off',
-      '@typescript-eslint/no-throw-literal': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      'id-denylist': 'off',
       'import-x/no-nodejs-modules': 'off',
-      'no-restricted-globals': 'off',
     },
   },
 ]);

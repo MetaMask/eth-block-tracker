@@ -4,11 +4,11 @@ import EMPTY_FUNCTION from './emptyFunction';
 
 type SetTimeoutCallback = () => any;
 
-interface SetTimeoutCall {
+type SetTimeoutCall = {
   callback: SetTimeoutCallback;
   duration: number;
   timeout: NodeJS.Timeout;
-}
+};
 
 type InterceptingCallback = (
   callback: SetTimeoutCallback,
@@ -182,7 +182,7 @@ class SetTimeoutRecorder {
   _mockClearTimeoutImplementation = (
     timeout?: NodeJS.Timeout | string | number,
   ): void => {
-    const index = this.calls.findIndex((c) => c.timeout === timeout);
+    const index = this.calls.findIndex((call) => call.timeout === timeout);
 
     if (index !== -1) {
       this.calls.splice(index, 1);

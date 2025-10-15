@@ -4,10 +4,10 @@ import EMPTY_FUNCTION from '../test/emptyFunction';
 import recordCallsToSetTimeout from '../test/recordCallsToSetTimeout';
 import { withPollingBlockTracker } from '../test/withBlockTracker';
 
-interface Sync {
+type Sync = {
   oldBlock: string;
   newBlock: string;
-}
+};
 
 const METHODS_TO_ADD_LISTENER = ['on', 'addListener'] as const;
 const METHODS_TO_REMOVE_LISTENER = ['off', 'removeListener'] as const;
@@ -174,7 +174,7 @@ describe('PollingBlockTracker', () => {
 
             await withPollingBlockTracker(async ({ blockTracker }) => {
               expect(blockTracker.isRunning()).toBe(false);
-              blockTracker.getLatestBlock();
+              await blockTracker.getLatestBlock();
               expect(blockTracker.isRunning()).toBe(false);
             });
           });
@@ -1203,7 +1203,7 @@ describe('PollingBlockTracker', () => {
           },
         },
         async ({ blockTracker }) => {
-          blockTracker.checkForLatestBlock();
+          await blockTracker.checkForLatestBlock();
           await new Promise((resolve) => {
             blockTracker.on('latest', resolve);
           });

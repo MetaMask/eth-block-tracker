@@ -10,10 +10,10 @@ import util from 'util';
 import type { PollingBlockTrackerOptions } from '../src';
 import { PollingBlockTracker } from '../src';
 
-interface WithPollingBlockTrackerOptions {
+type WithPollingBlockTrackerOptions = {
   provider?: FakeProviderOptions;
   blockTracker?: PollingBlockTrackerOptions;
-}
+};
 
 type WithPollingBlockTrackerCallback = (args: {
   provider: SafeEventEmitterProvider;
@@ -56,9 +56,9 @@ type FakeProviderStub =
  * stubs - A set of objects that allow specifying the behavior
  * of specific invocations of `request` matching a `methodName`.
  */
-interface FakeProviderOptions {
+type FakeProviderOptions = {
   stubs?: FakeProviderStub[];
-}
+};
 
 /**
  * Constructs a provider that returns fake responses for the various
